@@ -1,848 +1,826 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Village Code Validator</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Dynamic Title & SEO tags -->
+    <title>ZORO PANELS</title>
+    <meta name="description" content="" />
+
+    <!-- Google Fonts Inter & Playfair for VIP theme -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,700&display=swap" rel="stylesheet" />
+
+    <!-- Meta Pixel tracking logic (Supports Multiple Comma-Separated Pixels) -->
+    <script>
+        ! function(f, b, e, v, n, t, s) {
+            if (f.fbq) return;
+            n = f.fbq = function() {
+                n.callMethod ?
+                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+            };
+            if (!f._fbq) f._fbq = n;
+            n.push = n;
+            n.loaded = !0;
+            n.version = '2.0';
+            n.queue = [];
+            t = b.createElement(e);
+            t.async = !0;
+            t.src = v;
+            s = b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t, s)
+        }(window, document, 'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+
+        fbq('init', '1649134099683216');
+
+        fbq('track', 'PageView');
+    </script>
+    <noscript>
+        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1649134099683216&ev=PageView&noscript=1" />
+    </noscript>
+
     <style>
+        :root {
+            --blob1-color: #229ED9;
+            --blob2-color: #00FFA3;
+            --btn-start: #229ED9;
+            --btn-end: #00FFA3;
+            --text-glow: #00FFA3;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', sans-serif;
         }
-        
+
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            position: relative;
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 500px;
-            background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
             overflow: hidden;
+            color: #fff;
+            position: relative;
+            padding: 15px;
+            transition: background 0.5s ease;
+        }
+        body.has-bg {
+            background: url('uploads/1780058960_bg_1472ab3230075eee71a83f5be33c3260.jpg') no-repeat center center;
+            background-size: cover;
+        }
+
+        /* High contrast premium dark frosted screen mask */
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(6, 6, 10, 0.76);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* ==========================================
+           BACKGROUNDS AND PARTICLES (By Theme)
+           ========================================== */
+
+        /* Default Blobs */
+        .blob {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            border-radius: 50%;
+            filter: blur(130px);
+            opacity: 0.45;
+            animation: move 12s infinite alternate ease-in-out;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .blob1 {
+            background: var(--blob1-color);
+            top: -120px;
+            left: -120px;
+        }
+        .blob2 {
+            background: var(--blob2-color);
+            bottom: -120px;
+            right: -120px;
+            animation-delay: -3s;
+        }
+        @keyframes move {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+            100% {
+                transform: translate(80px, 60px) scale(1.1);
+            }
+        }
+
+        /* Cyberpunk Grid Background (Theme 2) */
+        .theme-theme2 {
+            background: #050508;
+            background-image:
+                linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
+            background-size: 25px 25px;
+        }
+
+        /* VIP Luxury Radiant Gradient (Theme 3) */
+        .theme-theme3 {
+            background: radial-gradient(circle at center, #111522 0%, #030408 100%);
+        }
+
+        /* Crimson Urgency Hype Background (Theme 4) */
+        .theme-theme4 {
+            background: #07070a;
+        }
+
+        /* Modern Tech Dot Matrix Background (Theme 5) */
+        .theme-theme5 {
+            background: #09090e;
+            background-image: radial-gradient(rgba(139, 92, 246, 0.08) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Aurora Borealis Slow Cycle (Theme 6) */
+        .theme-theme6 {
+            background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.1) 0%, rgba(139, 92, 246, 0.1) 90%), #040406;
+        }
+
+        /* ==========================================
+           CONTAINERS (By Theme)
+           ========================================== */
+        .container {
+            position: relative;
+            width: 100%;
+            max-width: 430px;
+            padding: 34px 28px;
+            z-index: 3;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Theme 1 - Neon Telegram */
+        .theme-theme1 .container {
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.035);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+            text-align: center;
+        }
+        .theme-theme1 .container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            padding: 1px;
+            background: linear-gradient(125deg, var(--btn-start), var(--btn-end));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        /* Theme 2 - Cyberpunk Angular */
+        .theme-theme2 .container {
+            background: rgba(10, 10, 16, 0.95);
+            border: 2px solid #06b6d4;
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.35), inset 0 0 15px rgba(6, 182, 212, 0.1);
+            clip-path: polygon(0 0, calc(100% - 25px) 0, 100% 25px, 100% 100%, 25px 100%, 0 calc(100% - 25px));
+            text-align: center;
+        }
+
+        /* Theme 3 - VIP Gold Luxury */
+        .theme-theme3 .container {
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(21, 28, 44, 0.9) 0%, rgba(10, 12, 20, 0.95) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+            text-align: center;
+        }
+
+        /* Theme 4 - Crimson Alert */
+        .theme-theme4 .container {
+            border-radius: 16px;
+            background: rgba(20, 15, 15, 0.95);
+            border-top: 6px solid #ef4444;
+            border-left: 1px solid rgba(239, 68, 68, 0.15);
+            border-right: 1px solid rgba(239, 68, 68, 0.15);
+            border-bottom: 1px solid rgba(239, 68, 68, 0.15);
+            box-shadow: 0 20px 45px rgba(239, 68, 68, 0.15);
+            text-align: center;
+        }
+
+        /* Theme 5 - Modern Tech Minimal */
+        .theme-theme5 .container {
+            max-width: 440px;
+            border-radius: 20px;
+            background: #0d0d14;
+            border: 1px solid rgba(139, 92, 246, 0.18);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
+            text-align: left;
+            padding: 40px 32px;
+        }
+
+        /* Theme 6 - Cosmic Aurora */
+        .theme-theme6 .container {
+            border-radius: 36px;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 15px 45px rgba(139, 92, 246, 0.12), inset 0 0 25px rgba(255, 255, 255, 0.02);
+            text-align: center;
+            padding: 38px 32px;
+        }
+
+        /* ==========================================
+           HERO IMAGES (By Theme)
+           ========================================== */
+        .hero {
+            width: 110px;
+            height: 110px;
+            object-fit: cover;
+            margin: 0 auto 18px auto;
+            display: block;
             transition: transform 0.3s ease;
         }
-        
-        .container.data-updating {
-            animation: pulse 0.5s ease;
+
+        /* Theme 1 - Neon Circle */
+        .theme-theme1 .hero {
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
+
+        /* Theme 2 - Cyber Square Block */
+        .theme-theme2 .hero {
+            border-radius: 4px;
+            border: 2px solid #06b6d4;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
         }
-        
-        .header {
-            background: linear-gradient(to right, #0f3460, #1a1a2e);
-            color: white;
-            padding: 25px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+
+        /* Theme 3 - VIP Gold Ringed */
+        .theme-theme3 .hero {
+            border-radius: 50%;
+            border: 3px double #f59e0b;
+            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25);
         }
-        
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
+
+        /* Theme 4 - Crimson Alert Box */
+        .theme-theme4 .hero {
+            border-radius: 12px;
+            border: 2px solid #ef4444;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
         }
-        
-        .coin-display {
-            background-color: rgba(255, 255, 255, 0.1);
-            border-radius: 50px;
-            padding: 10px 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            font-size: 18px;
-            backdrop-filter: blur(5px);
+
+        /* Theme 5 - Left Aligned Pill Icon */
+        .theme-theme5 .hero {
+            margin: 0 0 22px 0;
+            width: 76px;
+            height: 76px;
+            border-radius: 16px;
+            border: 1px solid rgba(139, 92, 246, 0.3);
         }
-        
-        .coin-display i {
-            color: gold;
-            font-size: 22px;
+
+        /* Theme 6 - Floating Cosmic Aura Hero */
+        .theme-theme6 .hero {
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.2);
+            animation: floatHero 4s infinite alternate ease-in-out;
         }
-        
-        .content {
-            padding: 30px;
+        @keyframes floatHero {
+            0% {
+                transform: translateY(0px) scale(1);
+            }
+            100% {
+                transform: translateY(-6px) scale(1.03);
+            }
         }
-        
-        .target-data {
-            background: linear-gradient(135deg, #0f3460 0%, #1a1a2e 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 25px;
-            border: 2px solid #e94560;
-            text-align: center;
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
+
+        /* ==========================================
+           TITLES & DESCRIPTIONS (By Theme)
+           ========================================== */
+        h1 {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
             transition: all 0.3s ease;
         }
-        
-        .target-data.data-changing {
-            background: linear-gradient(135deg, #e94560 0%, #ff6b8b 100%);
-            animation: dataChange 0.5s ease;
+
+        /* Theme 1 - Neon Text */
+        .theme-theme1 h1 {
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        
-        @keyframes dataChange {
-            0% { opacity: 1; transform: translateY(0); }
-            50% { opacity: 0.5; transform: translateY(-10px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        
-        .target-data h3 {
-            margin-bottom: 20px;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            color: #e94560;
-        }
-        
-        .data-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .data-item:last-child {
-            border-bottom: none;
-        }
-        
-        .data-label {
-            font-weight: 600;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #b8b8d1;
-        }
-        
-        .data-value {
-            font-weight: 700;
-            font-size: 18px;
+
+        /* Theme 2 - Glitch Cyber Uppercase */
+        .theme-theme2 h1 {
+            text-transform: uppercase;
+            font-family: monospace;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px #06b6d4, 0 0 20px #d946ef;
             color: #fff;
-            letter-spacing: 0.5px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
-        
-        .form-container {
-            background-color: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+
+        /* Theme 3 - Luxury Serif */
+        .theme-theme3 h1 {
+            font-family: 'Playfair Display', 'Georgia', serif;
+            font-style: italic;
+            color: #f59e0b;
+            letter-spacing: 0px;
         }
-        
-        .form-group {
-            margin-bottom: 25px;
+
+        /* Theme 4 - Bold Hype Warning */
+        .theme-theme4 h1 {
+            text-transform: uppercase;
+            font-weight: 900;
+            color: #ef4444;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
         }
-        
-        .form-group label {
+
+        /* Theme 5 - Left Aligned SaaS */
+        .theme-theme5 h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.25;
+            text-align: left;
+        }
+
+        /* Theme 6 - Aurora Radiant */
+        .theme-theme6 h1 {
+            background: linear-gradient(135deg, #10b981 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Description styling */
+        p {
+            font-size: 14px;
+            color: #ccd6f6;
+            line-height: 1.6;
+            margin-bottom: 22px;
+            white-space: pre-line;
+        }
+        .theme-theme5 p {
+            text-align: left;
+            color: #94a3b8;
+        }
+        .theme-theme3 p {
+            color: #d1d5db;
+            font-size: 13.5px;
+        }
+
+        /* ==========================================
+           POINTS CARDS LAYOUTS (By Theme)
+           ========================================== */
+        .points {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .point-card {
+            padding: 12px 16px;
+            font-size: 13.5px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Theme 1 - Neon Glow outline on Hover */
+        .theme-theme1 .point-card {
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #e2e8f0;
+            text-align: left;
+        }
+        .theme-theme1 .point-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+            border-color: var(--text-glow);
+        }
+
+        /* Theme 2 - Cyber Blocky */
+        .theme-theme2 .point-card {
+            border-radius: 0px;
+            border: 1px solid #d946ef;
+            background: rgba(217, 70, 239, 0.03);
+            color: #06b6d4;
+            text-align: left;
+            font-family: monospace;
+        }
+        .theme-theme2 .point-card:hover {
+            background: rgba(6, 182, 212, 0.1);
+            transform: scale(1.02);
+            box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+        }
+
+        /* Theme 3 - VIP Luxury */
+        .theme-theme3 .point-card {
+            border-radius: 6px;
+            border: 1px solid rgba(245, 158, 11, 0.15);
+            background: rgba(245, 158, 11, 0.02);
+            color: #cbd5e1;
+            text-align: left;
+        }
+        .theme-theme3 .point-card:hover {
+            border-color: #f59e0b;
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        /* Theme 4 - Crimson Alarm Card */
+        .theme-theme4 .point-card {
+            border-radius: 4px;
+            border-left: 4px solid #ef4444;
+            background: rgba(239, 68, 68, 0.05);
+            color: #e2e8f0;
+            text-align: left;
+        }
+        .theme-theme4 .point-card:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Theme 5 - SaaS checklist */
+        .theme-theme5 .point-card {
+            border-radius: 10px;
+            background: rgba(139, 92, 246, 0.03);
+            border: 1px solid rgba(139, 92, 246, 0.12);
+            color: #e2e8f0;
+            text-align: left;
+        }
+        .theme-theme5 .point-card:hover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.06);
+        }
+
+        /* Theme 6 - Aurora Capsule Card */
+        .theme-theme6 .point-card {
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #fff;
+            text-align: left;
+        }
+        .theme-theme6 .point-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.06);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.1);
+        }
+
+        /* 2 columns on screens over 500px wide (Except Theme 5 SaaS which is strictly stacked checklist) */
+        @media(min-width: 500px) {
+            .theme-theme1 .points,
+            .theme-theme2 .points,
+            .theme-theme3 .points,
+            .theme-theme4 .points,
+            .theme-theme6 .points {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* ==========================================
+           CONVERSION CTA BUTTONS (By Theme)
+           ========================================== */
+        .btn {
+            position: relative;
             display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .form-group input {
             width: 100%;
-            padding: 14px;
-            border: 2px solid #ddd;
-            border-radius: 10px;
+            padding: 16px 20px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 700;
             font-size: 16px;
-            transition: all 0.3s;
-            background-color: #fff;
-        }
-        
-        .form-group input:focus {
-            border-color: #0f3460;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.1);
-            background-color: #fff;
-        }
-        
-        .check-btn {
-            background: linear-gradient(to right, #0f3460, #1a1a2e);
-            color: white;
             border: none;
-            padding: 16px 30px;
-            font-size: 18px;
-            font-weight: 600;
-            border-radius: 10px;
             cursor: pointer;
-            width: 100%;
-            transition: all 0.3s;
-            margin-top: 10px;
-            letter-spacing: 0.5px;
-        }
-        
-        .check-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 15px rgba(15, 52, 96, 0.3);
-        }
-        
-        /* Results Modal Styles */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .results-modal {
-            background-color: white;
-            border-radius: 15px;
-            width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
             overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
-            animation: modalAppear 0.3s ease-out;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1;
         }
-        
-        @keyframes modalAppear {
-            from {
-                opacity: 0;
-                transform: translateY(-30px) scale(0.95);
+
+        /* Theme 1 - Neon Pulse Border */
+        .theme-theme1 .btn {
+            border-radius: 14px;
+            background: #111422;
+        }
+        .theme-theme1 .btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            padding: 2px;
+            background: linear-gradient(45deg, var(--btn-start), var(--btn-end));
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+        .theme-theme1 .btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            background: linear-gradient(45deg, var(--btn-start), var(--btn-end));
+            opacity: 0.18;
+            filter: blur(12px);
+            animation: pulseTheme1 2.5s infinite;
+            z-index: -1;
+        }
+        @keyframes pulseTheme1 {
+            0%,
+            100% {
+                opacity: 0.15;
+                transform: scale(1);
             }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
+            50% {
+                opacity: 0.38;
+                transform: scale(1.05);
             }
         }
-        
-        .modal-header {
-            background: linear-gradient(to right, #0f3460, #1a1a2e);
-            color: white;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .theme-theme1 .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(255, 255, 255, 0.12);
         }
-        
-        .modal-header h2 {
-            font-size: 22px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+
+        /* Theme 2 - Cyberpunk Blocky */
+        .theme-theme2 .btn {
+            border-radius: 0px;
+            background: linear-gradient(135deg, #d946ef 0%, #06b6d4 100%);
+            font-family: monospace;
+            letter-spacing: 2px;
+            box-shadow: 0 0 15px rgba(217, 70, 239, 0.5);
+            font-weight: 900;
+            text-transform: uppercase;
         }
-        
-        .close-modal {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s;
+        .theme-theme2 .btn:hover {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.8);
+            transform: translateY(-2px);
         }
-        
-        .close-modal:hover {
-            background-color: rgba(255, 255, 255, 0.2);
+
+        /* Theme 3 - VIP Gold Luxury */
+        .theme-theme3 .btn {
+            border-radius: 6px;
+            background: linear-gradient(to right, #f59e0b, #d97706);
+            color: #000;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
         }
-        
-        .modal-content {
-            padding: 25px;
-            overflow-y: auto;
-            max-height: calc(90vh - 80px);
+        .theme-theme3 .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(245, 158, 11, 0.5);
         }
-        
-        .result-status {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            padding: 15px;
-            border-radius: 10px;
+
+        /* Theme 4 - Crimson Alert Urgency Button */
+        .theme-theme4 .btn {
+            border-radius: 8px;
+            background: #ef4444;
+            font-weight: 800;
+            text-transform: uppercase;
+            animation: crimsonHypePulse 1.2s infinite;
+        }
+        @keyframes crimsonHypePulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+        .theme-theme4 .btn:hover {
+            background: #f43f5e;
+        }
+
+        /* Theme 5 - SaaS Sleek Pill */
+        .theme-theme5 .btn {
+            border-radius: 12px;
+            background: #8b5cf6;
             text-align: center;
-        }
-        
-        .success {
-            color: #28a745;
-            background-color: rgba(40, 167, 69, 0.1);
-            border: 2px solid #28a745;
-        }
-        
-        .error {
-            color: #dc3545;
-            background-color: rgba(220, 53, 69, 0.1);
-            border: 2px solid #dc3545;
-        }
-        
-        .comparison-container {
-            margin: 25px 0;
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 20px;
-            border: 1px solid #e9ecef;
-        }
-        
-        .comparison-title {
-            font-size: 18px;
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
             font-weight: 600;
-            margin-bottom: 15px;
-            color: #0f3460;
+        }
+        .theme-theme5 .btn:hover {
+            background: #7c3aed;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5);
+        }
+
+        /* Theme 6 - Aurora Capsule */
+        .theme-theme6 .btn {
+            border-radius: 30px;
+            background: linear-gradient(135deg, #10b981 0%, #8b5cf6 100%);
+            font-weight: 800;
+            text-transform: uppercase;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+        .theme-theme6 .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0) scale(1) !important;
+        }
+
+        /* Footers */
+        .footer {
+            margin-top: 24px;
+            font-size: 11px;
+            color: #52525b;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
         }
-        
-        .comparison-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #dee2e6;
+        .footer-logo {
+            height: 20px;
+            width: auto;
+            opacity: 0.65;
+            filter: brightness(1.2);
+            transition: opacity 0.3s ease;
         }
-        
-        .comparison-row:last-child {
-            border-bottom: none;
+        .footer-logo:hover {
+            opacity: 1 !important;
         }
-        
-        .field-name {
-            font-weight: 600;
-            color: #495057;
-            width: 30%;
+        .theme-theme2 .footer {
+            font-family: monospace;
+            color: #06b6d4;
         }
-        
-        .user-value {
-            width: 30%;
-            text-align: center;
-            padding: 5px 10px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            font-weight: 500;
+        .theme-theme3 .footer {
+            color: #78350f;
         }
-        
-        .target-value {
-            width: 30%;
-            text-align: center;
-            padding: 5px 10px;
-            background-color: #f1f3f5;
-            border-radius: 5px;
-            font-weight: 500;
-        }
-        
-        .match-indicator {
-            width: 10%;
-            text-align: center;
-            font-size: 20px;
-        }
-        
-        .match-yes {
-            color: #28a745;
-        }
-        
-        .match-no {
-            color: #dc3545;
-        }
-        
-        .coins-info {
-            background: linear-gradient(135deg, #fff9db, #ffe066);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 25px 0;
-            text-align: center;
-            border: 2px solid #ffd43b;
-        }
-        
-        .coins-info i {
-            color: #e67700;
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
-        
-        .coins-text {
-            font-size: 20px;
-            font-weight: 700;
-            color: #e67700;
-        }
-        
-        .modal-actions {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
-        }
-        
-        .modal-btn {
-            flex: 1;
-            padding: 16px;
-            border: none;
-            border-radius: 10px;
-            font-size: 17px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .modal-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 7px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .claim-btn {
-            background: linear-gradient(to right, #e94560, #ff6b8b);
-            color: white;
-        }
-        
-        .new-data-btn {
-            background: linear-gradient(to right, #0f3460, #1a1a2e);
-            color: white;
-        }
-        
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 22px;
-            }
-            
-            .data-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 5px;
-            }
-            
-            .data-value {
-                font-size: 16px;
-            }
-            
-            .modal-actions {
-                flex-direction: column;
-            }
-            
-            .comparison-row {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            
-            .field-name, .user-value, .target-value {
-                width: 100%;
-                text-align: left;
-            }
-            
-            .match-indicator {
-                width: 100%;
-                text-align: left;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .content {
-                padding: 20px;
-            }
-            
-            .target-data, .form-container {
-                padding: 20px;
-            }
-            
-            .modal-content {
-                padding: 20px;
-            }
+        .theme-theme5 .footer {
+            text-align: left;
+            color: #475569;
+            align-items: flex-start;
         }
     </style>
 </head>
-<body>
-    <div class="container" id="main-container">
-        <div class="header">
-            <h1><i class="fas fa-home"></i> Village Code Validator</h1>
-            <div class="coin-display">
-                <i class="fas fa-coins"></i>
-                <span id="coins-count">100</span> Coins
-            </div>
-        </div>
-        
-        <div class="content">
-            <div class="target-data" id="target-data">
-                <h3><i class="fas fa-bullseye"></i> Replicate This Data</h3>
-                <div class="data-item">
-                    <div class="data-label">
-                        <i class="fas fa-user"></i> Name:
-                    </div>
-                    <div class="data-value" id="target-name">Ava Lee</div>
-                </div>
-                <div class="data-item">
-                    <div class="data-label">
-                        <i class="fas fa-home"></i> Village:
-                    </div>
-                    <div class="data-value" id="target-village">Graffelfree</div>
-                </div>
-                <div class="data-item">
-                    <div class="data-label">
-                        <i class="fas fa-key"></i> Code:
-                    </div>
-                    <div class="data-value" id="target-code">O5535</div>
-                </div>
-            </div>
-            
-            <div class="form-container">
-                <div class="form-group">
-                    <label for="name"><i class="fas fa-user"></i> Enter Name and Surname</label>
-                    <input type="text" id="name" placeholder="Type the name shown above" autocomplete="off">
-                </div>
-                
-                <div class="form-group">
-                    <label for="village"><i class="fas fa-home"></i> Enter Village Name</label>
-                    <input type="text" id="village" placeholder="Type the village shown above" autocomplete="off">
-                </div>
-                
-                <div class="form-group">
-                    <label for="code"><i class="fas fa-key"></i> Enter Code (Letter + 4 Numbers)</label>
-                    <input type="text" id="code" placeholder="Type the code shown above" autocomplete="off">
-                </div>
-                
-                <button class="check-btn" id="check-btn">
-                    <i class="fas fa-check-circle"></i> Check Match
-                </button>
-            </div>
-        </div>
-    </div>
+<body class="theme-theme1 has-bg">
 
-    <!-- Results Modal -->
-    <div class="modal-overlay" id="results-modal">
-        <div class="results-modal">
-            <div class="modal-header">
-                <h2><i class="fas fa-poll"></i> Validation Results</h2>
-                <button class="close-modal" id="close-modal">&times;</button>
+    <!-- Background glowing nodes (Used heavily by classic, minimal, and aurora themes) -->
+    <div class="blob blob1"></div>
+    <div class="blob blob2"></div>
+
+    <div class="container">
+        <!-- Dynamic Hero Icon -->
+        <img src="https://api.dicebear.com/10.x/toon-head/svg?seed=Milo" class="hero" alt="ZORO PANELS" />
+
+        <!-- Landing Title -->
+        <h1>ZORO PANELS</h1>
+
+        <!-- Page description paragraph -->
+        <p></p>
+
+        <!-- Dynamic points grid list if bullet entries parsed -->
+        <div class="points">
+            <div class="point-card">
+                • Expert backed predictions
             </div>
-            
-            <div class="modal-content">
-                <div class="result-status" id="result-status">
-                    Checking your entries...
-                </div>
-                
-                <div class="comparison-container">
-                    <div class="comparison-title">
-                        <i class="fas fa-exchange-alt"></i> Entry Comparison
-                    </div>
-                    
-                    <div class="comparison-row">
-                        <div class="field-name">Name:</div>
-                        <div class="user-value" id="user-name-display">-</div>
-                        <div class="target-value" id="target-name-display">-</div>
-                        <div class="match-indicator" id="name-match">-</div>
-                    </div>
-                    
-                    <div class="comparison-row">
-                        <div class="field-name">Village:</div>
-                        <div class="user-value" id="user-village-display">-</div>
-                        <div class="target-value" id="target-village-display">-</div>
-                        <div class="match-indicator" id="village-match">-</div>
-                    </div>
-                    
-                    <div class="comparison-row">
-                        <div class="field-name">Code:</div>
-                        <div class="user-value" id="user-code-display">-</div>
-                        <div class="target-value" id="target-code-display">-</div>
-                        <div class="match-indicator" id="code-match">-</div>
-                    </div>
-                </div>
-                
-                <div class="coins-info" id="coins-info">
-                    <i class="fas fa-coins"></i>
-                    <div class="coins-text" id="coins-text">You can earn 25 coins!</div>
-                </div>
-                
-                <div class="modal-actions">
-                    <button class="modal-btn claim-btn" id="claim-btn">
-                        <i class="fas fa-gift"></i> Claim 25 Coins
-                    </button>
-                    <button class="modal-btn new-data-btn" id="new-data-btn">
-                        <i class="fas fa-redo"></i> Try New Data
-                    </button>
-                </div>
+            <div class="point-card">
+                • Fan sentiment tracking
+            </div>
+            <div class="point-card">
+                • Performance trends
+            </div>
+            <div class="point-card">
+                • Tactical breakdowns
             </div>
         </div>
+
+        <!-- Action Conversion Button -->
+        <button class="btn" onclick="triggerLeadConversion()">
+            Join Telegram Now
+        </button>
+
+        <!-- Footer signature -->
+        <div class="footer">
+            <img src="assets/Whale_logoW.png" class="footer-logo" alt="Big Whale Logo" onerror="this.style.display='none';" />
+            <span>© 2026 • ALL RIGHTS RESERVED</span>
+        </div>
+
+        <!-- Compliance Footer for Meta Safe Mode -->
     </div>
 
     <script>
-        // Arrays for generating random data
-        const firstNames = [
-            "Ava", "Emma", "Sophia", "Olivia", "Isabella", "Mia", "Charlotte", "Amelia",
-            "Harper", "Evelyn", "Abigail", "Emily", "Elizabeth", "Mila", "Ella", "Scarlett",
-            "Grace", "Chloe", "Victoria", "Riley", "Aria", "Lily", "Aurora", "Zoey"
-        ];
-        
-        const lastNames = [
-            "Lee", "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller",
-            "Davis", "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson",
-            "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Thompson", "White"
-        ];
-        
-        const fakeVillages = [
-            "Graffelfree", "Zorblaxia", "Quibbleton", "Fizzletown", "Glimmerfall", 
-            "Snickerdoodle", "Wobbleburg", "Jabberwock", "Flibbertown", "Zizzleville", 
-            "Quirkville", "Bumbleburg", "Noodleham", "Puddlewick", "Frogsbottom"
-        ];
-        
-        // DOM Elements
-        const nameInput = document.getElementById('name');
-        const villageInput = document.getElementById('village');
-        const codeInput = document.getElementById('code');
-        const checkBtn = document.getElementById('check-btn');
-        const claimBtn = document.getElementById('claim-btn');
-        const newDataBtn = document.getElementById('new-data-btn');
-        const closeModalBtn = document.getElementById('close-modal');
-        const resultsModal = document.getElementById('results-modal');
-        const resultStatus = document.getElementById('result-status');
-        const coinsCount = document.getElementById('coins-count');
-        const targetDataElement = document.getElementById('target-data');
-        const mainContainer = document.getElementById('main-container');
-        
-        // Target data elements
-        const targetNameElement = document.getElementById('target-name');
-        const targetVillageElement = document.getElementById('target-village');
-        const targetCodeElement = document.getElementById('target-code');
-        const targetData = document.getElementById('target-data');
-        
-        // Results display elements
-        const userNameDisplay = document.getElementById('user-name-display');
-        const userVillageDisplay = document.getElementById('user-village-display');
-        const userCodeDisplay = document.getElementById('user-code-display');
-        const targetNameDisplay = document.getElementById('target-name-display');
-        const targetVillageDisplay = document.getElementById('target-village-display');
-        const targetCodeDisplay = document.getElementById('target-code-display');
-        const nameMatchIndicator = document.getElementById('name-match');
-        const villageMatchIndicator = document.getElementById('village-match');
-        const codeMatchIndicator = document.getElementById('code-match');
-        const coinsText = document.getElementById('coins-text');
-        const coinsInfo = document.getElementById('coins-info');
-        
-        // Current target data
-        let targetName = '';
-        let targetVillage = '';
-        let targetCode = '';
-        
-        // Current coins from localStorage or default
-        let coins = localStorage.getItem('villageCodeCoins') ? parseInt(localStorage.getItem('villageCodeCoins')) : 100;
-        coinsCount.textContent = coins;
-        
-        // Function to generate random data
-        function generateRandomData() {
-            // Generate random name
-            const randomFirstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-            const randomLastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-            targetName = `${randomFirstName} ${randomLastName}`;
-            
-            // Generate random village
-            targetVillage = fakeVillages[Math.floor(Math.random() * fakeVillages.length)];
-            
-            // Generate random code (one letter + 4 numbers)
-            const randomLetter = String.fromCharCode(65 + Math.floor(Math.random() * 26));
-            const randomNumber = Math.floor(1000 + Math.random() * 9000);
-            targetCode = `${randomLetter}${randomNumber}`;
-            
-            // Update display with animation
-            targetDataElement.classList.add('data-changing');
-            mainContainer.classList.add('data-updating');
-            
-            setTimeout(() => {
-                targetNameElement.textContent = targetName;
-                targetVillageElement.textContent = targetVillage;
-                targetCodeElement.textContent = targetCode;
-                
-                targetDataElement.classList.remove('data-changing');
-                mainContainer.classList.remove('data-updating');
-            }, 300);
+        // Capture entry timestamp
+        var pageLoadTime = Date.now();
+        var currentClickId = 307161;
+        var redirectTriggered = false;
+
+        // Reset redirectTriggered flag when user comes back to page (via back button)
+        window.addEventListener('pageshow', function() {
+            redirectTriggered = false;
+        });
+
+        // Live Visitor Heartbeat (Ping every 10 seconds)
+        function sendHeartbeat() {
+            fetch('heartbeat.php?page_id=33').catch(function(e) {});
         }
-        
-        // Initialize with random data
-        generateRandomData();
-        
-        // Copy protection - disable text selection and copying
-        targetData.addEventListener('copy', function(e) {
-            e.preventDefault();
-            alert('Copying is not allowed! Please type the data manually.');
-        });
-        
-        targetData.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-            return false;
-        });
-        
-        // Check button click event
-        checkBtn.addEventListener('click', function() {
-            // Get input values
-            const name = nameInput.value.trim();
-            const village = villageInput.value.trim();
-            const code = codeInput.value.trim();
-            
-            // Update display in modal
-            userNameDisplay.textContent = name || "(empty)";
-            userVillageDisplay.textContent = village || "(empty)";
-            userCodeDisplay.textContent = code || "(empty)";
-            
-            targetNameDisplay.textContent = targetName;
-            targetVillageDisplay.textContent = targetVillage;
-            targetCodeDisplay.textContent = targetCode;
-            
-            // Validate inputs
-            let nameMatch = name === targetName;
-            let villageMatch = village === targetVillage;
-            let codeMatch = code === targetCode;
-            
-            let allMatch = nameMatch && villageMatch && codeMatch;
-            
-            // Update match indicators
-            nameMatchIndicator.textContent = nameMatch ? "✓" : "✗";
-            nameMatchIndicator.className = `match-indicator ${nameMatch ? 'match-yes' : 'match-no'}`;
-            
-            villageMatchIndicator.textContent = villageMatch ? "✓" : "✗";
-            villageMatchIndicator.className = `match-indicator ${villageMatch ? 'match-yes' : 'match-no'}`;
-            
-            codeMatchIndicator.textContent = codeMatch ? "✓" : "✗";
-            codeMatchIndicator.className = `match-indicator ${codeMatch ? 'match-yes' : 'match-no'}`;
-            
-            // Show appropriate result
-            if (allMatch) {
-                resultStatus.textContent = 'Perfect Match! All entries are correct!';
-                resultStatus.className = 'result-status success';
-                coinsText.innerHTML = 'You earned 25 coins!';
-                coinsInfo.style.background = 'linear-gradient(135deg, #d4edda, #c3e6cb)';
-                coinsInfo.style.borderColor = '#28a745';
-                claimBtn.style.display = 'flex';
-                newDataBtn.style.display = 'none';
-            } else {
-                resultStatus.textContent = 'Entries do not match';
-                resultStatus.className = 'result-status error';
-                coinsText.innerHTML = 'No coins earned this time';
-                coinsInfo.style.background = 'linear-gradient(135deg, #f8d7da, #f5c6cb)';
-                coinsInfo.style.borderColor = '#dc3545';
-                claimBtn.style.display = 'none';
-                newDataBtn.style.display = 'flex';
+        sendHeartbeat(); // Initial ping
+        setInterval(sendHeartbeat, 10000);
+
+        // Trigger background geo enrichment immediately (non-blocking)
+        // This ensures `clicks` rows get country/city populated even if user doesn't click CTA.
+        try {
+            fetch('capi.php?click_id=' + currentClickId + '&time_on_page=0').catch(function(e) {});
+        } catch (e) {}
+
+        function triggerLeadConversion() {
+            if (redirectTriggered) return;
+            redirectTriggered = true;
+
+            // 1. Calculate user reading duration (engagement tracking)
+            var timeOnPage = Math.round((Date.now() - pageLoadTime) / 1000);
+
+            // 2. Dispatch browser Lead tracking event
+            try {
+                fbq('track', 'Lead');
+            } catch (e) {
+                console.error("Meta Pixel browser tracking failed:", e);
             }
-            
-            // Show the modal
-            resultsModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        });
-        
-        // Claim button click event
-        claimBtn.addEventListener('click', function() {
-            // Add 25 coins
-            coins += 25;
-            coinsCount.textContent = coins;
-            localStorage.setItem('villageCodeCoins', coins);
-            
-            // Update result message
-            resultStatus.textContent = 'Congratulations!';
-            resultStatus.className = 'result-status success';
-            coinsText.innerHTML = '25 coins added to your balance!';
-            coinsInfo.style.background = 'linear-gradient(135deg, #fff9db, #ffe066)';
-            coinsInfo.style.borderColor = '#ffd43b';
-            claimBtn.style.display = 'none';
-            newDataBtn.style.display = 'flex';
-            
-            // Close modal after 1.5 seconds
-            setTimeout(() => {
-                resultsModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-                
-                // Generate new random data
-                generateRandomData();
-                
-                // Clear input fields
-                nameInput.value = '';
-                villageInput.value = '';
-                codeInput.value = '';
-                
-                // Focus on first input
-                nameInput.focus();
-            }, 1500);
-        });
-        
-        // New data button click event (for failed attempts)
-        newDataBtn.addEventListener('click', function() {
-            // Generate new random data
-            generateRandomData();
-            
-            // Clear input fields
-            nameInput.value = '';
-            villageInput.value = '';
-            codeInput.value = '';
-            
-            // Close modal
-            resultsModal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-            
-            // Focus on first input
-            nameInput.focus();
-        });
-        
-        // Close modal button
-        closeModalBtn.addEventListener('click', function() {
-            resultsModal.style.display = 'none';
-            document.body.style.overflow = 'auto';
-        });
-        
-        // Close modal when clicking outside
-        resultsModal.addEventListener('click', function(e) {
-            if (e.target === resultsModal) {
-                resultsModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
+
+            // 3. Trigger immediate redirect first (non-blocking CAPI in background)
+            var telegramLink = "https://t.me/Rlby6cbb6hAwOGQ9";
+
+            // Redirect immediately without waiting for API response
+            setTimeout(function() {
+                window.location.href = telegramLink;
+            }, 100);
+
+            // 4. Dispatch background CAPI server-to-server and Telegram bot alert (non-blocking)
+            var capiUrl = 'capi.php?click_id=' + currentClickId + '&time_on_page=' + timeOnPage +
+                '&is_converted=1';
+
+            try {
+                fetch(capiUrl, {
+                    method: 'GET',
+                    mode: 'no-cors',
+                    credentials: 'omit'
+                }).catch(function(err) {
+                    console.error("CAPI callback error (non-critical):", err);
+                });
+            } catch (e) {
+                console.error("CAPI fetch error:", e);
             }
-        });
-        
-        // Prevent copying from target data area
+        }
+
+        // ==========================================
+        // 🛡️ FRONTEND CODE & DESIGN PROTECTION SHIELD
+        // ==========================================
+
+        // 1. Block Context Menu (Right Click)
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        }, false);
+
+        // 2. Block Keyboard DevTools Shortcuts
         document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-                if (document.activeElement.closest('.target-data')) {
-                    e.preventDefault();
-                    alert('Copying is not allowed! Please type the data manually.');
-                }
+            // Block F12
+            if (e.key === 'F12' || e.keyCode === 123) {
+                e.preventDefault();
+                return false;
             }
-            
-            // Close modal with Escape key
-            if (e.key === 'Escape' && resultsModal.style.display === 'flex') {
-                resultsModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
+            // Block Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J
+            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J' || e.keyCode === 73 ||
+                    e.keyCode === 67 || e.keyCode === 74)) {
+                e.preventDefault();
+                return false;
             }
-            
-            // Submit with Enter key
-            if (e.key === 'Enter' && !resultsModal.style.display === 'flex') {
-                checkBtn.click();
+            // Block Cmd+Alt+I, Cmd+Alt+C, Cmd+Alt+J (Mac OSX shortcuts)
+            if (e.metaKey && e.altKey && (e.key === 'i' || e.key === 'c' || e.key === 'j' || e.keyCode === 73 ||
+                    e.keyCode === 67 || e.keyCode === 74)) {
+                e.preventDefault();
+                return false;
             }
-        });
-        
-        // Auto-focus on name input when page loads
-        window.addEventListener('load', function() {
-            nameInput.focus();
-        });
+            // Block Ctrl+U (View Source)
+            if (e.ctrlKey && (e.key === 'u' || e.keyCode === 85)) {
+                e.preventDefault();
+                return false;
+            }
+            // Block Cmd+Option+U (Mac View Source)
+            if (e.metaKey && e.altKey && (e.key === 'u' || e.keyCode === 85)) {
+                e.preventDefault();
+                return false;
+            }
+        }, false);
     </script>
+
 </body>
 </html>
