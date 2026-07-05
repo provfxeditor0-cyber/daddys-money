@@ -1,826 +1,588 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZILLA 4 PANEL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #05060a;
+  --s1:     #0a0c12;
+  --s2:     #0f1118;
+  --s3:     #141720;
+  --border: rgba(255,255,255,0.06);
+  --b2:     rgba(255,255,255,0.1);
+  --cyan:   #22d3ee;
+  --cyan2:  #67e8f9;
+  --cg:     rgba(34,211,238,0.12);
+  --red:    #ef4444;
+  --yellow: #fde68a;
+  --blue:   #93c5fd;
+  --t1:  #e8eaf0;
+  --t2:  rgba(232,234,240,0.55);
+  --t3:  rgba(232,234,240,0.28);
+  --t4:  rgba(232,234,240,0.10);
+  --mono:    'Share Tech Mono', monospace;
+  --orb:     'Orbitron', sans-serif;
+  --grotesk: 'Space Grotesk', sans-serif;
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html, body { height:100%; overflow:hidden; }
+body {
+  background: var(--bg);
+  color: var(--t1);
+  font-family: var(--grotesk);
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+}
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(34,211,238,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34,211,238,0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+  pointer-events:none; z-index:0;
+}
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background: radial-gradient(ellipse 110% 110% at 50% 50%, transparent 30%, rgba(5,6,10,0.92) 100%);
+  pointer-events:none; z-index:0;
+}
+.scanlines {
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px);
+}
 
-    <!-- Dynamic Title & SEO tags -->
-    <title>ZORO PANELS</title>
-    <meta name="description" content="" />
+/* ── PAGES ── */
+.page { display:none; width:100%; height:100%; position:fixed; inset:0; align-items:center; justify-content:center; z-index:10; }
+.page.active { display:flex; }
 
-    <!-- Google Fonts Inter & Playfair for VIP theme -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,700&display=swap" rel="stylesheet" />
+/* ══════════════════════════
+   LOGIN PAGE
+══════════════════════════ */
+#loginPage { flex-direction:column; align-items:center; }
 
-    <!-- Meta Pixel tracking logic (Supports Multiple Comma-Separated Pixels) -->
-    <script>
-        ! function(f, b, e, v, n, t, s) {
-            if (f.fbq) return;
-            n = f.fbq = function() {
-                n.callMethod ?
-                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-            };
-            if (!f._fbq) f._fbq = n;
-            n.push = n;
-            n.loaded = !0;
-            n.version = '2.0';
-            n.queue = [];
-            t = b.createElement(e);
-            t.async = !0;
-            t.src = v;
-            s = b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t, s)
-        }(window, document, 'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
+.scan-bar {
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity:0.45;
+  animation: scanMove 5s linear infinite;
+}
+@keyframes scanMove { 0%{top:0;opacity:0;} 5%{opacity:0.45;} 95%{opacity:0.45;} 100%{top:100%;opacity:0;} }
 
-        fbq('init', '1649134099683216');
+.corner { position:absolute; width:48px; height:48px; }
+.corner svg { width:48px; height:48px; }
+.corner.tl { top:22px; left:22px; }
+.corner.tr { top:22px; right:22px; transform:scaleX(-1); }
+.corner.bl { bottom:22px; left:22px; transform:scaleY(-1); }
+.corner.br { bottom:22px; right:22px; transform:scale(-1,-1); }
+.corner svg path { stroke:rgba(34,211,238,0.22); fill:none; stroke-width:1.5; stroke-linecap:square; }
 
-        fbq('track', 'PageView');
-    </script>
-    <noscript>
-        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1649134099683216&ev=PageView&noscript=1" />
-    </noscript>
+.login-wrap {
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; align-items:center;
+  animation: fadeIn 0.8s ease both;
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(18px);} to{opacity:1;transform:translateY(0);} }
 
-    <style>
-        :root {
-            --blob1-color: #229ED9;
-            --blob2-color: #00FFA3;
-            --btn-start: #229ED9;
-            --btn-end: #00FFA3;
-            --text-glow: #00FFA3;
-        }
+/* AVATAR */
+.avatar-ring {
+  position:relative; width:160px; height:160px; margin-bottom:26px;
+}
+.avatar-ring::before, .avatar-ring::after {
+  content:''; position:absolute; border-radius:50%;
+  border:1px solid rgba(34,211,238,0.2);
+  animation:ringPulse 3s ease-in-out infinite;
+}
+.avatar-ring::before { inset:-7px; animation-delay:0s; }
+.avatar-ring::after  { inset:-16px; opacity:0.5; animation-delay:0.7s; }
+@keyframes ringPulse { 0%,100%{transform:scale(1);opacity:0.5;} 50%{transform:scale(1.03);opacity:1;} }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
+.avatar-tick { position:absolute; width:12px; height:12px; border-color:var(--cyan); border-style:solid; opacity:0.6; }
+.avatar-tick.tl { top:-3px;left:-3px;border-width:2px 0 0 2px; }
+.avatar-tick.tr { top:-3px;right:-3px;border-width:2px 2px 0 0; }
+.avatar-tick.bl { bottom:-3px;left:-3px;border-width:0 0 2px 2px; }
+.avatar-tick.br { bottom:-3px;right:-3px;border-width:0 2px 2px 0; }
 
-        body {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            color: #fff;
-            position: relative;
-            padding: 15px;
-            transition: background 0.5s ease;
-        }
-        body.has-bg {
-            background: url('uploads/1780058960_bg_1472ab3230075eee71a83f5be33c3260.jpg') no-repeat center center;
-            background-size: cover;
-        }
+.avatar-img {
+  width:160px; height:160px; border-radius:50%; display:block;
+  border:2px solid rgba(34,211,238,0.28);
+  background:var(--s2);
+}
 
-        /* High contrast premium dark frosted screen mask */
-        body::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(6, 6, 10, 0.76);
-            backdrop-filter: blur(3px);
-            -webkit-backdrop-filter: blur(3px);
-            z-index: 1;
-            pointer-events: none;
-        }
+.login-brand {
+  font-family:var(--mono); font-size:9px; letter-spacing:3.5px;
+  color:var(--t4); text-transform:uppercase; margin-bottom:10px;
+}
+.login-title {
+  font-family:var(--orb); font-size:clamp(18px,3.5vw,26px); font-weight:800;
+  letter-spacing:3px; color:var(--t1); text-align:center;
+  margin-bottom:5px; text-transform:uppercase; line-height:1.3;
+}
+.login-title span { color:var(--cyan); }
+.login-sub {
+  font-family:var(--mono); font-size:10px; letter-spacing:2px;
+  color:var(--t4); text-transform:uppercase; margin-bottom:36px;
+}
 
-        /* ==========================================
-           BACKGROUNDS AND PARTICLES (By Theme)
-           ========================================== */
+.key-wrap { position:relative; width:310px; margin-bottom:10px; }
+.key-label {
+  font-family:var(--mono); font-size:9px; letter-spacing:2px;
+  color:var(--t4); text-transform:uppercase; margin-bottom:8px; display:block;
+  transition:color 0.2s;
+}
+.key-wrap:focus-within .key-label { color:var(--cyan); }
+.key-input-wrap { position:relative; display:flex; align-items:center; }
+.key-bracket {
+  font-family:var(--mono); font-size:22px; color:rgba(34,211,238,0.25);
+  padding:0 10px; line-height:1; flex-shrink:0; transition:color 0.2s;
+  user-select:none;
+}
+.key-wrap:focus-within .key-bracket { color:rgba(34,211,238,0.6); }
+.key-input {
+  flex:1; height:50px;
+  background:var(--s2); border:1px solid var(--border); border-left:none; border-right:none;
+  color:var(--cyan2); font-family:var(--mono); font-size:15px; letter-spacing:2px;
+  text-align:center; outline:none;
+  transition:border-color 0.25s, background 0.25s, box-shadow 0.25s;
+  padding:0 8px;
+}
+.key-input::placeholder { color:var(--t4); letter-spacing:2px; }
+.key-input:focus { background:rgba(34,211,238,0.03); box-shadow:0 0 0 1px rgba(34,211,238,0.18) inset, 0 0 20px rgba(34,211,238,0.05); }
+.key-input.error { color:var(--red); animation:shake 0.38s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);} }
 
-        /* Default Blobs */
-        .blob {
-            position: absolute;
-            width: 450px;
-            height: 450px;
-            border-radius: 50%;
-            filter: blur(130px);
-            opacity: 0.45;
-            animation: move 12s infinite alternate ease-in-out;
-            z-index: 2;
-            pointer-events: none;
-        }
-        .blob1 {
-            background: var(--blob1-color);
-            top: -120px;
-            left: -120px;
-        }
-        .blob2 {
-            background: var(--blob2-color);
-            bottom: -120px;
-            right: -120px;
-            animation-delay: -3s;
-        }
-        @keyframes move {
-            0% {
-                transform: translate(0, 0) scale(1);
-            }
-            100% {
-                transform: translate(80px, 60px) scale(1.1);
-            }
-        }
+.err-msg {
+  font-family:var(--mono); font-size:10px; color:var(--red);
+  letter-spacing:1.5px; text-align:center; min-height:16px; margin-bottom:18px;
+  opacity:0; transition:opacity 0.2s;
+}
+.err-msg.show { opacity:1; }
 
-        /* Cyberpunk Grid Background (Theme 2) */
-        .theme-theme2 {
-            background: #050508;
-            background-image:
-                linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
-            background-size: 25px 25px;
-        }
+.enter-btn {
+  width:310px; height:48px;
+  background:transparent; border:1px solid rgba(34,211,238,0.32);
+  color:var(--cyan); font-family:var(--orb); font-size:13px; font-weight:700;
+  letter-spacing:5px; text-transform:uppercase; cursor:pointer;
+  position:relative; overflow:hidden; transition:all 0.2s ease;
+}
+.enter-btn::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg,transparent,rgba(34,211,238,0.07),transparent);
+  transform:translateX(-100%); transition:transform 0.55s ease;
+}
+.enter-btn:hover { background:rgba(34,211,238,0.05); border-color:rgba(34,211,238,0.55); box-shadow:0 0 18px rgba(34,211,238,0.08); }
+.enter-btn:hover::before { transform:translateX(100%); }
+.enter-btn:active { transform:scale(0.98); }
 
-        /* VIP Luxury Radiant Gradient (Theme 3) */
-        .theme-theme3 {
-            background: radial-gradient(circle at center, #111522 0%, #030408 100%);
-        }
+.status-bar {
+  position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:14px;
+  font-family:var(--mono); font-size:9px; letter-spacing:2px; color:var(--t4); white-space:nowrap;
+}
+.status-dot { width:5px; height:5px; border-radius:50%; background:var(--cyan); opacity:0.5; animation:dotBlink 2s ease-in-out infinite; }
+@keyframes dotBlink { 0%,100%{opacity:0.25;} 50%{opacity:0.7;} }
 
-        /* Crimson Urgency Hype Background (Theme 4) */
-        .theme-theme4 {
-            background: #07070a;
-        }
+/* ══════════════════════════
+   PANEL PAGE
+══════════════════════════ */
+#panelPage { flex-direction:column; align-items:center; justify-content:flex-start; overflow:hidden; }
 
-        /* Modern Tech Dot Matrix Background (Theme 5) */
-        .theme-theme5 {
-            background: #09090e;
-            background-image: radial-gradient(rgba(139, 92, 246, 0.08) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
+/* ── HEADER ── */
+.panel-header {
+  width:100%; height:56px;
+  border-bottom:1px solid var(--border);
+  background:rgba(10,12,18,0.92);
+  backdrop-filter:blur(16px);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 24px; flex-shrink:0; position:relative; z-index:5;
+}
+.ph-logo { font-family:var(--orb); font-size:13px; font-weight:800; letter-spacing:4px; color:var(--t2); }
+.ph-logo span { color:var(--cyan); }
+.ph-right { display:flex; align-items:center; gap:24px; }
 
-        /* Aurora Borealis Slow Cycle (Theme 6) */
-        .theme-theme6 {
-            background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.1) 0%, rgba(139, 92, 246, 0.1) 90%), #040406;
-        }
+/* period */
+.period-wrap { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+.period-label { font-family:var(--mono); font-size:8px; letter-spacing:2px; color:var(--t4); text-transform:uppercase; }
+.period-val { font-family:var(--mono); font-size:11px; color:var(--t3); letter-spacing:0.5px; }
 
-        /* ==========================================
-           CONTAINERS (By Theme)
-           ========================================== */
-        .container {
-            position: relative;
-            width: 100%;
-            max-width: 430px;
-            padding: 34px 28px;
-            z-index: 3;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+/* ── WATCH TIMER ── */
+.watch-wrap {
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+}
+.watch-label { font-family:var(--mono); font-size:8px; letter-spacing:2px; color:var(--t4); text-transform:uppercase; }
 
-        /* Theme 1 - Neon Telegram */
-        .theme-theme1 .container {
-            border-radius: 24px;
-            background: rgba(255, 255, 255, 0.035);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
-            text-align: center;
-        }
-        .theme-theme1 .container::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 24px;
-            padding: 1px;
-            background: linear-gradient(125deg, var(--btn-start), var(--btn-end));
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
+.watch-face {
+  position:relative;
+  width:64px; height:64px;
+  flex-shrink:0;
+}
+.watch-svg { width:64px; height:64px; transform:rotate(-90deg); }
+.watch-track { fill:none; stroke:rgba(255,255,255,0.06); stroke-width:3; }
+.watch-prog  { fill:none; stroke:var(--cyan); stroke-width:3; stroke-linecap:round;
+  stroke-dasharray:163; stroke-dashoffset:0;
+  transition:stroke-dashoffset 0.9s linear, stroke 0.4s;
+  filter:drop-shadow(0 0 4px rgba(34,211,238,0.4));
+}
+.watch-prog.warn { stroke:#f59e0b; filter:drop-shadow(0 0 4px rgba(245,158,11,0.4)); }
+.watch-prog.crit { stroke:var(--red); filter:drop-shadow(0 0 5px rgba(239,68,68,0.5)); animation:progFlash 0.5s ease-in-out infinite; }
+@keyframes progFlash { 50%{ opacity:0.4; } }
 
-        /* Theme 2 - Cyberpunk Angular */
-        .theme-theme2 .container {
-            background: rgba(10, 10, 16, 0.95);
-            border: 2px solid #06b6d4;
-            box-shadow: 0 0 25px rgba(6, 182, 212, 0.35), inset 0 0 15px rgba(6, 182, 212, 0.1);
-            clip-path: polygon(0 0, calc(100% - 25px) 0, 100% 25px, 100% 100%, 25px 100%, 0 calc(100% - 25px));
-            text-align: center;
-        }
+.watch-center-text {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--orb); font-size:13px; font-weight:700; letter-spacing:1px;
+  color:var(--cyan); line-height:1;
+  transition:color 0.4s;
+}
+.watch-center-text.warn { color:#f59e0b; }
+.watch-center-text.crit { color:var(--red); }
 
-        /* Theme 3 - VIP Gold Luxury */
-        .theme-theme3 .container {
-            border-radius: 12px;
-            background: linear-gradient(135deg, rgba(21, 28, 44, 0.9) 0%, rgba(10, 12, 20, 0.95) 100%);
-            border: 1px solid rgba(245, 158, 11, 0.35);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
-            text-align: center;
-        }
+/* ── CENTER AREA ── */
+.panel-center {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  position:relative; z-index:2; width:100%; overflow:hidden;
+}
 
-        /* Theme 4 - Crimson Alert */
-        .theme-theme4 .container {
-            border-radius: 16px;
-            background: rgba(20, 15, 15, 0.95);
-            border-top: 6px solid #ef4444;
-            border-left: 1px solid rgba(239, 68, 68, 0.15);
-            border-right: 1px solid rgba(239, 68, 68, 0.15);
-            border-bottom: 1px solid rgba(239, 68, 68, 0.15);
-            box-shadow: 0 20px 45px rgba(239, 68, 68, 0.15);
-            text-align: center;
-        }
+/* result circle */
+.result-circle-wrap {
+  position:relative; display:flex; align-items:center; justify-content:center;
+}
 
-        /* Theme 5 - Modern Tech Minimal */
-        .theme-theme5 .container {
-            max-width: 440px;
-            border-radius: 20px;
-            background: #0d0d14;
-            border: 1px solid rgba(139, 92, 246, 0.18);
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
-            text-align: left;
-            padding: 40px 32px;
-        }
+.result-circle {
+  width:220px; height:220px; border-radius:50%;
+  border:2px solid rgba(255,255,255,0.06);
+  background: radial-gradient(circle, rgba(20,23,32,0.9) 0%, rgba(10,12,18,0.95) 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative; overflow:hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.04), inset 0 0 40px rgba(0,0,0,0.4);
+  transition: box-shadow 0.5s ease, border-color 0.5s;
+}
 
-        /* Theme 6 - Cosmic Aurora */
-        .theme-theme6 .container {
-            border-radius: 36px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 15px 45px rgba(139, 92, 246, 0.12), inset 0 0 25px rgba(255, 255, 255, 0.02);
-            text-align: center;
-            padding: 38px 32px;
-        }
+/* spinning ring on circle */
+.ring-spin {
+  position:absolute; inset:-2px;
+  border-radius:50%;
+  border:2px solid transparent;
+  border-top-color:rgba(34,211,238,0.25);
+  border-right-color:rgba(34,211,238,0.1);
+  animation:spin 6s linear infinite;
+  pointer-events:none;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
 
-        /* ==========================================
-           HERO IMAGES (By Theme)
-           ========================================== */
-        .hero {
-            width: 110px;
-            height: 110px;
-            object-fit: cover;
-            margin: 0 auto 18px auto;
-            display: block;
-            transition: transform 0.3s ease;
-        }
+.result-inner-label {
+  font-family:var(--mono); font-size:9px; letter-spacing:3px;
+  text-transform:uppercase; color:var(--t4); margin-bottom:8px;
+  transition:color 0.4s;
+}
+.result-main-text {
+  font-family:var(--orb); font-size:42px; font-weight:900;
+  letter-spacing:4px; text-transform:uppercase;
+  color:var(--t4); transition:color 0.4s, text-shadow 0.4s, font-size 0.3s;
+  line-height:1;
+}
+.result-sub-text {
+  font-family:var(--mono); font-size:10px; letter-spacing:2px;
+  color:var(--t4); margin-top:10px; text-transform:uppercase;
+  transition:color 0.4s; min-height:14px;
+}
 
-        /* Theme 1 - Neon Circle */
-        .theme-theme1 .hero {
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
+/* states */
+.result-circle.show-small {
+  border-color:rgba(253,230,138,0.3);
+  box-shadow:0 0 40px rgba(253,230,138,0.1), 0 0 80px rgba(253,230,138,0.04), inset 0 0 40px rgba(253,230,138,0.04);
+}
+.result-circle.show-small .result-inner-label { color:rgba(253,230,138,0.5); }
+.result-circle.show-small .result-main-text { color:var(--yellow); text-shadow:0 0 30px rgba(253,230,138,0.5), 0 0 60px rgba(253,230,138,0.2); font-size:52px; }
+.result-circle.show-small .result-sub-text  { color:rgba(253,230,138,0.45); }
 
-        /* Theme 2 - Cyber Square Block */
-        .theme-theme2 .hero {
-            border-radius: 4px;
-            border: 2px solid #06b6d4;
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
-        }
+.result-circle.show-big {
+  border-color:rgba(147,197,253,0.3);
+  box-shadow:0 0 40px rgba(147,197,253,0.12), 0 0 80px rgba(147,197,253,0.05), inset 0 0 40px rgba(147,197,253,0.05);
+}
+.result-circle.show-big .result-inner-label { color:rgba(147,197,253,0.5); }
+.result-circle.show-big .result-main-text { color:var(--blue); text-shadow:0 0 30px rgba(147,197,253,0.5), 0 0 60px rgba(147,197,253,0.2); font-size:64px; }
+.result-circle.show-big .result-sub-text  { color:rgba(147,197,253,0.45); }
 
-        /* Theme 3 - VIP Gold Ringed */
-        .theme-theme3 .hero {
-            border-radius: 50%;
-            border: 3px double #f59e0b;
-            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25);
-        }
+/* crosshair corners on circle */
+.circ-corner { position:absolute; width:14px; height:14px; }
+.circ-corner::before, .circ-corner::after { content:''; position:absolute; background:rgba(34,211,238,0.25); }
+.circ-corner.c-tl { top:14px;left:14px; }
+.circ-corner.c-tr { top:14px;right:14px; }
+.circ-corner.c-bl { bottom:14px;left:14px; }
+.circ-corner.c-br { bottom:14px;right:14px; }
+.circ-corner.c-tl::before,.circ-corner.c-tr::before,.circ-corner.c-bl::before,.circ-corner.c-br::before { width:100%;height:1px;top:0;left:0; }
+.circ-corner.c-tl::after,.circ-corner.c-tr::after,.circ-corner.c-bl::after,.circ-corner.c-br::after { height:100%;width:1px;top:0;left:0; }
 
-        /* Theme 4 - Crimson Alert Box */
-        .theme-theme4 .hero {
-            border-radius: 12px;
-            border: 2px solid #ef4444;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
-        }
+/* ── FOOTER ── */
+.panel-footer {
+  width:100%; padding:0 24px 32px;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  flex-shrink:0; position:relative; z-index:5;
+}
 
-        /* Theme 5 - Left Aligned Pill Icon */
-        .theme-theme5 .hero {
-            margin: 0 0 22px 0;
-            width: 76px;
-            height: 76px;
-            border-radius: 16px;
-            border: 1px solid rgba(139, 92, 246, 0.3);
-        }
+.generate-btn {
+  width:100%; max-width:280px; height:50px;
+  background:transparent;
+  border:1px solid rgba(34,211,238,0.3);
+  color:var(--cyan);
+  font-family:var(--orb); font-size:14px; font-weight:700; letter-spacing:5px;
+  text-transform:uppercase; cursor:pointer;
+  position:relative; overflow:hidden;
+  transition:all 0.22s ease;
+}
+.generate-btn::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg, transparent, rgba(34,211,238,0.07), transparent);
+  transform:translateX(-100%); transition:transform 0.5s;
+}
+.generate-btn:hover { background:rgba(34,211,238,0.05); border-color:rgba(34,211,238,0.55); box-shadow:0 0 20px rgba(34,211,238,0.1); }
+.generate-btn:hover::before { transform:translateX(100%); }
+.generate-btn:active { transform:scale(0.97); }
+.generate-btn:disabled { opacity:0.25; cursor:not-allowed; transform:none !important; box-shadow:none; border-color: rgba(239,68,68,0.3); color: var(--red); }
 
-        /* Theme 6 - Floating Cosmic Aura Hero */
-        .theme-theme6 .hero {
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.2);
-            animation: floatHero 4s infinite alternate ease-in-out;
-        }
-        @keyframes floatHero {
-            0% {
-                transform: translateY(0px) scale(1);
-            }
-            100% {
-                transform: translateY(-6px) scale(1.03);
-            }
-        }
+.footer-status {
+  font-family:var(--mono); font-size:9px; letter-spacing:2px;
+  color:var(--t4); text-transform:uppercase; text-align:center; min-height:13px;
+  transition:color 0.3s;
+}
+.footer-status.locked { color:rgba(239,68,68,0.6); }
 
-        /* ==========================================
-           TITLES & DESCRIPTIONS (By Theme)
-           ========================================== */
-        h1 {
-            font-size: 26px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            letter-spacing: -0.02em;
-            transition: all 0.3s ease;
-        }
-
-        /* Theme 1 - Neon Text */
-        .theme-theme1 h1 {
-            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Theme 2 - Glitch Cyber Uppercase */
-        .theme-theme2 h1 {
-            text-transform: uppercase;
-            font-family: monospace;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px #06b6d4, 0 0 20px #d946ef;
-            color: #fff;
-        }
-
-        /* Theme 3 - Luxury Serif */
-        .theme-theme3 h1 {
-            font-family: 'Playfair Display', 'Georgia', serif;
-            font-style: italic;
-            color: #f59e0b;
-            letter-spacing: 0px;
-        }
-
-        /* Theme 4 - Bold Hype Warning */
-        .theme-theme4 h1 {
-            text-transform: uppercase;
-            font-weight: 900;
-            color: #ef4444;
-            letter-spacing: -0.5px;
-            text-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
-        }
-
-        /* Theme 5 - Left Aligned SaaS */
-        .theme-theme5 h1 {
-            font-size: 24px;
-            font-weight: 800;
-            color: #fff;
-            line-height: 1.25;
-            text-align: left;
-        }
-
-        /* Theme 6 - Aurora Radiant */
-        .theme-theme6 h1 {
-            background: linear-gradient(135deg, #10b981 0%, #8b5cf6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Description styling */
-        p {
-            font-size: 14px;
-            color: #ccd6f6;
-            line-height: 1.6;
-            margin-bottom: 22px;
-            white-space: pre-line;
-        }
-        .theme-theme5 p {
-            text-align: left;
-            color: #94a3b8;
-        }
-        .theme-theme3 p {
-            color: #d1d5db;
-            font-size: 13.5px;
-        }
-
-        /* ==========================================
-           POINTS CARDS LAYOUTS (By Theme)
-           ========================================== */
-        .points {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .point-card {
-            padding: 12px 16px;
-            font-size: 13.5px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Theme 1 - Neon Glow outline on Hover */
-        .theme-theme1 .point-card {
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            color: #e2e8f0;
-            text-align: left;
-        }
-        .theme-theme1 .point-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateX(4px);
-            border-color: var(--text-glow);
-        }
-
-        /* Theme 2 - Cyber Blocky */
-        .theme-theme2 .point-card {
-            border-radius: 0px;
-            border: 1px solid #d946ef;
-            background: rgba(217, 70, 239, 0.03);
-            color: #06b6d4;
-            text-align: left;
-            font-family: monospace;
-        }
-        .theme-theme2 .point-card:hover {
-            background: rgba(6, 182, 212, 0.1);
-            transform: scale(1.02);
-            box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
-        }
-
-        /* Theme 3 - VIP Luxury */
-        .theme-theme3 .point-card {
-            border-radius: 6px;
-            border: 1px solid rgba(245, 158, 11, 0.15);
-            background: rgba(245, 158, 11, 0.02);
-            color: #cbd5e1;
-            text-align: left;
-        }
-        .theme-theme3 .point-card:hover {
-            border-color: #f59e0b;
-            background: rgba(245, 158, 11, 0.05);
-        }
-
-        /* Theme 4 - Crimson Alarm Card */
-        .theme-theme4 .point-card {
-            border-radius: 4px;
-            border-left: 4px solid #ef4444;
-            background: rgba(239, 68, 68, 0.05);
-            color: #e2e8f0;
-            text-align: left;
-        }
-        .theme-theme4 .point-card:hover {
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        /* Theme 5 - SaaS checklist */
-        .theme-theme5 .point-card {
-            border-radius: 10px;
-            background: rgba(139, 92, 246, 0.03);
-            border: 1px solid rgba(139, 92, 246, 0.12);
-            color: #e2e8f0;
-            text-align: left;
-        }
-        .theme-theme5 .point-card:hover {
-            border-color: #8b5cf6;
-            background: rgba(139, 92, 246, 0.06);
-        }
-
-        /* Theme 6 - Aurora Capsule Card */
-        .theme-theme6 .point-card {
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            color: #fff;
-            text-align: left;
-        }
-        .theme-theme6 .point-card:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.06);
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.1);
-        }
-
-        /* 2 columns on screens over 500px wide (Except Theme 5 SaaS which is strictly stacked checklist) */
-        @media(min-width: 500px) {
-            .theme-theme1 .points,
-            .theme-theme2 .points,
-            .theme-theme3 .points,
-            .theme-theme4 .points,
-            .theme-theme6 .points {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        /* ==========================================
-           CONVERSION CTA BUTTONS (By Theme)
-           ========================================== */
-        .btn {
-            position: relative;
-            display: block;
-            width: 100%;
-            padding: 16px 20px;
-            text-decoration: none;
-            color: #fff;
-            font-weight: 700;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 1;
-        }
-
-        /* Theme 1 - Neon Pulse Border */
-        .theme-theme1 .btn {
-            border-radius: 14px;
-            background: #111422;
-        }
-        .theme-theme1 .btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 14px;
-            padding: 2px;
-            background: linear-gradient(45deg, var(--btn-start), var(--btn-end));
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
-        .theme-theme1 .btn::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 14px;
-            background: linear-gradient(45deg, var(--btn-start), var(--btn-end));
-            opacity: 0.18;
-            filter: blur(12px);
-            animation: pulseTheme1 2.5s infinite;
-            z-index: -1;
-        }
-        @keyframes pulseTheme1 {
-            0%,
-            100% {
-                opacity: 0.15;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.38;
-                transform: scale(1.05);
-            }
-        }
-        .theme-theme1 .btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 10px 20px rgba(255, 255, 255, 0.12);
-        }
-
-        /* Theme 2 - Cyberpunk Blocky */
-        .theme-theme2 .btn {
-            border-radius: 0px;
-            background: linear-gradient(135deg, #d946ef 0%, #06b6d4 100%);
-            font-family: monospace;
-            letter-spacing: 2px;
-            box-shadow: 0 0 15px rgba(217, 70, 239, 0.5);
-            font-weight: 900;
-            text-transform: uppercase;
-        }
-        .theme-theme2 .btn:hover {
-            box-shadow: 0 0 25px rgba(6, 182, 212, 0.8);
-            transform: translateY(-2px);
-        }
-
-        /* Theme 3 - VIP Gold Luxury */
-        .theme-theme3 .btn {
-            border-radius: 6px;
-            background: linear-gradient(to right, #f59e0b, #d97706);
-            color: #000;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
-        }
-        .theme-theme3 .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(245, 158, 11, 0.5);
-        }
-
-        /* Theme 4 - Crimson Alert Urgency Button */
-        .theme-theme4 .btn {
-            border-radius: 8px;
-            background: #ef4444;
-            font-weight: 800;
-            text-transform: uppercase;
-            animation: crimsonHypePulse 1.2s infinite;
-        }
-        @keyframes crimsonHypePulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
-        }
-        .theme-theme4 .btn:hover {
-            background: #f43f5e;
-        }
-
-        /* Theme 5 - SaaS Sleek Pill */
-        .theme-theme5 .btn {
-            border-radius: 12px;
-            background: #8b5cf6;
-            text-align: center;
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
-            font-weight: 600;
-        }
-        .theme-theme5 .btn:hover {
-            background: #7c3aed;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5);
-        }
-
-        /* Theme 6 - Aurora Capsule */
-        .theme-theme6 .btn {
-            border-radius: 30px;
-            background: linear-gradient(135deg, #10b981 0%, #8b5cf6 100%);
-            font-weight: 800;
-            text-transform: uppercase;
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-        }
-        .theme-theme6 .btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.5);
-        }
-
-        .btn:active {
-            transform: translateY(0) scale(1) !important;
-        }
-
-        /* Footers */
-        .footer {
-            margin-top: 24px;
-            font-size: 11px;
-            color: #52525b;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-        }
-        .footer-logo {
-            height: 20px;
-            width: auto;
-            opacity: 0.65;
-            filter: brightness(1.2);
-            transition: opacity 0.3s ease;
-        }
-        .footer-logo:hover {
-            opacity: 1 !important;
-        }
-        .theme-theme2 .footer {
-            font-family: monospace;
-            color: #06b6d4;
-        }
-        .theme-theme3 .footer {
-            color: #78350f;
-        }
-        .theme-theme5 .footer {
-            text-align: left;
-            color: #475569;
-            align-items: flex-start;
-        }
-    </style>
+/* flash */
+.flash-overlay { position:fixed;inset:0;z-index:999;background:var(--cyan);opacity:0;pointer-events:none; }
+.flash-overlay.go { animation:flashAnim 0.4s ease forwards; }
+@keyframes flashAnim { 0%{opacity:0.3;} 100%{opacity:0;} }
+</style>
 </head>
-<body class="theme-theme1 has-bg">
+<body>
 
-    <!-- Background glowing nodes (Used heavily by classic, minimal, and aurora themes) -->
-    <div class="blob blob1"></div>
-    <div class="blob blob2"></div>
+<div class="scanlines"></div>
+<div class="flash-overlay" id="flashOverlay"></div>
 
-    <div class="container">
-        <!-- Dynamic Hero Icon -->
-        <img src="https://api.dicebear.com/10.x/toon-head/svg?seed=Milo" class="hero" alt="ZORO PANELS" />
+<div class="page active" id="loginPage">
+  <div class="scan-bar"></div>
+  <div class="corner tl"><svg viewBox="0 0 48 48"><path d="M2 46 L2 2 L46 2"/></svg></div>
+  <div class="corner tr"><svg viewBox="0 0 48 48"><path d="M2 46 L2 2 L46 2"/></svg></div>
+  <div class="corner bl"><svg viewBox="0 0 48 48"><path d="M2 46 L2 2 L46 2"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 48 48"><path d="M2 46 L2 2 L46 2"/></svg></div>
 
-        <!-- Landing Title -->
-        <h1>ZORO PANELS</h1>
-
-        <!-- Page description paragraph -->
-        <p></p>
-
-        <!-- Dynamic points grid list if bullet entries parsed -->
-        <div class="points">
-            <div class="point-card">
-                • Expert backed predictions
-            </div>
-            <div class="point-card">
-                • Fan sentiment tracking
-            </div>
-            <div class="point-card">
-                • Performance trends
-            </div>
-            <div class="point-card">
-                • Tactical breakdowns
-            </div>
-        </div>
-
-        <!-- Action Conversion Button -->
-        <button class="btn" onclick="triggerLeadConversion()">
-            Join Telegram Now
-        </button>
-
-        <!-- Footer signature -->
-        <div class="footer">
-            <img src="assets/Whale_logoW.png" class="footer-logo" alt="Big Whale Logo" onerror="this.style.display='none';" />
-            <span>© 2026 • ALL RIGHTS RESERVED</span>
-        </div>
-
-        <!-- Compliance Footer for Meta Safe Mode -->
+  <div class="login-wrap">
+    <div class="avatar-ring">
+      <div class="avatar-tick tl"></div>
+      <div class="avatar-tick tr"></div>
+      <div class="avatar-tick bl"></div>
+      <div class="avatar-tick br"></div>
+      <img class="avatar-img"
+           src="https://api.dicebear.com/10.x/toon-head/svg?seed=Felix"
+           alt="avatar"
+           onerror="this.style.background='#0f1118'">
     </div>
 
-    <script>
-        // Capture entry timestamp
-        var pageLoadTime = Date.now();
-        var currentClickId = 307161;
-        var redirectTriggered = false;
+    <div class="login-brand">Secure Access Terminal</div>
+    <div class="login-title">WELCOME TO <span>ZILLA</span> 4 PANEL</div>
+    <div class="login-sub">Authorized Personnel Only</div>
 
-        // Reset redirectTriggered flag when user comes back to page (via back button)
-        window.addEventListener('pageshow', function() {
-            redirectTriggered = false;
-        });
+    <div class="key-wrap">
+      <label class="key-label">Enter Your Key</label>
+      <div class="key-input-wrap">
+        <span class="key-bracket">[</span>
+        <input class="key-input" id="keyInput" type="password" placeholder="••••••••••••••" autocomplete="off">
+        <span class="key-bracket">]</span>
+      </div>
+    </div>
+    <div class="err-msg" id="errMsg">INVALID KEY — ACCESS DENIED</div>
+    <button class="enter-btn" id="enterBtn">ENTER</button>
+  </div>
 
-        // Live Visitor Heartbeat (Ping every 10 seconds)
-        function sendHeartbeat() {
-            fetch('heartbeat.php?page_id=33').catch(function(e) {});
-        }
-        sendHeartbeat(); // Initial ping
-        setInterval(sendHeartbeat, 10000);
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span>ZILLA4 &nbsp;|&nbsp; SECURE CHANNEL &nbsp;|&nbsp; v4.0.1</span>
+  </div>
+</div>
 
-        // Trigger background geo enrichment immediately (non-blocking)
-        // This ensures `clicks` rows get country/city populated even if user doesn't click CTA.
-        try {
-            fetch('capi.php?click_id=' + currentClickId + '&time_on_page=0').catch(function(e) {});
-        } catch (e) {}
+<div class="page" id="panelPage">
+  <div class="panel-header">
+    <div class="ph-logo">ZILLA <span>4</span> PANEL</div>
+    <div class="ph-right">
+      <div class="period-wrap">
+        <span class="period-label">Period</span>
+        <span class="period-val" id="periodVal">20260615100010418</span>
+      </div>
+      <div class="watch-wrap">
+        <span class="watch-label">Timer</span>
+        <div class="watch-face">
+          <svg class="watch-svg" viewBox="0 0 56 56">
+            <circle class="watch-track" cx="28" cy="28" r="26"/>
+            <circle class="watch-prog"  cx="28" cy="28" r="26" id="watchProg"/>
+          </svg>
+          <div class="watch-center-text" id="watchText">00:59</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        function triggerLeadConversion() {
-            if (redirectTriggered) return;
-            redirectTriggered = true;
+  <div class="panel-center">
+    <div class="result-circle-wrap">
+      <div class="result-circle" id="resultCircle">
+        <div class="ring-spin"></div>
+        <div class="circ-corner c-tl"></div>
+        <div class="circ-corner c-tr"></div>
+        <div class="circ-corner c-bl"></div>
+        <div class="circ-corner c-br"></div>
+        <div class="result-inner-label" id="resultLabel">RESULT</div>
+        <div class="result-main-text"   id="resultMain">—</div>
+        <div class="result-sub-text"    id="resultSub">Click Generate</div>
+      </div>
+    </div>
+  </div>
 
-            // 1. Calculate user reading duration (engagement tracking)
-            var timeOnPage = Math.round((Date.now() - pageLoadTime) / 1000);
+  <div class="panel-footer">
+    <button class="generate-btn" id="generateBtn">GENERATE</button>
+    <div class="footer-status" id="footerStatus">SELECT RESULT TO DISPLAY</div>
+  </div>
+</div>
 
-            // 2. Dispatch browser Lead tracking event
-            try {
-                fbq('track', 'Lead');
-            } catch (e) {
-                console.error("Meta Pixel browser tracking failed:", e);
-            }
+<script>
+/* ─── LOGIN ─── */
+const CORRECT_KEY = 'MONU MANFORCE';
 
-            // 3. Trigger immediate redirect first (non-blocking CAPI in background)
-            var telegramLink = "https://t.me/Rlby6cbb6hAwOGQ9";
+const keyInput = document.getElementById('keyInput');
+const enterBtn = document.getElementById('enterBtn');
+const errMsg   = document.getElementById('errMsg');
 
-            // Redirect immediately without waiting for API response
-            setTimeout(function() {
-                window.location.href = telegramLink;
-            }, 100);
+function tryLogin() {
+  if (keyInput.value.trim() === CORRECT_KEY) {
+    const fl = document.getElementById('flashOverlay');
+    fl.classList.add('go');
+    setTimeout(() => {
+      document.getElementById('loginPage').classList.remove('active');
+      document.getElementById('panelPage').classList.add('active');
+      startTimer();
+    }, 200);
+  } else {
+    keyInput.classList.add('error');
+    errMsg.classList.add('show');
+    setTimeout(() => keyInput.classList.remove('error'), 420);
+  }
+}
+enterBtn.addEventListener('click', tryLogin);
+keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+keyInput.addEventListener('input',   () => errMsg.classList.remove('show'));
 
-            // 4. Dispatch background CAPI server-to-server and Telegram bot alert (non-blocking)
-            var capiUrl = 'capi.php?click_id=' + currentClickId + '&time_on_page=' + timeOnPage +
-                '&is_converted=1';
+/* ─── REAL-TIME TIME-STAMP TIMER SYSTEM (1-MIN / 60S GAME) ─── */
+const GAME_SPEED_SECS = 60; 
+const CIRCUM = 2 * Math.PI * 26;
 
-            try {
-                fetch(capiUrl, {
-                    method: 'GET',
-                    mode: 'no-cors',
-                    credentials: 'omit'
-                }).catch(function(err) {
-                    console.error("CAPI callback error (non-critical):", err);
-                });
-            } catch (e) {
-                console.error("CAPI fetch error:", e);
-            }
-        }
+// Precise static anchor point linked to the requested baseline layout
+const START_TIMESTAMP = Date.parse('2026-06-15T12:27:00'); 
+const BASE_PERIOD_NUM = 20260615100010418n;
 
-        // ==========================================
-        // 🛡️ FRONTEND CODE & DESIGN PROTECTION SHIELD
-        // ==========================================
+let timeLeft = 0;
+let timerInt = null;
+let hasGeneratedThisRound = false;
+let currentActivePeriod = "";
 
-        // 1. Block Context Menu (Right Click)
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        }, false);
+const watchProg   = document.getElementById('watchProg');
+const watchText   = document.getElementById('watchText');
+const periodVal   = document.getElementById('periodVal');
+const generateBtn = document.getElementById('generateBtn');
+const footerStatus= document.getElementById('footerStatus');
+const resultCircle= document.getElementById('resultCircle');
+const resultLabel = document.getElementById('resultLabel');
+const resultMain  = document.getElementById('resultMain');
+const resultSub   = document.getElementById('resultSub');
 
-        // 2. Block Keyboard DevTools Shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Block F12
-            if (e.key === 'F12' || e.keyCode === 123) {
-                e.preventDefault();
-                return false;
-            }
-            // Block Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J
-            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J' || e.keyCode === 73 ||
-                    e.keyCode === 67 || e.keyCode === 74)) {
-                e.preventDefault();
-                return false;
-            }
-            // Block Cmd+Alt+I, Cmd+Alt+C, Cmd+Alt+J (Mac OSX shortcuts)
-            if (e.metaKey && e.altKey && (e.key === 'i' || e.key === 'c' || e.key === 'j' || e.keyCode === 73 ||
-                    e.keyCode === 67 || e.keyCode === 74)) {
-                e.preventDefault();
-                return false;
-            }
-            // Block Ctrl+U (View Source)
-            if (e.ctrlKey && (e.key === 'u' || e.keyCode === 85)) {
-                e.preventDefault();
-                return false;
-            }
-            // Block Cmd+Option+U (Mac View Source)
-            if (e.metaKey && e.altKey && (e.key === 'u' || e.keyCode === 85)) {
-                e.preventDefault();
-                return false;
-            }
-        }, false);
-    </script>
+watchProg.style.strokeDasharray = CIRCUM;
 
+function updateRealTimeEngine() {
+  const nowMs = Date.now();
+  
+  // 1. Live minutes calculated straight from standard reference anchor point
+  const elapsedMs = nowMs - START_TIMESTAMP;
+  const elapsedCycles = elapsedMs > 0 ? Math.floor(elapsedMs / (GAME_SPEED_SECS * 1000)) : 0;
+  
+  // 2. Absolute synced live loop period sequence engine
+  const calculatedPeriod = BASE_PERIOD_NUM + BigInt(elapsedCycles);
+  
+  if (currentActivePeriod !== calculatedPeriod.toString()) {
+    currentActivePeriod = calculatedPeriod.toString();
+    periodVal.textContent = currentActivePeriod;
+    // Round changes! Unlock only the button for the new period
+    resetRound();
+  }
+
+  // 3. Perfect continuous countdown tracker from 00:59 down to 00:00
+  const currentSeconds = new Date().getSeconds();
+  timeLeft = 59 - currentSeconds;
+
+  // Render SVG circular border fill tracking progress
+  const pct = timeLeft / 59;
+  watchProg.style.strokeDashoffset = CIRCUM * (1 - pct);
+
+  const m = "00";
+  const s = timeLeft.toString().padStart(2, '0');
+  watchText.textContent = `${m}:${s}`;
+
+  // Color changing status indicator states based on remaining clock frames
+  watchProg.className = 'watch-prog';
+  watchText.className = 'watch-center-text';
+  if (timeLeft <= 10) {
+    watchProg.classList.add('crit');
+    watchText.classList.add('crit');
+  } else if (timeLeft <= 20) {
+    watchProg.classList.add('warn');
+    watchText.classList.add('warn');
+  }
+}
+
+function resetRound() {
+  hasGeneratedThisRound = false;
+  generateBtn.disabled = false;
+  footerStatus.className = 'footer-status';
+  footerStatus.textContent = 'SELECT RESULT TO DISPLAY';
+}
+
+function startTimer() {
+  updateRealTimeEngine();
+  timerInt = setInterval(updateRealTimeEngine, 1000);
+}
+
+/* ─── GENERATE RESULT (ONLY BIG & SMALL) ─── */
+generateBtn.addEventListener('click', () => {
+  if (hasGeneratedThisRound) return;
+
+  hasGeneratedThisRound = true;
+  generateBtn.disabled = true; // Locks button instantly until new period triggers
+  footerStatus.className = 'footer-status locked';
+  footerStatus.textContent = 'LOCKED — WAIT FOR NEXT PERIOD';
+
+  // Completely random 50/50 balance split sequence logic
+  const isBig = Math.random() < 0.5;
+  const size  = isBig ? 'big' : 'small';
+
+  // Smooth CSS scale transform animation
+  resultCircle.style.transform = 'scale(0.96)';
+  setTimeout(() => {
+    resultCircle.style.transition = 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.5s, border-color 0.5s';
+    resultCircle.style.transform = 'scale(1)';
+
+    // Reset current classes safely
+    resultCircle.className = 'result-circle';
+    
+    // Inject active stylized layout states immediately
+    resultCircle.classList.add('show-' + size);
+    resultLabel.textContent = size === 'small' ? 'RESULT · SMALL' : 'RESULT · BIG';
+    resultMain.textContent  = size.toUpperCase();
+    resultSub.textContent   = size === 'small' ? 'Light Yellow' : 'Light Blue';
+  }, 160);
+});
+</script>
 </body>
 </html>
