@@ -1,826 +1,1666 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+<title>DURABLE BATTLE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@500;600;700&family=Orbitron:wght@600;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<style>
+:root{
+  --bg:#0a0c11;
+  --bg-2:#11141c;
+  --card:#161a24;
+  --card-2:#1c2130;
+  --line:#242a3a;
+  --text:#eef1f7;
+  --muted:#8a93a6;
+  --gold:#ffcf47;
+  --gold-2:#ffb000;
+  --green:#22c55e;
+  --red:#ef4444;
+  --blue:#3b82f6;
+  --purple:#8b5cf6;
+  --primary:#ff2e5b;
+  --primary-2:#ff7a18;
+  --grad:linear-gradient(135deg,#ff2e5b,#ff7a18);
+  --grad-2:linear-gradient(135deg,#8b5cf6,#3b82f6);
+  --grad-gold:linear-gradient(135deg,#ffb000,#ffcf47);
+  --tile:#1a1f2e;
+  --safe-b:env(safe-area-inset-bottom);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Poppins',system-ui,sans-serif;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font-family:inherit}
+.app{max-width:520px;margin:0 auto;min-height:100vh;background:var(--bg);position:relative;padding-bottom:calc(78px + var(--safe-b))}
 
-    <!-- Dynamic Title & SEO tags -->
-    <title>ZORO PANELS</title>
-    <meta name="description" content="" />
+/* HEADER */
+.header{
+  position:sticky;top:0;z-index:60;height:58px;width:100%;
+  background:linear-gradient(180deg,#12151f, #0f1219);
+  border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;padding:0 14px;
+  backdrop-filter:blur(8px);
+}
+.brand{display:flex;align-items:center;gap:8px}
+.brand .logo{width:34px;height:34px;border-radius:10px;background:#dff2d8;display:grid;place-items:center;overflow:hidden;box-shadow:0 6px 18px -6px #4b3cff80}
+.brand .logo img{width:100%;height:100%;object-fit:contain;padding:3px}
+.brand .name{font-family:'Orbitron';font-weight:900;letter-spacing:1.2px;font-size:14px;white-space:nowrap}
+.header .right{display:flex;align-items:center;gap:8px}
+.coin-pill{display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#2a1f00,#3a2a00);border:1px solid #4a3a00;color:var(--gold);padding:6px 10px;border-radius:999px;font-weight:700;font-size:13px}
+.coin-pill i{color:var(--gold)}
+.icon-btn{width:36px;height:36px;border-radius:10px;background:var(--card);display:grid;place-items:center;border:1px solid var(--line);color:var(--text)}
 
-    <!-- Google Fonts Inter & Playfair for VIP theme -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,700&display=swap" rel="stylesheet" />
+/* SLIDER */
+.slider-wrap{width:100%;height:185px;overflow:hidden;position:relative;background:#0f1219}
+.slider{display:flex;height:100%;transition:transform .6s cubic-bezier(.7,.1,.2,1)}
+.slide{min-width:100%;height:100%;padding:10px}
+.slide .frame{width:100%;height:100%;border-radius:22px;overflow:hidden;position:relative;background:#222;box-shadow:0 12px 30px -12px #000}
+.slide img{width:100%;height:100%;object-fit:cover;display:block}
+.slide .caption{position:absolute;left:14px;bottom:12px;right:14px;color:#fff;text-shadow:0 2px 10px #000;font-family:'Rajdhani';font-weight:700;font-size:16px;letter-spacing:.5px}
+.dots{position:absolute;bottom:6px;left:0;right:0;display:flex;justify-content:center;gap:5px}
+.dots span{width:5px;height:5px;border-radius:50%;background:#ffffff70}
+.dots span.on{background:var(--gold);width:14px;border-radius:3px}
 
-    <!-- Meta Pixel tracking logic (Supports Multiple Comma-Separated Pixels) -->
-    <script>
-        ! function(f, b, e, v, n, t, s) {
-            if (f.fbq) return;
-            n = f.fbq = function() {
-                n.callMethod ?
-                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-            };
-            if (!f._fbq) f._fbq = n;
-            n.push = n;
-            n.loaded = !0;
-            n.version = '2.0';
-            n.queue = [];
-            t = b.createElement(e);
-            t.async = !0;
-            t.src = v;
-            s = b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t, s)
-        }(window, document, 'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
+/* SECTION */
+.section{padding:14px}
+.sec-title{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 10px}
+.sec-title h3{margin:0;font-family:'Rajdhani';letter-spacing:.5px;font-size:16px;color:#e6ecff;display:flex;align-items:center;gap:8px}
+.sec-title .sub{color:var(--muted);font-size:12px}
 
-        fbq('init', '1649134099683216');
+/* GAMES GRID */
+.games{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tile{
+  position:relative;background:var(--tile);border-radius:16px;overflow:hidden;
+  aspect-ratio: 1/1.15;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:8px;
+  border:1px solid #ffffff18;
+  box-shadow:0 6px 16px -8px #000;
+}
+.tile .badge{align-self:flex-start;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff;font-size:9px;padding:3px 7px;border-radius:6px;font-weight:800;letter-spacing:.6px;display:inline-flex;align-items:center;gap:4px}
+.tile .badge.live{background:linear-gradient(135deg,#22c55e,#16a34a)}
+.tile .badge i{font-size:7px}
+.tile .name{color:#fff;font-family:'Rajdhani';font-weight:700;font-size:13px;line-height:1.15;text-shadow:0 1px 2px #0009}
+.tile .tid{font-size:9px;color:#fff;font-family:'Orbitron';font-weight:700;letter-spacing:.8px;background:#00000080;padding:2px 5px;border-radius:5px;align-self:flex-start;backdrop-filter:blur(4px)}
+.tile .row{display:flex;justify-content:space-between;align-items:flex-end;gap:4px}
 
-        fbq('track', 'PageView');
-    </script>
-    <noscript>
-        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1649134099683216&ev=PageView&noscript=1" />
-    </noscript>
+/* Bottom nav */
+.tabbar{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:0;
+  max-width:520px;width:100%;background:#0d1018;border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(5,1fr);z-index:70;
+  padding-bottom:var(--safe-b);
+}
+.tabbar button{padding:9px 0;display:flex;flex-direction:column;gap:3px;align-items:center;color:var(--muted);font-size:10px;font-weight:600}
+.tabbar button.active{color:#fff}
+.tabbar button.active i{color:var(--gold)}
+.tabbar i{font-size:17px}
 
-    <style>
-        :root {
-            --blob1-color: #229ED9;
-            --blob2-color: #00FFA3;
-            --btn-start: #229ED9;
-            --btn-end: #00FFA3;
-            --text-glow: #00FFA3;
-        }
+/* PAGES */
+.page{display:none}
+.page.active{display:block}
+.subpage{display:none;position:fixed;inset:0;background:var(--bg);z-index:80;overflow-y:auto;max-width:520px;margin:0 auto;padding-bottom:24px}
+.subpage.active{display:block}
+.subhead{position:sticky;top:0;height:58px;background:#0f1219;border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 10px;gap:10px;z-index:5}
+.subhead h2{margin:0;font-family:'Rajdhani';font-size:18px;font-weight:700;letter-spacing:.5px}
+.back-btn{width:38px;height:38px;border-radius:10px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
+/* AUTH */
+.auth{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:24px;background:radial-gradient(1000px 400px at 50% -10%,#ff2e5b30,transparent),var(--bg)}
+.auth .logo-big{width:84px;height:84px;border-radius:24px;background:#dff2d8;display:grid;place-items:center;margin:0 auto 12px;box-shadow:0 20px 50px -20px #4b3cff80;overflow:hidden;cursor:pointer;user-select:none}
+.auth .logo-big img{width:100%;height:100%;object-fit:contain;padding:8px}
+.auth h1{font-family:'Orbitron';font-weight:900;text-align:center;margin:0 0 4px;letter-spacing:2px;font-size:22px}
+.auth .tag{text-align:center;color:var(--muted);margin-bottom:22px;font-size:12px;letter-spacing:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:.4px;font-weight:600;text-transform:uppercase}
+.field .inp{display:flex;align-items:center;background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:0 12px;height:46px;gap:10px}
+.field .inp:focus-within{border-color:var(--primary)}
+.field .inp i{color:var(--muted);width:16px;text-align:center}
+.field input,.field select{flex:1;background:none;border:0;color:var(--text);height:100%;outline:none;font-size:14px}
+.field select option{background:var(--card-2);color:var(--text)}
+.btn{width:100%;height:48px;border-radius:12px;background:var(--grad);color:#fff;font-weight:800;letter-spacing:1px;font-family:'Rajdhani';font-size:16px;box-shadow:0 12px 30px -12px #ff2e5b;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.secondary{background:var(--card-2);border:1px solid var(--line);color:#fff;box-shadow:none}
+.btn.gold{background:var(--grad-gold);color:#1a1200}
+.btn.green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.btn.sm{height:38px;font-size:13px;padding:0 14px;width:auto}
+.toggle{text-align:center;margin-top:14px;color:var(--muted);font-size:13px}
+.toggle b{color:var(--gold);cursor:pointer}
 
-        body {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            color: #fff;
-            position: relative;
-            padding: 15px;
-            transition: background 0.5s ease;
-        }
-        body.has-bg {
-            background: url('uploads/1780058960_bg_1472ab3230075eee71a83f5be33c3260.jpg') no-repeat center center;
-            background-size: cover;
-        }
+/* MATCH card */
+.match{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:14px;box-shadow:0 10px 24px -18px #000}
+.match .m-img{height:150px;background:#333;position:relative}
+.match .m-img img{width:100%;height:100%;object-fit:cover;display:block}
+.match .m-img:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,#000000cc)}
+.match .m-top{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;z-index:2}
+.match .tag{background:#000000b0;padding:4px 9px;border-radius:8px;font-size:10px;font-weight:700;letter-spacing:1px;color:#fff;display:inline-flex;align-items:center;gap:5px;backdrop-filter:blur(6px)}
+.match .tag.tid{color:var(--gold);font-family:'Orbitron'}
+.match .tag.live{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff}
+.match .tag.upc{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:#fff}
+.match .m-bot{position:absolute;bottom:10px;left:12px;right:12px;z-index:2;color:#fff;font-family:'Rajdhani';font-weight:700;letter-spacing:.5px;font-size:15px;text-shadow:0 2px 8px #000}
+.match .body{padding:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:2px 0 10px}
+.stat{background:var(--card-2);border:1px solid var(--line);border-radius:10px;padding:8px 6px;text-align:center}
+.stat .k{font-size:9px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase;font-weight:600}
+.stat .v{font-family:'Rajdhani';font-weight:700;color:#fff;font-size:15px;margin-top:2px}
+.stat .v.gold{color:var(--gold)}
+.join-row{display:flex;align-items:center;gap:10px;background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-top:8px}
+.join-row .type{font-family:'Rajdhani';font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#fff}
+.join-row .users{font-family:'Orbitron';font-weight:700;font-size:12px;color:var(--gold);margin-left:auto;margin-right:8px}
+.join-row .users i{margin-right:4px}
+.join-btn{background:var(--grad);color:#fff;font-weight:800;letter-spacing:1px;font-family:'Rajdhani';font-size:14px;padding:8px 18px;border-radius:10px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 8px 20px -10px #ff2e5b}
 
-        /* High contrast premium dark frosted screen mask */
-        body::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(6, 6, 10, 0.76);
-            backdrop-filter: blur(3px);
-            -webkit-backdrop-filter: blur(3px);
-            z-index: 1;
-            pointer-events: none;
-        }
+/* Match detail panel */
+.md-hero{position:relative;height:200px;overflow:hidden}
+.md-hero img{width:100%;height:100%;object-fit:cover}
+.md-hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,var(--bg))}
+.md-info{padding:14px;margin-top:-40px;position:relative;z-index:2}
+.md-title{font-family:'Rajdhani';font-weight:700;font-size:20px;letter-spacing:1px;color:#fff;margin:0 0 4px;text-transform:uppercase}
+.md-sub{color:var(--muted);font-size:12px;margin-bottom:12px}
+.md-block{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.md-block .lbl{font-size:10px;color:var(--muted);letter-spacing:1px;font-weight:700;text-transform:uppercase;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.md-block .lbl i{color:var(--gold)}
+.md-block .val{color:#fff;font-family:'Rajdhani';font-weight:600;font-size:14px;white-space:pre-line}
 
-        /* ==========================================
-           BACKGROUNDS AND PARTICLES (By Theme)
-           ========================================== */
+/* Wallet */
+.wallet-hero{background:var(--grad-2);border-radius:20px;padding:16px;color:#fff;position:relative;overflow:hidden}
+.wallet-hero:after{content:"";position:absolute;right:-30px;top:-30px;width:140px;height:140px;background:#ffffff20;border-radius:50%}
+.wallet-hero .label{opacity:.85;font-size:12px;letter-spacing:1px;text-transform:uppercase}
+.wallet-hero .amt{font-family:'Orbitron';font-weight:900;font-size:28px;margin-top:4px}
+.wallet-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 
-        /* Default Blobs */
-        .blob {
-            position: absolute;
-            width: 450px;
-            height: 450px;
-            border-radius: 50%;
-            filter: blur(130px);
-            opacity: 0.45;
-            animation: move 12s infinite alternate ease-in-out;
-            z-index: 2;
-            pointer-events: none;
-        }
-        .blob1 {
-            background: var(--blob1-color);
-            top: -120px;
-            left: -120px;
-        }
-        .blob2 {
-            background: var(--blob2-color);
-            bottom: -120px;
-            right: -120px;
-            animation-delay: -3s;
-        }
-        @keyframes move {
-            0% {
-                transform: translate(0, 0) scale(1);
-            }
-            100% {
-                transform: translate(80px, 60px) scale(1.1);
-            }
-        }
+/* Leaderboard */
+.podium{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:8px;align-items:end;margin:10px 0 16px}
+.pod{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center;position:relative}
+.pod img{width:52px;height:52px;border-radius:50%;background:#222;border:2px solid var(--gold)}
+.pod .rank{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:22px;height:22px;border-radius:50%;background:var(--gold);color:#111;font-weight:900;display:grid;place-items:center;font-size:11px;font-family:'Orbitron'}
+.pod .n{margin-top:6px;font-weight:700;font-size:12px;color:#fff}
+.pod .s{color:var(--muted);font-size:11px;font-family:'Rajdhani';font-weight:700}
+.pod.p1{transform:translateY(-10px)}
+.pod.p1 img{width:64px;height:64px;border-color:var(--gold)}
+.pod.p2 img{border-color:#c0c0c0}
+.pod.p3 img{border-color:#cd7f32}
+.leader-list{display:flex;flex-direction:column;gap:6px}
+.leader-item{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px}
+.leader-item img{width:36px;height:36px;border-radius:50%}
+.leader-item .name{flex:1;font-weight:600;font-size:13px}
+.leader-item .score{color:var(--gold);font-family:'Rajdhani';font-weight:700}
 
-        /* Cyberpunk Grid Background (Theme 2) */
-        .theme-theme2 {
-            background: #050508;
-            background-image:
-                linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
-            background-size: 25px 25px;
-        }
+/* Profile */
+.profile-hero{padding:16px;background:linear-gradient(180deg,#1a1030,#0b0d12)}
+.profile-hero .top{display:flex;align-items:center;gap:12px}
+.profile-hero img{width:64px;height:64px;border-radius:50%;background:#222;border:2px solid var(--gold);cursor:pointer}
+.profile-hero .info h2{margin:0;font-family:'Rajdhani';font-size:18px}
+.profile-hero .info .uid{color:var(--muted);font-size:12px;margin-top:2px}
+.menu{display:flex;flex-direction:column;gap:8px;padding:10px 14px}
+.menu-item{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.menu-item i{width:36px;height:36px;border-radius:10px;background:var(--card-2);display:grid;place-items:center;color:var(--gold);font-size:14px}
+.menu-item .lab{flex:1;font-weight:600;font-size:14px}
+.menu-item .chev{color:var(--muted)}
 
-        /* VIP Luxury Radiant Gradient (Theme 3) */
-        .theme-theme3 {
-            background: radial-gradient(circle at center, #111522 0%, #030408 100%);
-        }
+/* History list */
+.hist{display:flex;flex-direction:column;gap:8px;padding:12px}
+.h-item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.h-item .row1{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.h-item .amount{font-family:'Rajdhani';font-weight:800;font-size:18px}
+.h-item .time{color:var(--muted);font-size:11px}
+.h-item .meta{color:var(--muted);font-size:12px;display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.pill{padding:3px 8px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.pill.processing{background:#3b82f620;color:#93c5fd;border:1px solid #3b82f640}
+.pill.success{background:#22c55e20;color:#86efac;border:1px solid #22c55e40}
+.pill.failed{background:#ef444420;color:#fca5a5;border:1px solid #ef444440}
+.pill.credit{background:#22c55e20;color:#86efac}
+.pill.debit{background:#ef444420;color:#fca5a5}
 
-        /* Crimson Urgency Hype Background (Theme 4) */
-        .theme-theme4 {
-            background: #07070a;
-        }
+/* Empty */
+.empty{padding:40px 20px;text-align:center;color:var(--muted)}
+.empty i{font-size:36px;margin-bottom:10px;display:block;color:#444}
 
-        /* Modern Tech Dot Matrix Background (Theme 5) */
-        .theme-theme5 {
-            background: #09090e;
-            background-image: radial-gradient(rgba(139, 92, 246, 0.08) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
+/* Gift page */
+.gift-wrap{padding:20px;text-align:center}
+.gift-icon{font-size:80px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin:20px 0 10px}
+.gift-wrap h2{font-family:'Rajdhani';margin:0;letter-spacing:1px}
+.gift-wrap p{color:var(--muted);font-size:13px;margin:6px 0 20px}
 
-        /* Aurora Borealis Slow Cycle (Theme 6) */
-        .theme-theme6 {
-            background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.1) 0%, rgba(139, 92, 246, 0.1) 90%), #040406;
-        }
+/* Refer page */
+.refer-banner{width:100%;border-radius:18px;overflow:hidden;margin-bottom:12px;box-shadow:0 12px 30px -18px #000}
+.refer-banner img{width:100%;display:block}
+.refer-code-box{background:var(--card);border:2px dashed var(--gold);border-radius:16px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0}
+.refer-code-box .code{font-family:'Orbitron';font-weight:900;font-size:20px;letter-spacing:2px;color:var(--gold)}
+.refer-info{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:10px}
+.refer-info h3{margin:0 0 8px;font-family:'Rajdhani';font-size:16px;display:flex;align-items:center;gap:8px}
+.refer-info h3 i{color:var(--gold)}
+.refer-info ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:13px;line-height:1.7}
+.refer-info ul li b{color:var(--gold)}
 
-        /* ==========================================
-           CONTAINERS (By Theme)
-           ========================================== */
-        .container {
-            position: relative;
-            width: 100%;
-            max-width: 430px;
-            padding: 34px 28px;
-            z-index: 3;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+/* Avatars grid */
+.avatar-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px}
+.avatar-cell{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:6px;display:grid;place-items:center;cursor:pointer;transition:all .15s}
+.avatar-cell.on{border-color:var(--gold);background:#2a1f00}
+.avatar-cell img{width:100%;aspect-ratio:1;border-radius:12px;background:#222}
 
-        /* Theme 1 - Neon Telegram */
-        .theme-theme1 .container {
-            border-radius: 24px;
-            background: rgba(255, 255, 255, 0.035);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
-            text-align: center;
-        }
-        .theme-theme1 .container::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 24px;
-            padding: 1px;
-            background: linear-gradient(125deg, var(--btn-start), var(--btn-end));
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
+/* Settings */
+.settings-block{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px}
+.settings-block h3{margin:0 0 10px;font-family:'Rajdhani';font-size:16px;display:flex;align-items:center;gap:8px}
+.settings-block h3 i{color:var(--gold)}
 
-        /* Theme 2 - Cyberpunk Angular */
-        .theme-theme2 .container {
-            background: rgba(10, 10, 16, 0.95);
-            border: 2px solid #06b6d4;
-            box-shadow: 0 0 25px rgba(6, 182, 212, 0.35), inset 0 0 15px rgba(6, 182, 212, 0.1);
-            clip-path: polygon(0 0, calc(100% - 25px) 0, 100% 25px, 100% 100%, 25px 100%, 0 calc(100% - 25px));
-            text-align: center;
-        }
+/* Toast */
+.toast{position:fixed;bottom:calc(90px + var(--safe-b));left:50%;transform:translateX(-50%);background:#1a1f2e;border:1px solid var(--line);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;z-index:200;box-shadow:0 10px 30px -10px #000;display:none;max-width:90%;text-align:center}
+.toast.show{display:block;animation:t .3s}
+@keyframes t{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
-        /* Theme 3 - VIP Gold Luxury */
-        .theme-theme3 .container {
-            border-radius: 12px;
-            background: linear-gradient(135deg, rgba(21, 28, 44, 0.9) 0%, rgba(10, 12, 20, 0.95) 100%);
-            border: 1px solid rgba(245, 158, 11, 0.35);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
-            text-align: center;
-        }
+/* Modal */
+.modal{position:fixed;inset:0;background:#000000b0;z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.modal .sheet{background:var(--card);border:1px solid var(--line);border-top-left-radius:22px;border-top-right-radius:22px;width:100%;max-width:520px;padding:16px;max-height:90vh;overflow-y:auto}
+.sheet .grab{width:40px;height:4px;background:#333;border-radius:99px;margin:0 auto 12px}
 
-        /* Theme 4 - Crimson Alert */
-        .theme-theme4 .container {
-            border-radius: 16px;
-            background: rgba(20, 15, 15, 0.95);
-            border-top: 6px solid #ef4444;
-            border-left: 1px solid rgba(239, 68, 68, 0.15);
-            border-right: 1px solid rgba(239, 68, 68, 0.15);
-            border-bottom: 1px solid rgba(239, 68, 68, 0.15);
-            box-shadow: 0 20px 45px rgba(239, 68, 68, 0.15);
-            text-align: center;
-        }
+/* QR */
+.qr-box{width:200px;height:200px;background:#fff;border-radius:14px;margin:0 auto;overflow:hidden;padding:8px}
+.qr-box img{width:100%;height:100%;object-fit:contain;display:block}
 
-        /* Theme 5 - Modern Tech Minimal */
-        .theme-theme5 .container {
-            max-width: 440px;
-            border-radius: 20px;
-            background: #0d0d14;
-            border: 1px solid rgba(139, 92, 246, 0.18);
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
-            text-align: left;
-            padding: 40px 32px;
-        }
-
-        /* Theme 6 - Cosmic Aurora */
-        .theme-theme6 .container {
-            border-radius: 36px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 15px 45px rgba(139, 92, 246, 0.12), inset 0 0 25px rgba(255, 255, 255, 0.02);
-            text-align: center;
-            padding: 38px 32px;
-        }
-
-        /* ==========================================
-           HERO IMAGES (By Theme)
-           ========================================== */
-        .hero {
-            width: 110px;
-            height: 110px;
-            object-fit: cover;
-            margin: 0 auto 18px auto;
-            display: block;
-            transition: transform 0.3s ease;
-        }
-
-        /* Theme 1 - Neon Circle */
-        .theme-theme1 .hero {
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Theme 2 - Cyber Square Block */
-        .theme-theme2 .hero {
-            border-radius: 4px;
-            border: 2px solid #06b6d4;
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
-        }
-
-        /* Theme 3 - VIP Gold Ringed */
-        .theme-theme3 .hero {
-            border-radius: 50%;
-            border: 3px double #f59e0b;
-            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25);
-        }
-
-        /* Theme 4 - Crimson Alert Box */
-        .theme-theme4 .hero {
-            border-radius: 12px;
-            border: 2px solid #ef4444;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
-        }
-
-        /* Theme 5 - Left Aligned Pill Icon */
-        .theme-theme5 .hero {
-            margin: 0 0 22px 0;
-            width: 76px;
-            height: 76px;
-            border-radius: 16px;
-            border: 1px solid rgba(139, 92, 246, 0.3);
-        }
-
-        /* Theme 6 - Floating Cosmic Aura Hero */
-        .theme-theme6 .hero {
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.2);
-            animation: floatHero 4s infinite alternate ease-in-out;
-        }
-        @keyframes floatHero {
-            0% {
-                transform: translateY(0px) scale(1);
-            }
-            100% {
-                transform: translateY(-6px) scale(1.03);
-            }
-        }
-
-        /* ==========================================
-           TITLES & DESCRIPTIONS (By Theme)
-           ========================================== */
-        h1 {
-            font-size: 26px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            letter-spacing: -0.02em;
-            transition: all 0.3s ease;
-        }
-
-        /* Theme 1 - Neon Text */
-        .theme-theme1 h1 {
-            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Theme 2 - Glitch Cyber Uppercase */
-        .theme-theme2 h1 {
-            text-transform: uppercase;
-            font-family: monospace;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px #06b6d4, 0 0 20px #d946ef;
-            color: #fff;
-        }
-
-        /* Theme 3 - Luxury Serif */
-        .theme-theme3 h1 {
-            font-family: 'Playfair Display', 'Georgia', serif;
-            font-style: italic;
-            color: #f59e0b;
-            letter-spacing: 0px;
-        }
-
-        /* Theme 4 - Bold Hype Warning */
-        .theme-theme4 h1 {
-            text-transform: uppercase;
-            font-weight: 900;
-            color: #ef4444;
-            letter-spacing: -0.5px;
-            text-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
-        }
-
-        /* Theme 5 - Left Aligned SaaS */
-        .theme-theme5 h1 {
-            font-size: 24px;
-            font-weight: 800;
-            color: #fff;
-            line-height: 1.25;
-            text-align: left;
-        }
-
-        /* Theme 6 - Aurora Radiant */
-        .theme-theme6 h1 {
-            background: linear-gradient(135deg, #10b981 0%, #8b5cf6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Description styling */
-        p {
-            font-size: 14px;
-            color: #ccd6f6;
-            line-height: 1.6;
-            margin-bottom: 22px;
-            white-space: pre-line;
-        }
-        .theme-theme5 p {
-            text-align: left;
-            color: #94a3b8;
-        }
-        .theme-theme3 p {
-            color: #d1d5db;
-            font-size: 13.5px;
-        }
-
-        /* ==========================================
-           POINTS CARDS LAYOUTS (By Theme)
-           ========================================== */
-        .points {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .point-card {
-            padding: 12px 16px;
-            font-size: 13.5px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Theme 1 - Neon Glow outline on Hover */
-        .theme-theme1 .point-card {
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            color: #e2e8f0;
-            text-align: left;
-        }
-        .theme-theme1 .point-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateX(4px);
-            border-color: var(--text-glow);
-        }
-
-        /* Theme 2 - Cyber Blocky */
-        .theme-theme2 .point-card {
-            border-radius: 0px;
-            border: 1px solid #d946ef;
-            background: rgba(217, 70, 239, 0.03);
-            color: #06b6d4;
-            text-align: left;
-            font-family: monospace;
-        }
-        .theme-theme2 .point-card:hover {
-            background: rgba(6, 182, 212, 0.1);
-            transform: scale(1.02);
-            box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
-        }
-
-        /* Theme 3 - VIP Luxury */
-        .theme-theme3 .point-card {
-            border-radius: 6px;
-            border: 1px solid rgba(245, 158, 11, 0.15);
-            background: rgba(245, 158, 11, 0.02);
-            color: #cbd5e1;
-            text-align: left;
-        }
-        .theme-theme3 .point-card:hover {
-            border-color: #f59e0b;
-            background: rgba(245, 158, 11, 0.05);
-        }
-
-        /* Theme 4 - Crimson Alarm Card */
-        .theme-theme4 .point-card {
-            border-radius: 4px;
-            border-left: 4px solid #ef4444;
-            background: rgba(239, 68, 68, 0.05);
-            color: #e2e8f0;
-            text-align: left;
-        }
-        .theme-theme4 .point-card:hover {
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        /* Theme 5 - SaaS checklist */
-        .theme-theme5 .point-card {
-            border-radius: 10px;
-            background: rgba(139, 92, 246, 0.03);
-            border: 1px solid rgba(139, 92, 246, 0.12);
-            color: #e2e8f0;
-            text-align: left;
-        }
-        .theme-theme5 .point-card:hover {
-            border-color: #8b5cf6;
-            background: rgba(139, 92, 246, 0.06);
-        }
-
-        /* Theme 6 - Aurora Capsule Card */
-        .theme-theme6 .point-card {
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            color: #fff;
-            text-align: left;
-        }
-        .theme-theme6 .point-card:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.06);
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.1);
-        }
-
-        /* 2 columns on screens over 500px wide (Except Theme 5 SaaS which is strictly stacked checklist) */
-        @media(min-width: 500px) {
-            .theme-theme1 .points,
-            .theme-theme2 .points,
-            .theme-theme3 .points,
-            .theme-theme4 .points,
-            .theme-theme6 .points {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        /* ==========================================
-           CONVERSION CTA BUTTONS (By Theme)
-           ========================================== */
-        .btn {
-            position: relative;
-            display: block;
-            width: 100%;
-            padding: 16px 20px;
-            text-decoration: none;
-            color: #fff;
-            font-weight: 700;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 1;
-        }
-
-        /* Theme 1 - Neon Pulse Border */
-        .theme-theme1 .btn {
-            border-radius: 14px;
-            background: #111422;
-        }
-        .theme-theme1 .btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 14px;
-            padding: 2px;
-            background: linear-gradient(45deg, var(--btn-start), var(--btn-end));
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
-        .theme-theme1 .btn::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 14px;
-            background: linear-gradient(45deg, var(--btn-start), var(--btn-end));
-            opacity: 0.18;
-            filter: blur(12px);
-            animation: pulseTheme1 2.5s infinite;
-            z-index: -1;
-        }
-        @keyframes pulseTheme1 {
-            0%,
-            100% {
-                opacity: 0.15;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.38;
-                transform: scale(1.05);
-            }
-        }
-        .theme-theme1 .btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 10px 20px rgba(255, 255, 255, 0.12);
-        }
-
-        /* Theme 2 - Cyberpunk Blocky */
-        .theme-theme2 .btn {
-            border-radius: 0px;
-            background: linear-gradient(135deg, #d946ef 0%, #06b6d4 100%);
-            font-family: monospace;
-            letter-spacing: 2px;
-            box-shadow: 0 0 15px rgba(217, 70, 239, 0.5);
-            font-weight: 900;
-            text-transform: uppercase;
-        }
-        .theme-theme2 .btn:hover {
-            box-shadow: 0 0 25px rgba(6, 182, 212, 0.8);
-            transform: translateY(-2px);
-        }
-
-        /* Theme 3 - VIP Gold Luxury */
-        .theme-theme3 .btn {
-            border-radius: 6px;
-            background: linear-gradient(to right, #f59e0b, #d97706);
-            color: #000;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
-        }
-        .theme-theme3 .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(245, 158, 11, 0.5);
-        }
-
-        /* Theme 4 - Crimson Alert Urgency Button */
-        .theme-theme4 .btn {
-            border-radius: 8px;
-            background: #ef4444;
-            font-weight: 800;
-            text-transform: uppercase;
-            animation: crimsonHypePulse 1.2s infinite;
-        }
-        @keyframes crimsonHypePulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
-        }
-        .theme-theme4 .btn:hover {
-            background: #f43f5e;
-        }
-
-        /* Theme 5 - SaaS Sleek Pill */
-        .theme-theme5 .btn {
-            border-radius: 12px;
-            background: #8b5cf6;
-            text-align: center;
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
-            font-weight: 600;
-        }
-        .theme-theme5 .btn:hover {
-            background: #7c3aed;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5);
-        }
-
-        /* Theme 6 - Aurora Capsule */
-        .theme-theme6 .btn {
-            border-radius: 30px;
-            background: linear-gradient(135deg, #10b981 0%, #8b5cf6 100%);
-            font-weight: 800;
-            text-transform: uppercase;
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-        }
-        .theme-theme6 .btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.5);
-        }
-
-        .btn:active {
-            transform: translateY(0) scale(1) !important;
-        }
-
-        /* Footers */
-        .footer {
-            margin-top: 24px;
-            font-size: 11px;
-            color: #52525b;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-        }
-        .footer-logo {
-            height: 20px;
-            width: auto;
-            opacity: 0.65;
-            filter: brightness(1.2);
-            transition: opacity 0.3s ease;
-        }
-        .footer-logo:hover {
-            opacity: 1 !important;
-        }
-        .theme-theme2 .footer {
-            font-family: monospace;
-            color: #06b6d4;
-        }
-        .theme-theme3 .footer {
-            color: #78350f;
-        }
-        .theme-theme5 .footer {
-            text-align: left;
-            color: #475569;
-            align-items: flex-start;
-        }
-    </style>
+@media (max-width:360px){
+  .tile .name{font-size:12px}
+  .brand .name{font-size:13px}
+}
+</style>
 </head>
-<body class="theme-theme1 has-bg">
+<body>
 
-    <!-- Background glowing nodes (Used heavily by classic, minimal, and aurora themes) -->
-    <div class="blob blob1"></div>
-    <div class="blob blob2"></div>
+<!-- AUTH -->
+<div id="auth" class="auth">
+  <div class="logo-big" id="authLogo" title="Logo"><img src="" id="authLogoImg" alt="logo"></div>
+  <h1 id="authBrand">DURABLE BATTLE</h1>
+  <div class="tag">PLAY <i class="fa-solid fa-circle" style="font-size:4px;vertical-align:middle"></i> WIN <i class="fa-solid fa-circle" style="font-size:4px;vertical-align:middle"></i> WITHDRAW</div>
 
-    <div class="container">
-        <!-- Dynamic Hero Icon -->
-        <img src="https://api.dicebear.com/10.x/toon-head/svg?seed=Milo" class="hero" alt="ZORO PANELS" />
+  <div id="registerCard" class="card">
+    <div class="field"><label>Phone Number</label><div class="inp"><i class="fa-solid fa-phone"></i><input id="rPhone" type="tel" maxlength="10" placeholder="10 digit mobile"></div></div>
+    <div class="field"><label>Name</label><div class="inp"><i class="fa-solid fa-user"></i><input id="rName" placeholder="Your name"></div></div>
+    <div class="field"><label>Password</label><div class="inp"><i class="fa-solid fa-lock"></i><input id="rPass" type="password" placeholder="Create password"></div></div>
+    <div class="field"><label>Confirm Password</label><div class="inp"><i class="fa-solid fa-lock"></i><input id="rPass2" type="password" placeholder="Repeat password"></div></div>
+    <div class="field"><label>Referral Code (optional)</label><div class="inp"><i class="fa-solid fa-gift"></i><input id="rRef" placeholder="Enter referral code"></div></div>
+    <div class="age-check" onclick="toggleAge()" id="ageBox" style="display:flex;align-items:center;gap:12px;background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:12px;margin:6px 0 14px;cursor:pointer;user-select:none">
+      <div id="ageRadio" style="width:22px;height:22px;border-radius:50%;border:2px solid var(--muted);display:grid;place-items:center;flex:0 0 auto;transition:all .2s"><i class="fa-solid fa-check" style="font-size:12px;color:#fff;opacity:0;transition:opacity .2s"></i></div>
+      <div style="font-size:13px;font-weight:600;letter-spacing:.5px">I AM 18+</div>
+    </div>
+    <button class="btn" onclick="doRegister()"><i class="fa-solid fa-user-plus"></i> REGISTER</button>
+    <div class="toggle">Already have an account? <b onclick="showLogin()">LOGIN</b></div>
+  </div>
 
-        <!-- Landing Title -->
-        <h1>ZORO PANELS</h1>
+  <div id="loginCard" class="card" style="display:none">
+    <div class="field"><label>Phone Number</label><div class="inp"><i class="fa-solid fa-phone"></i><input id="lPhone" type="tel" maxlength="10" placeholder="10 digit mobile"></div></div>
+    <div class="field"><label>Password</label><div class="inp"><i class="fa-solid fa-lock"></i><input id="lPass" type="password" placeholder="Password"></div></div>
+    <button class="btn" onclick="doLogin()"><i class="fa-solid fa-right-to-bracket"></i> LOGIN</button>
+    <div class="toggle">New here? <b onclick="showRegister()">REGISTER</b></div>
+  </div>
+</div>
 
-        <!-- Page description paragraph -->
-        <p></p>
+<!-- APP -->
+<div id="app" class="app" style="display:none">
 
-        <!-- Dynamic points grid list if bullet entries parsed -->
-        <div class="points">
-            <div class="point-card">
-                • Expert backed predictions
-            </div>
-            <div class="point-card">
-                • Fan sentiment tracking
-            </div>
-            <div class="point-card">
-                • Performance trends
-            </div>
-            <div class="point-card">
-                • Tactical breakdowns
-            </div>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="brand">
+      <div class="logo" id="brandLogo"><img src="" id="brandLogoImg" alt="logo"></div>
+      <div class="name" id="brandName">DURABLE BATTLE</div>
+    </div>
+    <div class="right">
+      <div class="coin-pill"><i class="fa-solid fa-indian-rupee-sign"></i><span id="hCoin">0</span></div>
+      <button class="icon-btn" onclick="go('profile')"><i class="fa-solid fa-user"></i></button>
+    </div>
+  </header>
+
+  <!-- HOME -->
+  <section class="page active" id="p-home">
+    <div class="slider-wrap">
+      <div class="slider" id="slider"></div>
+      <div class="dots" id="dots"></div>
+    </div>
+    <div class="section">
+      <div class="sec-title"><h3><i class="fa-solid fa-gamepad" style="color:var(--gold)"></i> Battle Modes</h3><span class="sub">Choose &amp; Win</span></div>
+      <div class="games" id="games"></div>
+    </div>
+  </section>
+
+  <!-- WALLET -->
+  <section class="page" id="p-wallet">
+    <div class="section">
+      <div class="wallet-hero">
+        <div class="label"><i class="fa-solid fa-wallet"></i> Wallet Balance</div>
+        <div class="amt">₹<span id="wBal">0</span></div>
+        <div class="wallet-actions">
+          <button class="btn gold" onclick="openSheet('addFundsSheet')"><i class="fa-solid fa-plus"></i> ADD</button>
+          <button class="btn secondary" onclick="openSheet('withdrawSheet')"><i class="fa-solid fa-arrow-down"></i> WITHDRAW</button>
         </div>
+      </div>
+      <div class="sec-title" style="margin-top:16px"><h3>Recent Activity</h3><span class="sub" onclick="openSub('subTransition')" style="color:var(--gold);cursor:pointer">View all</span></div>
+      <div id="walletRecent"></div>
+    </div>
+  </section>
 
-        <!-- Action Conversion Button -->
-        <button class="btn" onclick="triggerLeadConversion()">
-            Join Telegram Now
-        </button>
+  <!-- LEADERBOARD -->
+  <section class="page" id="p-leader">
+    <div class="section">
+      <div class="sec-title"><h3><i class="fa-solid fa-trophy" style="color:var(--gold)"></i> Top Players</h3><span class="sub">This Week</span></div>
+      <div class="podium" id="podium"></div>
+      <div class="leader-list" id="leaderList"></div>
+    </div>
+  </section>
 
-        <!-- Footer signature -->
-        <div class="footer">
-            <img src="assets/Whale_logoW.png" class="footer-logo" alt="Big Whale Logo" onerror="this.style.display='none';" />
-            <span>© 2026 • ALL RIGHTS RESERVED</span>
+  <!-- MATCHES -->
+  <section class="page" id="p-match">
+    <div class="section">
+      <div class="sec-title"><h3 id="matchTitle">Matches</h3><span class="sub" onclick="go('home')" style="cursor:pointer"><i class="fa-solid fa-angle-left"></i> Back</span></div>
+      <div id="matchList"></div>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section class="page" id="p-profile">
+    <div class="profile-hero">
+      <div class="top">
+        <img id="pAvatar" src="" onclick="openSub('subSettings')">
+        <div class="info">
+          <h2 id="pName">Player</h2>
+          <div class="uid">UID: <span id="pUid">------</span> <i class="fa-solid fa-circle" style="font-size:3px;vertical-align:middle;color:var(--muted)"></i> <span id="pPhone"></span></div>
         </div>
+      </div>
+    </div>
+    <div class="menu">
+      <div class="menu-item" onclick="openSub('subAddHist')"><i class="fa-solid fa-plus"></i><div class="lab">Add Funds History</div><i class="fa-solid fa-angle-right chev"></i></div>
+      <div class="menu-item" onclick="openSub('subWithHist')"><i class="fa-solid fa-arrow-down"></i><div class="lab">Withdraw History</div><i class="fa-solid fa-angle-right chev"></i></div>
+      <div class="menu-item" onclick="openSub('subTransition')"><i class="fa-solid fa-right-left"></i><div class="lab">Transition</div><i class="fa-solid fa-angle-right chev"></i></div>
+      <div class="menu-item" onclick="openSub('subGameHist')"><i class="fa-solid fa-gamepad"></i><div class="lab">Game History</div><i class="fa-solid fa-angle-right chev"></i></div>
+      <div class="menu-item" onclick="openSub('subGift')"><i class="fa-solid fa-gift"></i><div class="lab">Gift Code</div><i class="fa-solid fa-angle-right chev"></i></div>
+      <div class="menu-item" onclick="openSub('subRefer')"><i class="fa-solid fa-user-group"></i><div class="lab">Refer</div><i class="fa-solid fa-angle-right chev"></i></div>
+      <div class="menu-item" onclick="openSub('subPromo')"><i class="fa-solid fa-bullhorn"></i><div class="lab">Promotion</div><i class="fa-solid fa-angle-right chev"></i></div>
+      <div class="menu-item" onclick="openSub('subSettings')"><i class="fa-solid fa-gear"></i><div class="lab">Settings</div><i class="fa-solid fa-angle-right chev"></i></div>
+      <div class="menu-item" onclick="openSupport()"><i class="fa-solid fa-headset"></i><div class="lab">Support</div><i class="fa-solid fa-angle-right chev"></i></div>
+      <div class="menu-item" onclick="doLogout()"><i class="fa-solid fa-right-from-bracket" style="color:#ff5c5c"></i><div class="lab">Logout</div><i class="fa-solid fa-angle-right chev"></i></div>
+    </div>
+  </section>
 
-        <!-- Compliance Footer for Meta Safe Mode -->
+  <!-- TABBAR -->
+  <nav class="tabbar">
+    <button data-t="home" onclick="go('home')"><i class="fa-solid fa-house"></i>Home</button>
+    <button data-t="wallet" onclick="go('wallet')"><i class="fa-solid fa-wallet"></i>Wallet</button>
+    <button data-t="leader" onclick="go('leader')"><i class="fa-solid fa-trophy"></i>Rank</button>
+    <button data-t="profile" onclick="go('profile')"><i class="fa-solid fa-user"></i>Profile</button>
+    <button onclick="openSub('subRefer')"><i class="fa-solid fa-gift"></i>Refer</button>
+  </nav>
+</div>
+
+<!-- SUB PAGES -->
+
+<!-- MATCH DETAIL -->
+<div class="subpage" id="subMatchDetail">
+  <div class="subhead"><button class="back-btn" onclick="closeSub('subMatchDetail')"><i class="fa-solid fa-angle-left"></i></button><h2 id="mdHead">Match</h2></div>
+  <div class="md-hero"><img id="mdImg" src=""></div>
+  <div class="md-info">
+    <h1 class="md-title" id="mdTitle">Match Title</h1>
+    <div class="md-sub" id="mdSub">Match ID: ------</div>
+
+    <div class="stats">
+      <div class="stat"><div class="k">Prize Pool</div><div class="v gold">₹<span id="mdPrize">0</span></div></div>
+      <div class="stat"><div class="k">Per Kill</div><div class="v">₹<span id="mdKill">0</span></div></div>
+      <div class="stat"><div class="k">Entry</div><div class="v">₹<span id="mdEntry">0</span></div></div>
     </div>
 
-    <script>
-        // Capture entry timestamp
-        var pageLoadTime = Date.now();
-        var currentClickId = 307161;
-        var redirectTriggered = false;
+    <div class="md-block"><div class="lbl"><i class="fa-solid fa-ban"></i> Ban Guns</div><div class="val" id="mdBanGuns">—</div></div>
+    <div class="md-block"><div class="lbl"><i class="fa-solid fa-user-slash"></i> Ban Characters</div><div class="val" id="mdBanChars">—</div></div>
+    <div class="md-block"><div class="lbl"><i class="fa-solid fa-clock"></i> Time</div><div class="val" id="mdTime">—</div></div>
 
-        // Reset redirectTriggered flag when user comes back to page (via back button)
-        window.addEventListener('pageshow', function() {
-            redirectTriggered = false;
-        });
+    <button class="btn" onclick="openJoinForm()"><i class="fa-solid fa-play"></i> JOIN MATCH</button>
+  </div>
+</div>
 
-        // Live Visitor Heartbeat (Ping every 10 seconds)
-        function sendHeartbeat() {
-            fetch('heartbeat.php?page_id=33').catch(function(e) {});
-        }
-        sendHeartbeat(); // Initial ping
-        setInterval(sendHeartbeat, 10000);
+<div class="subpage" id="subAddHist">
+  <div class="subhead"><button class="back-btn" onclick="closeSub('subAddHist')"><i class="fa-solid fa-angle-left"></i></button><h2>Add Funds History</h2></div>
+  <div class="hist" id="addHistList"></div>
+</div>
 
-        // Trigger background geo enrichment immediately (non-blocking)
-        // This ensures `clicks` rows get country/city populated even if user doesn't click CTA.
-        try {
-            fetch('capi.php?click_id=' + currentClickId + '&time_on_page=0').catch(function(e) {});
-        } catch (e) {}
+<div class="subpage" id="subWithHist">
+  <div class="subhead"><button class="back-btn" onclick="closeSub('subWithHist')"><i class="fa-solid fa-angle-left"></i></button><h2>Withdraw History</h2></div>
+  <div class="hist" id="withHistList"></div>
+</div>
 
-        function triggerLeadConversion() {
-            if (redirectTriggered) return;
-            redirectTriggered = true;
+<div class="subpage" id="subTransition">
+  <div class="subhead"><button class="back-btn" onclick="closeSub('subTransition')"><i class="fa-solid fa-angle-left"></i></button><h2>Transition</h2></div>
+  <div class="hist" id="transList"></div>
+</div>
 
-            // 1. Calculate user reading duration (engagement tracking)
-            var timeOnPage = Math.round((Date.now() - pageLoadTime) / 1000);
+<div class="subpage" id="subGameHist">
+  <div class="subhead"><button class="back-btn" onclick="closeSub('subGameHist')"><i class="fa-solid fa-angle-left"></i></button><h2>Game History</h2></div>
+  <div class="hist" id="gameHistList"></div>
+</div>
 
-            // 2. Dispatch browser Lead tracking event
-            try {
-                fbq('track', 'Lead');
-            } catch (e) {
-                console.error("Meta Pixel browser tracking failed:", e);
-            }
+<div class="subpage" id="subGift">
+  <div class="subhead"><button class="back-btn" onclick="closeSub('subGift')"><i class="fa-solid fa-angle-left"></i></button><h2>Gift Code</h2></div>
+  <div class="gift-wrap">
+    <i class="fa-solid fa-gift gift-icon"></i>
+    <h2>CLAIM YOUR GIFT CODE</h2>
+    <p>Enter your gift code below to claim rewards</p>
+    <div class="card" style="text-align:left">
+      <div class="field"><label>Enter Code</label><div class="inp"><i class="fa-solid fa-ticket"></i><input id="giftCode" placeholder="XXXX-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:2px"></div></div>
+      <button class="btn gold" onclick="claimGift()"><i class="fa-solid fa-gift"></i> CLAIM</button>
+    </div>
+  </div>
+</div>
 
-            // 3. Trigger immediate redirect first (non-blocking CAPI in background)
-            var telegramLink = "https://t.me/Rlby6cbb6hAwOGQ9";
+<div class="subpage" id="subSettings">
+  <div class="subhead"><button class="back-btn" onclick="closeSub('subSettings')"><i class="fa-solid fa-angle-left"></i></button><h2>Settings</h2></div>
 
-            // Redirect immediately without waiting for API response
-            setTimeout(function() {
-                window.location.href = telegramLink;
-            }, 100);
+  <div class="settings-block">
+    <h3><i class="fa-solid fa-user-astronaut"></i> Change Avatar</h3>
+    <div class="avatar-grid" id="avGrid" style="padding:0"></div>
+  </div>
 
-            // 4. Dispatch background CAPI server-to-server and Telegram bot alert (non-blocking)
-            var capiUrl = 'capi.php?click_id=' + currentClickId + '&time_on_page=' + timeOnPage +
-                '&is_converted=1';
+  <div class="settings-block">
+    <h3><i class="fa-solid fa-signature"></i> Change Name</h3>
+    <div class="field"><div class="inp"><i class="fa-solid fa-user"></i><input id="setName" placeholder="Enter new name"></div></div>
+    <button class="btn" onclick="changeName()"><i class="fa-solid fa-check"></i> SAVE NAME</button>
+  </div>
 
-            try {
-                fetch(capiUrl, {
-                    method: 'GET',
-                    mode: 'no-cors',
-                    credentials: 'omit'
-                }).catch(function(err) {
-                    console.error("CAPI callback error (non-critical):", err);
-                });
-            } catch (e) {
-                console.error("CAPI fetch error:", e);
-            }
-        }
+  <div class="settings-block">
+    <h3><i class="fa-solid fa-key"></i> Change Password</h3>
+    <div class="field"><label>Old Password</label><div class="inp"><i class="fa-solid fa-lock"></i><input id="oldPass" type="password"></div></div>
+    <div class="field"><label>New Password</label><div class="inp"><i class="fa-solid fa-lock"></i><input id="newPass" type="password"></div></div>
+    <div class="field"><label>Confirm New Password</label><div class="inp"><i class="fa-solid fa-lock"></i><input id="newPass2" type="password"></div></div>
+    <button class="btn" onclick="changePassword()"><i class="fa-solid fa-shield-halved"></i> UPDATE PASSWORD</button>
+  </div>
+</div>
 
-        // ==========================================
-        // 🛡️ FRONTEND CODE & DESIGN PROTECTION SHIELD
-        // ==========================================
+<div class="subpage" id="subRefer">
+  <div class="subhead"><button class="back-btn" onclick="closeSub('subRefer')"><i class="fa-solid fa-angle-left"></i></button><h2>Refer &amp; Earn</h2></div>
+  <div style="padding:14px">
+    <div class="refer-banner">
+      <img src="https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/1ce8a4ce-201e-4986-a665-1201531de457/refer.png" alt="Refer and Earn">
+    </div>
 
-        // 1. Block Context Menu (Right Click)
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        }, false);
+    <div style="margin-top:4px;color:var(--muted);font-size:12px;letter-spacing:1px;text-transform:uppercase;font-weight:700">Your Referral Code</div>
+    <div class="refer-code-box">
+      <div class="code" id="referCode">------</div>
+      <button class="btn sm" onclick="copyRefer()"><i class="fa-solid fa-copy"></i> COPY</button>
+    </div>
 
-        // 2. Block Keyboard DevTools Shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Block F12
-            if (e.key === 'F12' || e.keyCode === 123) {
-                e.preventDefault();
-                return false;
-            }
-            // Block Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J
-            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J' || e.keyCode === 73 ||
-                    e.keyCode === 67 || e.keyCode === 74)) {
-                e.preventDefault();
-                return false;
-            }
-            // Block Cmd+Alt+I, Cmd+Alt+C, Cmd+Alt+J (Mac OSX shortcuts)
-            if (e.metaKey && e.altKey && (e.key === 'i' || e.key === 'c' || e.key === 'j' || e.keyCode === 73 ||
-                    e.keyCode === 67 || e.keyCode === 74)) {
-                e.preventDefault();
-                return false;
-            }
-            // Block Ctrl+U (View Source)
-            if (e.ctrlKey && (e.key === 'u' || e.keyCode === 85)) {
-                e.preventDefault();
-                return false;
-            }
-            // Block Cmd+Option+U (Mac View Source)
-            if (e.metaKey && e.altKey && (e.key === 'u' || e.keyCode === 85)) {
-                e.preventDefault();
-                return false;
-            }
-        }, false);
-    </script>
+    <div class="refer-info">
+      <h3><i class="fa-solid fa-circle-info"></i> How It Works</h3>
+      <ul>
+        <li>Share your referral code with friends.</li>
+        <li>When your friend registers using your code and completes their <b>first Add Funds request of ₹50 or more</b>, you get <b>₹10</b> credited instantly.</li>
+        <li>Earn <b>₹10 on every successful referral</b> — unlimited!</li>
+        <li>Example: <i>User A shares code → User B registers with the code → User B adds ₹50 → User A receives ₹10.</i></li>
+      </ul>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="sec-title"><h3><i class="fa-solid fa-medal" style="color:var(--gold)"></i> Successful Referrals</h3><span class="sub" id="referCount">0</span></div>
+      <div id="referList" class="hist" style="padding:0"></div>
+    </div>
+  </div>
+</div>
+
+<div class="subpage" id="subPromo">
+  <div class="subhead"><button class="back-btn" onclick="closeSub('subPromo')"><i class="fa-solid fa-angle-left"></i></button><h2>Promotion</h2></div>
+  <div id="promoList" class="hist"></div>
+</div>
+
+
+
+<!-- SHEETS -->
+<div class="modal" id="addFundsSheet">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h3 style="margin:0 0 6px;font-family:'Rajdhani'"><i class="fa-solid fa-plus" style="color:var(--gold)"></i> Add Funds</h3>
+    <p style="color:var(--muted);font-size:12px;margin:0 0 12px">Minimum ₹10. Scan the QR or send to UPI, then submit UTR.</p>
+    <div class="qr-box"><img id="qrImg" src="https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/472f3cfe-4113-4fa8-baa9-6c56f73c81f1/qr.png" alt="QR"></div>
+    <div style="text-align:center;margin:10px 0;font-family:'Rajdhani';font-weight:700" id="upiText">UPI: smbattle@upi</div>
+    <div class="field"><label>Amount (₹)</label><div class="inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="fAmt" type="number" min="10"></div></div>
+    <div class="field"><label>Sender Name</label><div class="inp"><i class="fa-solid fa-user"></i><input id="fSender"></div></div>
+    <div class="field"><label>UTR / Transaction ID</label><div class="inp"><i class="fa-solid fa-hashtag"></i><input id="fUtr"></div></div>
+    <button class="btn gold" onclick="submitAdd()"><i class="fa-solid fa-paper-plane"></i> SUBMIT REQUEST</button>
+    <button class="btn secondary" style="margin-top:8px" onclick="closeSheet('addFundsSheet')">Cancel</button>
+  </div>
+</div>
+
+<div class="modal" id="withdrawSheet">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h3 style="margin:0 0 6px;font-family:'Rajdhani'"><i class="fa-solid fa-arrow-down" style="color:var(--gold)"></i> Withdraw</h3>
+    <p style="color:var(--muted);font-size:12px;margin:0 0 12px">Enter amount and UPI details.</p>
+    <div class="field"><label>Amount (₹)</label><div class="inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="wAmt" type="number" min="50"></div></div>
+    <div class="field"><label>Receiver Name</label><div class="inp"><i class="fa-solid fa-user"></i><input id="wRecv"></div></div>
+    <div class="field"><label>UPI ID</label><div class="inp"><i class="fa-solid fa-at"></i><input id="wUpi" placeholder="name@upi"></div></div>
+    <button class="btn green" onclick="submitWith()"><i class="fa-solid fa-paper-plane"></i> SUBMIT REQUEST</button>
+    <button class="btn secondary" style="margin-top:8px" onclick="closeSheet('withdrawSheet')">Cancel</button>
+  </div>
+</div>
+
+<!-- JOIN FORM SHEET -->
+<div class="modal" id="joinFormSheet">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h3 style="margin:0 0 6px;font-family:'Rajdhani'"><i class="fa-solid fa-play" style="color:var(--gold)"></i> Join Match</h3>
+    <p style="color:var(--muted);font-size:12px;margin:0 0 12px" id="jfSub">Fill your details to confirm.</p>
+
+    <div class="field"><label>Select Level</label>
+      <div class="inp"><i class="fa-solid fa-layer-group"></i>
+        <select id="jfLevel"></select>
+      </div>
+    </div>
+    <div class="field"><label>UID</label><div class="inp"><i class="fa-solid fa-id-card"></i><input id="jfUid" placeholder="Your game UID"></div></div>
+    <div class="field"><label>WhatsApp</label><div class="inp"><i class="fa-brands fa-whatsapp"></i><input id="jfWa" type="tel" maxlength="10" placeholder="10 digit number"></div></div>
+    <div class="field"><label>ID Name</label><div class="inp"><i class="fa-solid fa-signature"></i><input id="jfName" placeholder="In-game name"></div></div>
+
+    <button class="btn" onclick="confirmJoin()"><i class="fa-solid fa-check"></i> CONFIRM</button>
+    <button class="btn secondary" style="margin-top:8px" onclick="closeSheet('joinFormSheet')">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- FIREBASE (real-time sync) ---------- */
+/* Config is public by design (protected by Realtime DB rules).
+   User passwords are stored as SHA-256 hashes (see hashPass). */
+const _fbCfg={apiKey:"AIzaSyAMv06ww-KU43nNeKxTkY7ORZLMh0ehqH0",authDomain:"adam-667af.firebaseapp.com",databaseURL:"https://adam-667af-default-rtdb.firebaseio.com",projectId:"adam-667af",storageBucket:"adam-667af.firebasestorage.app",messagingSenderId:"168230428684",appId:"1:168230428684:web:6412a7b10cd8f9bfdc0e29"};
+let _fbDB=null;
+try{ if(window.firebase && !firebase.apps.length){ firebase.initializeApp(_fbCfg); _fbDB=firebase.database(); } }catch(e){ console.warn('fb init',e); }
+function _fbSafe(fn){ try{ if(_fbDB) fn(_fbDB); }catch(e){ console.warn('fb',e); } }
+function fbPushUser(u){ _fbSafe(db=>db.ref('users/'+u.phone).set({name:u.name,phone:u.phone,uid:u.uid,balance:u.balance,blocked:!!u.blocked,updated:Date.now()})); }
+function fbPushAddReq(phone,r){ _fbSafe(db=>db.ref('addRequests').push({phone,...r})); }
+function fbPushWithReq(phone,r){ _fbSafe(db=>db.ref('withRequests').push({phone,...r})); }
+function fbPushMatchReq(e){ _fbSafe(db=>db.ref('matchRequests').push(e)); if(!S.matchReq) S.matchReq=[]; S.matchReq.unshift(e); if(S.matchReq.length>500) S.matchReq.pop(); }
+async function hashPass(p){
+  try{ const b=new TextEncoder().encode(p+'|durable-salt'); const h=await crypto.subtle.digest('SHA-256',b);
+    return 'sha256$'+Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,'0')).join(''); }
+  catch(e){ return p; }
+}
+
+/* 18+ checkbox */
+let ageChecked=false;
+function toggleAge(){
+  ageChecked=!ageChecked;
+  const box=document.getElementById('ageBox'), r=document.getElementById('ageRadio');
+  if(!box||!r) return;
+  if(ageChecked){ r.style.background='linear-gradient(135deg,#16a34a,#22c55e)'; r.style.borderColor='#22c55e'; r.firstElementChild.style.opacity='1'; }
+  else { r.style.background='transparent'; r.style.borderColor='var(--muted)'; r.firstElementChild.style.opacity='0'; }
+}
+
+/* ---------- ASSETS ---------- */
+const CDN = 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app';
+const LOGO_IMG = CDN + '/__l5e/assets-v1/a2442550-f38b-4560-86bc-4197f2694623/logo.png';
+const BATTLE_IMGS = [
+  CDN + '/__l5e/assets-v1/884d62a0-1561-4ed1-a8c0-3489ca46ecb6/battle1.png',
+  CDN + '/__l5e/assets-v1/69c81111-f271-4bd7-a5c2-3d1f1bc8e4f7/battle2.png'
+];
+const TILE_IMGS = [
+  CDN + '/__l5e/assets-v1/f793a90b-3f54-4032-8d41-696a70f61737/tile1.jpg',
+  CDN + '/__l5e/assets-v1/ca4466fd-74ed-4d48-9620-c1f75a94b9ad/tile2.jpg',
+  CDN + '/__l5e/assets-v1/9b6ae716-de45-4bd0-97dd-f35835f591df/tile3.jpg',
+  CDN + '/__l5e/assets-v1/98c19331-ede9-4323-bce2-7f270826c7a5/tile4.jpg',
+  CDN + '/__l5e/assets-v1/26d6872e-0d0d-4c0b-b979-e385abe1cee3/tile5.jpg',
+  CDN + '/__l5e/assets-v1/9f1b696b-ce8e-4c32-aa8e-f2cfd1f77f34/tile6.jpg',
+  CDN + '/__l5e/assets-v1/2bb753bb-971e-4c4d-a816-131a5a76ba87/tile7.jpg',
+  CDN + '/__l5e/assets-v1/d63f02e9-5581-43c3-8ec5-68f2360374bf/tile8.jpg',
+  CDN + '/__l5e/assets-v1/2f262ca9-8d09-4433-966a-86bd014995bf/tile9.jpg'
+];
+const REFER_IMG   = CDN + '/__l5e/assets-v1/1ce8a4ce-201e-4986-a665-1201531de457/refer.png';
+const DEFAULT_QR  = CDN + '/__l5e/assets-v1/472f3cfe-4113-4fa8-baa9-6c56f73c81f1/qr.png';
+const BANNER_IMGS = {
+  whatsapp1:   CDN + '/__l5e/assets-v1/fb6334ca-b290-43d9-8295-8cd381d27081/whatsapp1.png',
+  withdrawal:  CDN + '/__l5e/assets-v1/6bc60a55-88bd-4362-86ef-8d8567b2c19f/withdrawal.png',
+  leaderboard: CDN + '/__l5e/assets-v1/4dafd457-f799-4dc2-af0c-3a4d96cc4c82/leaderboard.png',
+  deposit:     CDN + '/__l5e/assets-v1/639cb2b1-72eb-4e94-b0bf-4f8e4a0a4383/deposit.png',
+  whatsapp2:   CDN + '/__l5e/assets-v1/1012eff2-a76e-4813-a93c-905319db8a67/whatsapp2.png',
+  tutorial:    CDN + '/__l5e/assets-v1/734977a8-31af-4076-9f0c-c128cdfe8fb2/tutorial.png',
+};
+
+/* ---------- DATA ---------- */
+const AVATARS = ['Milo','Luna','Zara','Kai','Nova','Rex','Aria','Leo','Mia','Finn','Iris','Otto','Suki','Zed'];
+const avatarUrl = seed => `https://api.dicebear.com/10.x/adventurer/svg?seed=${encodeURIComponent(seed)}`;
+
+const BANNERS = [
+  {img:BANNER_IMGS.whatsapp1,   cap:'Follow WhatsApp Channel · Free Matches'},
+  {img:BANNER_IMGS.withdrawal,  cap:'Withdrawal Complete in 30 Minutes'},
+  {img:BANNER_IMGS.leaderboard, cap:'Weekly Leaderboard · Top 3 Rewards'},
+  {img:BANNER_IMGS.deposit,     cap:'Deposit Bonus · Up to +150 Coins'},
+  {img:BANNER_IMGS.whatsapp2,   cap:'Join Our WhatsApp for Giveaways'},
+  {img:BANNER_IMGS.tutorial,    cap:'Tutorial · How to Add Coins'},
+  {img:REFER_IMG,               cap:'Refer & Earn ₹10 per friend'},
+];
+
+const MODES = [
+  {id:'fullmap', name:'FULL MAP', mode:'Solo', map:'Bermuda',  cap:48, img:TILE_IMGS[4]},
+  {id:'cs1v1',  name:'CS 1V1',   mode:'1v1',  map:'Bermuda',  cap:2,  img:TILE_IMGS[0]},
+  {id:'lw1v1',  name:'LW 1V1',   mode:'1v1',  map:'Iron Cage',cap:2,  img:TILE_IMGS[3]},
+  {id:'head1v1',name:'HEAD 1V1', mode:'1v1',  map:'Kalahari', cap:2,  img:TILE_IMGS[8]},
+  {id:'cs2v2',  name:'CS 2V2',   mode:'2v2',  map:'Bermuda',  cap:4,  img:TILE_IMGS[5]},
+  {id:'lw2v2',  name:'LW 2V2',   mode:'2v2',  map:'Iron Cage',cap:4,  img:TILE_IMGS[1]},
+  {id:'head2v2',name:'HEAD 2V2', mode:'2v2',  map:'Kalahari', cap:4,  img:TILE_IMGS[7]},
+  {id:'cs4v4',  name:'CS 4V4',   mode:'4v4',  map:'Bermuda',  cap:8,  img:TILE_IMGS[2]},
+  {id:'head4v4',name:'HEAD 4V4', mode:'4v4',  map:'Kalahari', cap:8,  img:TILE_IMGS[6]},
+  {id:'free',   name:'FREE',     mode:'Solo', map:'Purgatory',cap:48, img:BATTLE_IMGS[0]},
+];
+
+/* ---------- STATE ---------- */
+const S = JSON.parse(localStorage.getItem('sm_state')||'{}');
+S.users = S.users||{};
+S.brand = S.brand||'DURABLE BATTLE';
+S.supportUrl = S.supportUrl||'https://t.me/durablebattle_support';
+S.giftCodes = S.giftCodes||{};
+S.session = S.session||null;
+S.qrUrl = S.qrUrl||DEFAULT_QR;   // admin can replace
+S.upi = S.upi||'durablebattle@upi';
+/* Admin */
+S.admin = S.admin || { email:'xyzrony1293@gmail.com', password:'MONU MANFORCE' };
+S.adminSession = S.adminSession || false;
+
+/* Reset tile/match cache when structure changes */
+const MODES_VERSION = 'v3';
+if(S.modesVersion !== MODES_VERSION){
+  delete S.tiles; delete S.matches;
+  S.modesVersion = MODES_VERSION;
+}
+
+/* Tiles & matches (admin editable) */
+function seedRnd(seed){let x=seed;return()=>((x=Math.imul(1664525,x)+1013904223)>>>0)/4294967296}
+function genTileId(seed){const r=seedRnd(seed+1);return String(Math.floor(100000+r()*900000))}
+
+if(!S.tiles){
+  S.tiles = MODES.map((m,i)=>({
+    id:m.id, tileId:genTileId(i*7+3), status:'upcoming', // upcoming | live
+  }));
+}
+if(!S.matches){
+  S.matches = {};
+  MODES.forEach((m,i)=>{
+    S.matches[m.id] = Array.from({length:6}).map((_,k)=>{
+      return {
+        matchId:genTileId(i*13+k*5),
+        image:m.img,
+        status:'upcoming',
+        prize:58, kill:1, entry:41,
+        joined:0,
+        banGuns:'M79, AWM',
+        banChars:'DJ Alok, Chrono',
+        time:'Today · 8:00 PM'
+      };
+    });
+  });
+}
+
+/* Auto live/upcoming from time. Live during [time, time+30min], else upcoming.
+   When leaving the live window slots reset to 0. Admin-editable time string. */
+function parseMatchTime(str){
+  const m=/(\d{1,2}):(\d{2})\s*(AM|PM)/i.exec(str||''); if(!m) return null;
+  let h=(+m[1])%12; if(/PM/i.test(m[3])) h+=12;
+  const d=new Date(); d.setHours(h,+m[2],0,0); return d.getTime();
+}
+function computeStatus(mt){
+  const t=parseMatchTime(mt.time); if(t==null) return;
+  const now=Date.now();
+  if(now>=t && now<t+30*60000){
+    mt.status='live';
+  } else {
+    if(mt.status==='live'){ mt.joined=0; } // reset after live window ends
+    mt.status='upcoming';
+  }
+}
+function refreshMatchStatus(id){
+  const arr=S.matches[id]||[]; arr.forEach(computeStatus);
+  // tile status = live if any match live
+  const tile=S.tiles.find(t=>t.id===id);
+  if(tile) tile.status = arr.some(m=>m.status==='live')?'live':'upcoming';
+  save();
+}
+function refreshAllStatuses(){
+  MODES.forEach(m=>refreshMatchStatus(m.id));
+}
+
+function save(){localStorage.setItem('sm_state',JSON.stringify(S))}
+function u(){return S.session? S.users[S.session]: null}
+function toast(m,dur){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur||2200)}
+
+/* ---------- AUTH ---------- */
+function showLogin(){document.getElementById('registerCard').style.display='none';document.getElementById('loginCard').style.display='block'}
+function showRegister(){document.getElementById('loginCard').style.display='none';document.getElementById('registerCard').style.display='block'}
+function genUid(){return String(Math.floor(100000+Math.random()*900000))}
+function genRefer(name){return (name.substring(0,3).toUpperCase().replace(/[^A-Z]/g,'X')+Math.floor(1000+Math.random()*9000))}
+
+async function doRegister(){
+  const phone=rPhone.value.trim(), name=rName.value.trim(), p=rPass.value, p2=rPass2.value, ref=rRef.value.trim().toUpperCase();
+  if(!/^\d{10}$/.test(phone)) return toast('Enter valid 10 digit phone');
+  if(!name) return toast('Enter your name');
+  if(p.length<4) return toast('Password too short');
+  if(p!==p2) return toast('Passwords do not match');
+  if(!ageChecked) return toast('Please confirm you are 18+');
+  if(S.users[phone]) return toast('Already registered, please login');
+  const passHash=await hashPass(p);
+  const user={phone,name,pass:passHash,uid:genUid(),avatar:AVATARS[0],balance:0,coins:0,refer:genRefer(name),referredBy:ref||null,firstAdded:false,freeUnlocked:false,referRewarded:false,
+    addHist:[],withHist:[],trans:[],gameHist:[],refers:[]};
+  S.users[phone]=user;
+  S.session=phone;save();fbPushUser(user);enterApp();
+}
+async function doLogin(){
+  const phone=lPhone.value.trim(), p=lPass.value;
+  const usr=S.users[phone];
+  if(!usr) return toast('Invalid phone or password');
+  const ph=await hashPass(p);
+  if(usr.pass!==ph && usr.pass!==p) return toast('Invalid phone or password');
+  if(usr.pass===p){ usr.pass=ph; } // migrate old plaintext
+  S.session=phone;save();enterApp();
+}
+function doLogout(){S.session=null;save();location.reload()}
+
+/* ---------- BOOT ---------- */
+function enterApp(){
+  document.getElementById('auth').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('brandName').textContent=S.brand;
+  document.getElementById('brandLogoImg').src=LOGO_IMG;
+  document.getElementById('qrImg').src=S.qrUrl;
+  document.getElementById('upiText').textContent='UPI: '+S.upi;
+  buildSlider();buildGames();buildLeader();refreshAll();
+  setInterval(()=>{ buildGames(); if(currentMode) openMode(currentMode.id); }, 30000);
+}
+function refreshAll(){
+  const usr=u();if(!usr)return;
+  hCoin.textContent=usr.balance;
+  wBal.textContent=usr.balance;
+  pName.textContent=usr.name;
+  pUid.textContent=usr.uid;
+  pPhone.textContent=usr.phone;
+  pAvatar.src=avatarUrl(usr.avatar);
+  referCode.textContent=usr.refer;
+  renderWalletRecent();
+  renderReferList();
+  renderAvatarGrid();
+  setName.value=usr.name;
+}
+
+/* ---------- SLIDER ---------- */
+let sIdx=0;
+function buildSlider(){
+  const s=document.getElementById('slider'),d=document.getElementById('dots');
+  s.innerHTML=BANNERS.map(b=>`<div class="slide"><div class="frame"><img src="${b.img}"><div class="caption">${b.cap}</div></div></div>`).join('');
+  d.innerHTML=BANNERS.map((_,i)=>`<span class="${i===0?'on':''}"></span>`).join('');
+  setInterval(()=>{sIdx=(sIdx+1)%BANNERS.length;s.style.transform=`translateX(-${sIdx*100}%)`;[...d.children].forEach((el,i)=>el.classList.toggle('on',i===sIdx))},3000);
+}
+
+/* ---------- GAMES ---------- */
+function isFreeUnlocked(){ const usr=u(); if(!usr) return false; if(usr.freeUnlocked) return true;
+  const ok=(usr.addHist||[]).some(x=>x.status==='success' && x.amount>=20);
+  if(ok){ usr.freeUnlocked=true; save(); }
+  return ok;
+}
+function buildGames(){
+  refreshAllStatuses();
+  document.getElementById('games').innerHTML=MODES.map((m,i)=>{
+    const t=S.tiles[i];
+    const img=m.img;
+    const locked = (m.id==='free' && !isFreeUnlocked());
+    const lockOverlay = locked?`<div style="position:absolute;inset:0;background:#000000d0;display:grid;place-items:center;border-radius:16px;z-index:2"><div style="text-align:center;color:#fff;padding:6px"><i class="fa-solid fa-lock" style="font-size:22px;color:var(--gold)"></i><div style="font-size:9px;margin-top:4px;font-weight:700;letter-spacing:.5px">ADD ₹20 TO UNLOCK</div></div></div>`:'';
+    return `
+    <div class="tile" style="position:relative;background-image:linear-gradient(180deg,#00000020 20%,#000000e6),url('${img}');background-size:cover;background-position:center" onclick="openMode('${m.id}')">
+      ${lockOverlay}
+      <div style="display:flex;justify-content:flex-end;gap:4px;align-items:flex-start">
+        <span class="tid">#${t.tileId}</span>
+      </div>
+      <div>
+        <div class="name">${m.name}</div>
+        <div class="row"><span class="badge" style="background:#ffffffd0;color:#111">${m.mode}</span><span style="font-family:'Orbitron';font-size:8px;color:#ffffffb0;letter-spacing:1px">${m.map.toUpperCase()}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- MODE / MATCHES ---------- */
+let currentMode=null;
+function openMode(id){
+  if(id==='free' && !isFreeUnlocked()){ return toast('FREE section locked — add ₹20 successfully to unlock forever'); }
+  currentMode=MODES.find(m=>m.id===id);
+  matchTitle.textContent=currentMode.name;
+  refreshMatchStatus(id);
+  const list=S.matches[id];
+  matchList.innerHTML=list.map((mt,idx)=>{
+    const isLive=mt.status==='live';
+    const cap=currentMode.cap;
+    const filled=Math.min(100,Math.round(mt.joined/cap*100));
+    return `<div class="match">
+      <div class="m-img">
+        <img src="${mt.image}">
+        <div class="m-top">
+          <span class="tag ${isLive?'live':'upc'}"><i class="fa-solid fa-circle" style="font-size:7px"></i> ${isLive?'LIVE':'UPCOMING'}</span>
+          <span class="tag tid">#${mt.matchId}</span>
+        </div>
+        <div class="m-bot">${currentMode.name} · ${currentMode.map}</div>
+      </div>
+      <div class="body">
+        <div class="stats">
+          <div class="stat"><div class="k">Prize Pool</div><div class="v gold">₹${mt.prize}</div></div>
+          <div class="stat"><div class="k">Per Kill</div><div class="v">₹${mt.kill}</div></div>
+          <div class="stat"><div class="k">Entry Fee</div><div class="v">₹${mt.entry}</div></div>
+        </div>
+        <div class="join-row">
+          <span class="type">${currentMode.mode}</span>
+          <span class="users"><i class="fa-solid fa-user-group"></i>${mt.joined}/${cap}</span>
+          <button class="join-btn" onclick="openMatch('${id}',${idx})"><i class="fa-solid fa-arrow-right"></i> JOIN</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  go('match');
+}
+
+/* ---------- MATCH DETAIL ---------- */
+let currentMatch=null;
+function openMatch(modeId,idx){
+  const mode=MODES.find(m=>m.id===modeId);
+  const mt=S.matches[modeId][idx];
+  currentMatch={mode,mt,idx,modeId};
+  mdHead.textContent=mode.name;
+  mdImg.src=mt.image;
+  mdTitle.textContent=mode.name+' · '+mode.mode;
+  mdSub.textContent='Match ID: #'+mt.matchId+'  ·  '+(mt.status==='live'?'LIVE':'UPCOMING');
+  mdPrize.textContent=mt.prize;
+  mdKill.textContent=mt.kill;
+  mdEntry.textContent=mt.entry;
+  mdBanGuns.textContent=mt.banGuns||'—';
+  mdBanChars.textContent=mt.banChars||'—';
+  mdTime.textContent=mt.time||'—';
+  openSub('subMatchDetail');
+}
+
+function openJoinForm(){
+  if(!currentMatch)return;
+  // populate level 30..100
+  const sel=document.getElementById('jfLevel');
+  sel.innerHTML=Array.from({length:71}).map((_,i)=>`<option value="${30+i}">Level ${30+i}</option>`).join('');
+  jfSub.textContent = `${currentMatch.mode.name} · Entry ₹${currentMatch.mt.entry}`;
+  jfUid.value=''; jfWa.value=''; jfName.value='';
+  openSheet('joinFormSheet');
+}
+
+function confirmJoin(){
+  const usr=u();
+  const level=jfLevel.value;
+  const uid=jfUid.value.trim(), wa=jfWa.value.trim(), name=jfName.value.trim();
+  if(!uid) return toast('Enter your UID');
+  if(!/^\d{10}$/.test(wa)) return toast('Enter valid WhatsApp number');
+  if(!name) return toast('Enter your ID Name');
+  const mt=currentMatch.mt, mode=currentMatch.mode;
+  if(usr.balance<mt.entry){return toast('Insufficient balance — please add funds')}
+  const cap=mode.cap;
+  if(mt.joined>=cap) return toast('Match is full');
+  usr.balance-=mt.entry;
+  mt.joined+=1;
+  usr.trans.push({type:'debit',amount:mt.entry,note:`Match entry: ${mode.name} #${mt.matchId}`,time:Date.now()});
+  const entry={
+    game:mode.name, map:mode.map, mode:mode.mode,
+    matchId:mt.matchId, entry:mt.entry, prize:mt.prize, kill:mt.kill,
+    level, uid, wa, idName:name, time:Date.now(),
+    registeredName:usr.name, registeredPhone:usr.phone
+  };
+  usr.gameHist.push(entry);
+  save();fbPushMatchReq(entry);fbPushUser(usr);
+  refreshAll();
+  closeSheet('joinFormSheet');
+  openMode(currentMode.id);
+  toast('✓ Joined! Room ID & Password will be sent on your WhatsApp shortly.',7500);
+}
+
+/* ---------- LEADERBOARD ---------- */
+function buildLeader(){
+  const names=['ProSlayer','NoScope','ArcadeKing','GhostFire','ShadowX','ViperOP','StormRider','LegendYT','BooyahBro','KingKong','MidnightOwl','FrostByte','TitanZ','NitroX','AceGamer'];
+  const list=names.map((n,i)=>({n,s:Math.max(500-i*23-Math.floor(Math.random()*10),0),a:AVATARS[i%AVATARS.length]})).sort((a,b)=>b.s-a.s);
+  const top=list.slice(0,3);
+  podium.innerHTML=`
+    <div class="pod p2"><span class="rank">2</span><img src="${avatarUrl(top[1].a)}"><div class="n">${top[1].n}</div><div class="s">${top[1].s} pts</div></div>
+    <div class="pod p1"><span class="rank">1</span><img src="${avatarUrl(top[0].a)}"><div class="n">${top[0].n}</div><div class="s">${top[0].s} pts</div></div>
+    <div class="pod p3"><span class="rank">3</span><img src="${avatarUrl(top[2].a)}"><div class="n">${top[2].n}</div><div class="s">${top[2].s} pts</div></div>`;
+  leaderList.innerHTML=list.slice(3).map((p,i)=>`<div class="leader-item"><span style="width:22px;color:var(--muted);font-weight:700">#${i+4}</span><img src="${avatarUrl(p.a)}"><div class="name">${p.n}</div><div class="score">${p.s}</div></div>`).join('');
+}
+
+/* ---------- NAV ---------- */
+function go(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('p-'+name).classList.add('active');
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('active',b.dataset.t===name));
+  window.scrollTo(0,0);
+}
+function openSub(id){document.getElementById(id).classList.add('active');window.scrollTo(0,0);if(id==='subAddHist')renderAdd();if(id==='subWithHist')renderWith();if(id==='subTransition')renderTrans();if(id==='subGameHist')renderGame();if(id==='subRefer')renderReferList();if(id==='subSettings')renderAvatarGrid();if(id==='subPromo')renderPromos();}
+function closeSub(id){document.getElementById(id).classList.remove('active')}
+function openSheet(id){document.getElementById(id).classList.add('show')}
+function closeSheet(id){document.getElementById(id).classList.remove('show')}
+
+/* ---------- HISTORIES ---------- */
+function fmtTime(t){const d=new Date(t);return d.toLocaleDateString()+' · '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
+function statusPill(s){return `<span class="pill ${s}">${s}</span>`}
+function empty(icon,msg){return `<div class="empty"><i class="${icon}"></i><div>${msg}</div></div>`}
+
+function renderAdd(){
+  const usr=u();const list=usr.addHist.slice().reverse();
+  addHistList.innerHTML=list.length?list.map(x=>`
+    <div class="h-item">
+      <div class="row1"><div class="amount">+ ₹${x.amount}</div>${statusPill(x.status)}</div>
+      <div class="meta"><span>UTR: <b>${x.utr}</b></span><span>Sender: ${x.sender}</span></div>
+      <div class="time">${fmtTime(x.time)}</div>
+    </div>`).join(''):empty('fa-solid fa-inbox','No add funds history yet');
+}
+function renderWith(){
+  const usr=u();const list=usr.withHist.slice().reverse();
+  withHistList.innerHTML=list.length?list.map(x=>`
+    <div class="h-item">
+      <div class="row1"><div class="amount">- ₹${x.amount}</div>${statusPill(x.status)}</div>
+      <div class="meta"><span>UPI: <b>${x.upi}</b></span><span>To: ${x.recv}</span></div>
+      <div class="time">${fmtTime(x.time)}</div>
+    </div>`).join(''):empty('fa-solid fa-inbox','No withdraw history yet');
+}
+function renderTrans(){
+  const usr=u();const list=usr.trans.slice().reverse();
+  transList.innerHTML=list.length?list.map(x=>`
+    <div class="h-item">
+      <div class="row1"><div class="amount" style="color:${x.type==='credit'?'#86efac':'#fca5a5'}">${x.type==='credit'?'+':'-'} ₹${x.amount}</div><span class="pill ${x.type}">${x.type}</span></div>
+      <div class="meta"><span>${x.note}</span></div>
+      <div class="time">${fmtTime(x.time)}</div>
+    </div>`).join(''):empty('fa-solid fa-right-left','No transactions yet');
+}
+function renderGame(){
+  const usr=u();const list=usr.gameHist.slice().reverse();
+  gameHistList.innerHTML=list.length?list.map(x=>`
+    <div class="h-item">
+      <div class="row1"><div class="amount" style="font-size:15px">${x.game}</div><span class="pill processing">${x.map}</span></div>
+      <div class="meta">
+        <span><i class="fa-solid fa-hashtag"></i> ${x.matchId||'-'}</span>
+        <span>Type: ${x.mode||'-'}</span>
+        <span>Entry: ₹${x.entry}</span>
+        <span>Prize: ₹${x.prize||0}</span>
+        <span>Lvl: ${x.level||'-'}</span>
+        <span>UID: ${x.uid||'-'}</span>
+        <span>Name: ${x.idName||'-'}</span>
+      </div>
+      <div class="time">${fmtTime(x.time)}</div>
+    </div>`).join(''):empty('fa-solid fa-gamepad','No game history yet');
+}
+function renderWalletRecent(){
+  const usr=u();const list=usr.trans.slice(-5).reverse();
+  walletRecent.innerHTML=list.length?list.map(x=>`
+    <div class="h-item">
+      <div class="row1"><div class="amount" style="color:${x.type==='credit'?'#86efac':'#fca5a5'};font-size:16px">${x.type==='credit'?'+':'-'} ₹${x.amount}</div><span class="pill ${x.type}">${x.type}</span></div>
+      <div class="meta"><span>${x.note}</span></div>
+      <div class="time">${fmtTime(x.time)}</div>
+    </div>`).join(''):empty('fa-solid fa-wallet','No activity yet');
+}
+
+/* ---------- FUNDS ---------- */
+function submitAdd(){
+  const usr=u();
+  const amt=parseInt(fAmt.value||0), sender=fSender.value.trim(), utr=fUtr.value.trim();
+  if(amt<10) return toast('Minimum ₹10');
+  if(!sender||!utr) return toast('Fill all fields');
+  const rec={amount:amt,sender,utr,status:'processing',time:Date.now()};
+  usr.addHist.push(rec);
+  usr.trans.push({type:'debit',amount:0,note:`Add funds request ₹${amt} · processing`,time:Date.now()});
+  save();fbPushUser(usr);fbPushAddReq(usr.phone,rec);
+  closeSheet('addFundsSheet');fAmt.value=fSender.value=fUtr.value='';
+  toast('✓ Request received. Your amount will be added to your wallet within 2 hours.',7500);
+  renderWalletRecent();
+}
+function submitWith(){
+  const usr=u();
+  const amt=parseInt(wAmt.value||0), recv=wRecv.value.trim(), upi=wUpi.value.trim();
+  if(amt<50) return toast('Minimum ₹50');
+  if(!recv||!upi) return toast('Fill all fields');
+  if(usr.balance<amt) return toast('Insufficient balance');
+  usr.balance-=amt;
+  const rec={amount:amt,recv,upi,status:'processing',time:Date.now()};
+  usr.withHist.push(rec);
+  usr.trans.push({type:'debit',amount:amt,note:`Withdraw request to ${upi} · processing`,time:Date.now()});
+  save();fbPushUser(usr);fbPushWithReq(usr.phone,rec);
+  closeSheet('withdrawSheet');wAmt.value=wRecv.value=wUpi.value='';
+  toast('✓ Withdraw request received. Amount will be credited within 2 hours.',7500);
+  refreshAll();
+}
+
+/* ---------- GIFT ---------- */
+function claimGift(){
+  const code=giftCode.value.trim().toUpperCase();const usr=u();
+  if(!code) return toast('Enter a code');
+  const g=S.giftCodes[code];
+  if(!g) return toast('Invalid code');
+  if(g.used.includes(usr.phone)) return toast('Code already claimed');
+  g.used.push(usr.phone);usr.balance+=g.amount;
+  usr.trans.push({type:'credit',amount:g.amount,note:`Gift code ${code}`,time:Date.now()});
+  save();refreshAll();giftCode.value='';toast(`Success! ₹${g.amount} credited`);
+}
+
+/* ---------- SETTINGS ---------- */
+function renderAvatarGrid(){
+  const usr=u();
+  avGrid.innerHTML=AVATARS.map(a=>`<div class="avatar-cell ${usr.avatar===a?'on':''}" onclick="setAvatar('${a}')"><img src="${avatarUrl(a)}"></div>`).join('');
+}
+function setAvatar(a){u().avatar=a;save();refreshAll();toast('Avatar updated')}
+function changeName(){const n=setName.value.trim();if(!n)return toast('Enter name');u().name=n;save();fbPushUser(u());refreshAll();toast('Name updated')}
+async function changePassword(){
+  const usr=u();
+  const oldH=await hashPass(oldPass.value);
+  if(oldH!==usr.pass && oldPass.value!==usr.pass) return toast('Old password incorrect');
+  if(newPass.value.length<4) return toast('Password too short');
+  if(newPass.value!==newPass2.value) return toast('New passwords do not match');
+  usr.pass=await hashPass(newPass.value);save();fbPushUser(usr);oldPass.value=newPass.value=newPass2.value='';toast('Password updated');
+}
+function openSupport(){window.open(S.supportUrl,'_blank')}
+
+/* ---------- REFER ---------- */
+function copyRefer(){navigator.clipboard.writeText(u().refer);toast('Referral code copied!')}
+function renderReferList(){
+  const usr=u();const list=usr.refers||[];
+  referCount.textContent=list.length+' friends';
+  referList.innerHTML=list.length?list.map(r=>`
+    <div class="h-item">
+      <div class="row1"><div class="amount" style="font-size:15px">${r.name}</div><span class="pill success">+₹${r.reward}</span></div>
+      <div class="meta"><span>Phone: ${r.phone.substring(0,3)}****${r.phone.slice(-2)}</span></div>
+      <div class="time">${fmtTime(r.time)}</div>
+    </div>`).join(''):empty('fa-solid fa-user-group','No successful referrals yet. Share your code to start earning!');
+}
+
+/* ---------- ADMIN HELPERS (console) ----------
+  Change QR:     S.qrUrl='https://...'; save();
+  Change UPI:    S.upi='name@upi'; save();
+  Set tile live: S.tiles.find(t=>t.id==='clash').status='live'; save();
+  Edit match:    S.matches['clash'][0].prize=100; save();
+  Then reload the page.
+------------------------------------------------ */
+
+/* ---------- BOOT ---------- */
+document.getElementById('authLogoImg').src = LOGO_IMG;
+document.getElementById('authBrand').textContent = S.brand;
+if(S.session && S.users[S.session]) enterApp();
+</script>
+
+<!-- ============================================================ -->
+<!-- ================= ADMIN PANEL ============================== -->
+<!-- ============================================================ -->
+<style>
+.admin-root{position:fixed;inset:0;z-index:500;background:#0a0c11;color:#eef1f7;font-family:'Poppins',system-ui,sans-serif;display:none;overflow:hidden}
+.admin-root.show{display:flex;flex-direction:column}
+.adm-header{height:58px;flex:0 0 auto;background:linear-gradient(180deg,#12151f,#0f1219);border-bottom:1px solid #242a3a;display:flex;align-items:center;padding:0 14px;gap:10px;position:sticky;top:0;z-index:10}
+.adm-header .brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
+.adm-header .brand .lg{width:34px;height:34px;border-radius:10px;background:#dff2d8;display:grid;place-items:center;overflow:hidden}
+.adm-header .brand .lg img{width:100%;height:100%;object-fit:contain;padding:3px}
+.adm-header .brand .nm{font-family:'Orbitron';font-weight:900;letter-spacing:1.2px;font-size:14px}
+.adm-header .close{width:36px;height:36px;border-radius:10px;background:#161a24;border:1px solid #242a3a;display:grid;place-items:center;color:#eef1f7}
+.adm-header .menu-btn{width:36px;height:36px;border-radius:10px;background:#161a24;border:1px solid #242a3a;display:grid;place-items:center;color:#eef1f7}
+.adm-body{flex:1;display:flex;min-height:0;position:relative}
+.adm-side{width:250px;background:#0d1018;border-right:1px solid #242a3a;padding:14px 10px;overflow-y:auto;flex:0 0 auto}
+.adm-side .item{display:flex;align-items:center;gap:10px;padding:12px 12px;border-radius:10px;color:#c6ccdb;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:4px;border:1px solid transparent}
+.adm-side .item i{width:18px;text-align:center;color:#ffcf47}
+.adm-side .item:hover{background:#161a24}
+.adm-side .item.on{background:linear-gradient(135deg,#ff2e5b25,#ff7a1825);border-color:#ff2e5b40;color:#fff}
+.adm-main{flex:1;overflow-y:auto;padding:16px}
+.adm-h1{font-family:'Rajdhani';font-weight:700;font-size:22px;letter-spacing:.5px;margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.adm-h1 i{color:#ffcf47}
+.adm-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.adm-stat{background:linear-gradient(135deg,#161a24,#1c2130);border:1px solid #242a3a;border-radius:16px;padding:14px}
+.adm-stat .k{font-size:11px;color:#8a93a6;letter-spacing:.6px;font-weight:700;text-transform:uppercase}
+.adm-stat .v{font-family:'Orbitron';font-weight:900;font-size:22px;margin-top:6px;background:linear-gradient(135deg,#ffb000,#ffcf47);-webkit-background-clip:text;background-clip:text;color:transparent}
+.adm-stat i{color:#ffcf47;margin-right:6px}
+.adm-card{background:#161a24;border:1px solid #242a3a;border-radius:14px;padding:14px;margin-bottom:12px}
+.adm-card h3{margin:0 0 10px;font-family:'Rajdhani';font-size:16px;display:flex;align-items:center;gap:8px}
+.adm-card h3 i{color:#ffcf47}
+.adm-field{margin-bottom:10px}
+.adm-field label{display:block;font-size:11px;color:#8a93a6;margin-bottom:6px;letter-spacing:.4px;font-weight:600;text-transform:uppercase}
+.adm-inp{display:flex;align-items:center;background:#1c2130;border:1px solid #242a3a;border-radius:10px;padding:0 10px;height:42px;gap:8px}
+.adm-inp i{color:#8a93a6;width:16px;text-align:center}
+.adm-inp input,.adm-inp select,.adm-inp textarea{flex:1;background:none;border:0;color:#eef1f7;height:100%;outline:none;font-size:13px;font-family:inherit}
+.adm-btn{height:42px;padding:0 16px;border-radius:10px;background:linear-gradient(135deg,#ff2e5b,#ff7a18);color:#fff;font-weight:800;letter-spacing:.6px;font-family:'Rajdhani';font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;border:0}
+.adm-btn.sec{background:#1c2130;border:1px solid #242a3a;color:#eef1f7}
+.adm-btn.green{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.adm-btn.red{background:linear-gradient(135deg,#dc2626,#ef4444)}
+.adm-btn.sm{height:34px;padding:0 10px;font-size:12px}
+.adm-row{display:flex;gap:8px;flex-wrap:wrap}
+.adm-item{background:#1c2130;border:1px solid #242a3a;border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.adm-item .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.adm-item .top .name{font-weight:700;font-size:14px}
+.adm-item .meta{color:#8a93a6;font-size:12px;display:flex;flex-wrap:wrap;gap:8px}
+.adm-item .actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.pill-s{padding:3px 8px;border-radius:99px;font-size:10px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.pill-s.processing{background:#3b82f620;color:#93c5fd;border:1px solid #3b82f640}
+.pill-s.success{background:#22c55e20;color:#86efac;border:1px solid #22c55e40}
+.pill-s.failed{background:#ef444420;color:#fca5a5;border:1px solid #ef444440}
+.adm-empty{padding:30px 10px;text-align:center;color:#8a93a6}
+.adm-empty i{font-size:34px;display:block;margin-bottom:8px;color:#3a4258}
+.adm-search{margin-bottom:12px}
+.adm-code{font-family:'Orbitron';font-weight:900;letter-spacing:1px;background:#0d1018;padding:8px 10px;border-radius:8px;border:1px solid #242a3a;font-size:13px;color:#ffcf47;display:inline-block;word-break:break-all}
+.adm-qr-preview{width:150px;height:150px;background:#fff;border-radius:12px;padding:8px;margin:8px 0}
+.adm-qr-preview img{width:100%;height:100%;object-fit:contain}
+@media (max-width:720px){
+  .adm-side{position:absolute;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .25s;z-index:20;box-shadow:20px 0 40px -10px #000}
+  .adm-side.open{transform:translateX(0)}
+  .adm-scrim{position:absolute;inset:0;background:#000000a0;z-index:15;display:none}
+  .adm-scrim.open{display:block}
+  .adm-header .menu-btn{display:grid}
+}
+@media (min-width:721px){ .adm-header .menu-btn{display:none} }
+</style>
+
+<div class="admin-root" id="adminRoot">
+  <!-- Header -->
+  <div class="adm-header">
+    <button class="menu-btn" onclick="admToggleSide()"><i class="fa-solid fa-bars"></i></button>
+    <div class="brand">
+      <div class="lg"><img src="" id="admHeaderLogo"></div>
+      <div class="nm" id="admHeaderName">DURABLE ADMIN</div>
+    </div>
+    <button class="close" onclick="admClose()"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <!-- Login screen -->
+  <div id="admLoginScreen" style="flex:1;display:none;align-items:center;justify-content:center;padding:20px">
+    <div style="width:100%;max-width:360px">
+      <div class="adm-card">
+        <h3><i class="fa-solid fa-user-shield"></i> ADMIN LOGIN</h3>
+        <div class="adm-field"><label>Email</label><div class="adm-inp"><i class="fa-solid fa-envelope"></i><input id="admEmail" type="email" placeholder="admin email"></div></div>
+        <div class="adm-field"><label>Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="admPass" type="password" placeholder="password"></div></div>
+        <button class="adm-btn" style="width:100%" onclick="admDoLogin()"><i class="fa-solid fa-right-to-bracket"></i> ENTER</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel body -->
+  <div class="adm-body" id="admBody" style="display:none">
+    <div class="adm-scrim" onclick="admToggleSide()"></div>
+    <aside class="adm-side" id="admSide">
+      <div class="item on" data-sec="dashboard" onclick="admGo('dashboard')"><i class="fa-solid fa-gauge-high"></i> Dashboard</div>
+      <div class="item" data-sec="appname" onclick="admGo('appname')"><i class="fa-solid fa-signature"></i> Change App Name</div>
+      <div class="item" data-sec="support" onclick="admGo('support')"><i class="fa-solid fa-headset"></i> Change Support Link</div>
+      <div class="item" data-sec="qr" onclick="admGo('qr')"><i class="fa-solid fa-qrcode"></i> QR and UPI</div>
+      <div class="item" data-sec="addreq" onclick="admGo('addreq')"><i class="fa-solid fa-plus"></i> Add Funds Requests</div>
+      <div class="item" data-sec="witreq" onclick="admGo('witreq')"><i class="fa-solid fa-arrow-down"></i> Withdraw Requests</div>
+      <div class="item" data-sec="matches" onclick="admGo('matches')"><i class="fa-solid fa-gamepad"></i> Edit Match Details</div>
+      <div class="item" data-sec="matchreq" onclick="admGo('matchreq')"><i class="fa-solid fa-file-signature"></i> Match Requests</div>
+      <div class="item" data-sec="promo" onclick="admGo('promo')"><i class="fa-solid fa-bullhorn"></i> Add Promotion</div>
+      <div class="item" data-sec="users" onclick="admGo('users')"><i class="fa-solid fa-users"></i> Users</div>
+      <div class="item" data-sec="password" onclick="admGo('password')"><i class="fa-solid fa-key"></i> Change Admin Password</div>
+      <div class="item" data-sec="gift" onclick="admGo('gift')"><i class="fa-solid fa-gift"></i> Gift Codes</div>
+      <div class="item" onclick="admLogout()"><i class="fa-solid fa-right-from-bracket" style="color:#ff5c5c"></i> Logout</div>
+    </aside>
+    <main class="adm-main" id="admMain"></main>
+  </div>
+</div>
+
+<script>
+/* ============= ADMIN PANEL LOGIC ============= */
+function openAdminLogin(){
+  document.getElementById('admHeaderLogo').src = LOGO_IMG;
+  document.getElementById('admHeaderName').textContent = (S.brand||'DURABLE')+' ADMIN';
+  document.getElementById('adminRoot').classList.add('show');
+  if(S.adminSession){
+    document.getElementById('admLoginScreen').style.display='none';
+    document.getElementById('admBody').style.display='flex';
+    admGo('dashboard');
+  } else {
+    document.getElementById('admLoginScreen').style.display='flex';
+    document.getElementById('admBody').style.display='none';
+  }
+}
+function admClose(){ document.getElementById('adminRoot').classList.remove('show'); }
+function admDoLogin(){
+  const e=document.getElementById('admEmail').value.trim().toLowerCase();
+  const p=document.getElementById('admPass').value;
+  if(e!==S.admin.email.toLowerCase() || p!==S.admin.password){
+    toast('Invalid admin credentials'); return;
+  }
+  S.adminSession=true; save();
+  document.getElementById('admPass').value='';
+  document.getElementById('admLoginScreen').style.display='none';
+  document.getElementById('admBody').style.display='flex';
+  admGo('dashboard');
+}
+function admLogout(){ S.adminSession=false; save(); document.getElementById('admLoginScreen').style.display='flex'; document.getElementById('admBody').style.display='none'; }
+function admToggleSide(){ document.getElementById('admSide').classList.toggle('open'); document.querySelector('.adm-scrim').classList.toggle('open'); }
+
+function admGo(sec){
+  document.querySelectorAll('.adm-side .item').forEach(el=>el.classList.toggle('on', el.dataset.sec===sec));
+  const m=document.getElementById('admMain');
+  if(window.innerWidth<=720){document.getElementById('admSide').classList.remove('open');document.querySelector('.adm-scrim').classList.remove('open');}
+  const sections={dashboard:admRenderDashboard,appname:admRenderAppName,support:admRenderSupport,qr:admRenderQR,addreq:admRenderAddReq,witreq:admRenderWitReq,matches:admRenderMatches,matchreq:admRenderMatchReq,promo:admRenderPromo,users:admRenderUsers,password:admRenderPassword,gift:admRenderGift};
+  (sections[sec]||admRenderDashboard)(m);
+}
+
+/* Data aggregation */
+function admAllAddReq(){
+  const out=[];
+  for(const ph in S.users){
+    const u=S.users[ph];
+    (u.addHist||[]).forEach((r,i)=>out.push({phone:ph,user:u.name,idx:i,...r}));
+  }
+  return out.sort((a,b)=>b.time-a.time);
+}
+function admAllWitReq(){
+  const out=[];
+  for(const ph in S.users){
+    const u=S.users[ph];
+    (u.withHist||[]).forEach((r,i)=>out.push({phone:ph,user:u.name,idx:i,...r}));
+  }
+  return out.sort((a,b)=>b.time-a.time);
+}
+function admTotalSpent(){
+  let t=0;
+  for(const ph in S.users){
+    (S.users[ph].trans||[]).forEach(x=>{ if(x.type==='debit' && /Match entry/i.test(x.note||'')) t+=(x.amount||0); });
+  }
+  return t;
+}
+
+function admRenderDashboard(m){
+  const users=Object.keys(S.users).length;
+  const addTotal=admAllAddReq().reduce((a,b)=>a+(b.amount||0),0);
+  const witSuccess=admAllWitReq().filter(r=>r.status==='success').reduce((a,b)=>a+(b.amount||0),0);
+  const spent=admTotalSpent();
+  m.innerHTML=`
+    <h1 class="adm-h1"><i class="fa-solid fa-gauge-high"></i> Dashboard</h1>
+    <div class="adm-stats">
+      <div class="adm-stat"><div class="k"><i class="fa-solid fa-users"></i> Active Users</div><div class="v">${users}</div></div>
+      <div class="adm-stat"><div class="k"><i class="fa-solid fa-plus"></i> Total Add Funds Req</div><div class="v">₹${addTotal}</div></div>
+      <div class="adm-stat"><div class="k"><i class="fa-solid fa-arrow-down"></i> Total Withdraw (OK)</div><div class="v">₹${witSuccess}</div></div>
+      <div class="adm-stat"><div class="k"><i class="fa-solid fa-gamepad"></i> Total Spent</div><div class="v">₹${spent}</div></div>
+    </div>
+    <div class="adm-card"><h3><i class="fa-solid fa-circle-info"></i> Quick Info</h3>
+      <div style="color:#8a93a6;font-size:13px;line-height:1.7">
+        App name: <b style="color:#fff">${S.brand}</b><br>
+        Support link: <b style="color:#fff">${S.supportUrl}</b><br>
+        UPI: <b style="color:#fff">${S.upi}</b><br>
+        Admin email: <b style="color:#fff">${S.admin.email}</b>
+      </div>
+    </div>`;
+}
+
+function admRenderAppName(m){
+  m.innerHTML=`
+    <h1 class="adm-h1"><i class="fa-solid fa-signature"></i> Change App Name</h1>
+    <div class="adm-card">
+      <div style="color:#8a93a6;font-size:12px;margin-bottom:6px">Current app name</div>
+      <div class="adm-code" style="margin-bottom:14px">${S.brand}</div>
+      <div class="adm-field"><label>Enter new app name</label><div class="adm-inp"><i class="fa-solid fa-signature"></i><input id="admNewName" placeholder="New name" value="${S.brand}"></div></div>
+      <button class="adm-btn" onclick="admSaveName()"><i class="fa-solid fa-check"></i> Confirm</button>
+    </div>`;
+}
+function admSaveName(){
+  const v=document.getElementById('admNewName').value.trim();
+  if(!v) return toast('Enter a name');
+  S.brand=v; save();
+  document.getElementById('brandName').textContent=v;
+  document.getElementById('authBrand').textContent=v;
+  document.getElementById('admHeaderName').textContent=v+' ADMIN';
+  document.title=v;
+  toast('App name updated');
+  admGo('appname');
+}
+
+function admRenderSupport(m){
+  m.innerHTML=`
+    <h1 class="adm-h1"><i class="fa-solid fa-headset"></i> Change Support Link</h1>
+    <div class="adm-card">
+      <div style="color:#8a93a6;font-size:12px;margin-bottom:6px">Current support link</div>
+      ${S.supportUrl?`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="adm-code">${S.supportUrl}</div><button class="adm-btn red sm" onclick="admDelSupport()"><i class="fa-solid fa-trash"></i> Delete</button></div>`:`<div style="color:#8a93a6;font-size:13px">No support link set.</div>`}
+      <div style="margin-top:14px">
+        <button class="adm-btn sm" onclick="document.getElementById('admSupNew').style.display='block'"><i class="fa-solid fa-plus"></i> Add / Update Link</button>
+      </div>
+      <div id="admSupNew" style="display:${S.supportUrl?'none':'block'};margin-top:12px">
+        <div class="adm-field"><label>Enter link</label><div class="adm-inp"><i class="fa-solid fa-link"></i><input id="admSupInput" placeholder="https://..."></div></div>
+        <button class="adm-btn" onclick="admSaveSupport()"><i class="fa-solid fa-check"></i> Confirm</button>
+      </div>
+    </div>`;
+}
+function admDelSupport(){ S.supportUrl=''; save(); toast('Support link deleted'); admGo('support'); }
+function admSaveSupport(){ const v=document.getElementById('admSupInput').value.trim(); if(!v) return toast('Enter link'); S.supportUrl=v; save(); toast('Support link updated'); admGo('support'); }
+
+function admRenderQR(m){
+  m.innerHTML=`
+    <h1 class="adm-h1"><i class="fa-solid fa-qrcode"></i> QR and UPI</h1>
+    <div class="adm-card">
+      <h3><i class="fa-solid fa-image"></i> Current QR</h3>
+      <div class="adm-qr-preview"><img src="${S.qrUrl}"></div>
+      <div class="adm-field"><label>Upload new QR</label>
+        <div class="adm-inp"><i class="fa-solid fa-upload"></i><input id="admQrFile" type="file" accept="image/*"></div>
+      </div>
+    </div>
+    <div class="adm-card">
+      <h3><i class="fa-solid fa-at"></i> Change UPI</h3>
+      <div style="color:#8a93a6;font-size:12px;margin-bottom:6px">Current UPI: <b style="color:#fff">${S.upi}</b></div>
+      <div class="adm-field"><label>New UPI</label><div class="adm-inp"><i class="fa-solid fa-at"></i><input id="admUpiInp" value="${S.upi}" placeholder="name@upi"></div></div>
+    </div>
+    <button class="adm-btn" onclick="admSaveQR()"><i class="fa-solid fa-check"></i> Confirm</button>`;
+}
+function admSaveQR(){
+  const upi=document.getElementById('admUpiInp').value.trim();
+  const file=document.getElementById('admQrFile').files[0];
+  const done=()=>{ save(); document.getElementById('qrImg').src=S.qrUrl; document.getElementById('upiText').textContent='UPI: '+S.upi; toast('QR / UPI updated'); admGo('qr'); };
+  if(upi) S.upi=upi;
+  if(file){ const r=new FileReader(); r.onload=e=>{ S.qrUrl=e.target.result; done(); }; r.readAsDataURL(file); }
+  else done();
+}
+
+function admRenderAddReq(m){
+  const list=admAllAddReq();
+  m.innerHTML=`<h1 class="adm-h1"><i class="fa-solid fa-plus"></i> Add Funds Requests</h1>
+    <div id="admAddList">${list.length?list.map(r=>admAddItem(r)).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No add funds requests yet</div>`}</div>`;
+}
+function admAddItem(r){
+  return `<div class="adm-item" style="min-height:80px">
+    <div class="top"><div class="name">${r.user} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${r.phone}</span></div><span class="pill-s ${r.status}">${r.status}</span></div>
+    <div class="meta"><span>UTR: <b style="color:#fff">${r.utr}</b></span><span>Amount: <b style="color:#ffcf47">₹${r.amount}</b></span><span>Sender: ${r.sender||'-'}</span><span>${fmtTime(r.time)}</span></div>
+    ${r.status==='processing'?`<div class="actions"><button class="adm-btn green sm" onclick="admApproveAdd('${r.phone}',${r.idx})"><i class="fa-solid fa-check"></i> Approve</button><button class="adm-btn red sm" onclick="admRejectAdd('${r.phone}',${r.idx})"><i class="fa-solid fa-xmark"></i> Reject</button></div>`:''}
+  </div>`;
+}
+function admApproveAdd(ph,idx){
+  const u=S.users[ph]; const r=u.addHist[idx];
+  if(r.status!=='processing') return;
+  r.status='success'; u.balance+=r.amount;
+  u.trans.push({type:'credit',amount:r.amount,note:`Add funds approved (UTR ${r.utr})`,time:Date.now()});
+  // Referral reward: only once per referred user, only when deposit >= ₹50
+  if(u.referredBy && !u.referRewarded && r.amount>=50){
+    for(const k in S.users){
+      if(S.users[k].refer===u.referredBy){
+        const ref=S.users[k];
+        ref.balance+=10;
+        ref.trans.push({type:'credit',amount:10,note:`Referral reward (${u.name})`,time:Date.now()});
+        ref.refers=ref.refers||[]; ref.refers.push({name:u.name,phone:u.phone,reward:10,time:Date.now()});
+        u.referRewarded=true; fbPushUser(ref);
+        break;
+      }
+    }
+  }
+  fbPushUser(u); save(); toast('Approved'); admGo('addreq'); if(u===S.users[S.session]) refreshAll();
+}
+function admRejectAdd(ph,idx){
+  const u=S.users[ph]; const r=u.addHist[idx];
+  if(r.status!=='processing') return;
+  r.status='failed';
+  u.trans.push({type:'debit',amount:0,note:`Add funds rejected (UTR ${r.utr})`,time:Date.now()});
+  fbPushUser(u); save(); toast('Rejected'); admGo('addreq');
+}
+
+function admRenderWitReq(m){
+  const list=admAllWitReq();
+  m.innerHTML=`<h1 class="adm-h1"><i class="fa-solid fa-arrow-down"></i> Withdraw Requests</h1>
+    ${list.length?list.map(r=>admWitItem(r)).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No withdraw requests yet</div>`}`;
+}
+function admWitItem(r){
+  return `<div class="adm-item">
+    <div class="top"><div class="name">${r.user} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${r.phone}</span></div><span class="pill-s ${r.status}">${r.status}</span></div>
+    <div class="meta"><span>Amount: <b style="color:#ffcf47">₹${r.amount}</b></span><span>UPI: <b style="color:#fff">${r.upi}</b></span><span>To: ${r.recv||'-'}</span><span>${fmtTime(r.time)}</span></div>
+    ${r.status==='processing'?`<div class="actions"><button class="adm-btn green sm" onclick="admApproveWit('${r.phone}',${r.idx})"><i class="fa-solid fa-check"></i> Approve</button><button class="adm-btn red sm" onclick="admRejectWit('${r.phone}',${r.idx})"><i class="fa-solid fa-xmark"></i> Reject</button></div>`:''}
+  </div>`;
+}
+function admApproveWit(ph,idx){
+  const u=S.users[ph]; const r=u.withHist[idx];
+  if(r.status!=='processing') return;
+  r.status='success';
+  u.trans.push({type:'debit',amount:0,note:`Withdraw approved to ${r.upi}`,time:Date.now()});
+  save(); toast('Approved'); admGo('witreq');
+}
+function admRejectWit(ph,idx){
+  const u=S.users[ph]; const r=u.withHist[idx];
+  if(r.status!=='processing') return;
+  r.status='failed'; u.balance+=r.amount;
+  u.trans.push({type:'credit',amount:r.amount,note:`Withdraw refund (${r.upi})`,time:Date.now()});
+  save(); toast('Rejected & refunded'); admGo('witreq'); if(u===S.users[S.session]) refreshAll();
+}
+
+function admRenderMatches(m){
+  const all=[];
+  MODES.forEach(mo=>{ (S.matches[mo.id]||[]).forEach((mt,i)=>all.push({mode:mo,idx:i,mt})); });
+  m.innerHTML=`<h1 class="adm-h1"><i class="fa-solid fa-gamepad"></i> Edit Match Details</h1>
+    <div class="adm-search"><div class="adm-inp"><i class="fa-solid fa-magnifying-glass"></i><input id="admMSearch" placeholder="Search by Match ID..." oninput="admFilterMatches()"></div></div>
+    <div id="admMList">${all.map(x=>admMatchRow(x)).join('')}</div>`;
+}
+function admMatchRow(x){
+  return `<div class="adm-item am-row" data-mid="${x.mt.matchId}">
+    <div class="top"><div class="name">${x.mode.name} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${x.mode.map}</span></div><span class="pill-s ${x.mt.status==='live'?'success':'processing'}">${x.mt.status}</span></div>
+    <div class="meta"><span>ID: <b style="color:#ffcf47">#${x.mt.matchId}</b></span><span>Prize ₹${x.mt.prize}</span><span>Kill ₹${x.mt.kill}</span><span>Entry ₹${x.mt.entry}</span><span>${x.mt.time}</span></div>
+    <div class="actions"><button class="adm-btn sm" onclick="admEditMatch('${x.mode.id}',${x.idx})"><i class="fa-solid fa-pen"></i> Edit</button><button class="adm-btn red sm" onclick="admDelMatch('${x.mode.id}',${x.idx})"><i class="fa-solid fa-trash"></i> Delete</button></div>
+  </div>`;
+}
+function admFilterMatches(){
+  const q=document.getElementById('admMSearch').value.trim().toLowerCase();
+  document.querySelectorAll('.am-row').forEach(el=>{ el.style.display = el.dataset.mid.toLowerCase().includes(q)?'':'none'; });
+}
+function admEditMatch(modeId,idx){
+  const mode=MODES.find(x=>x.id===modeId); const mt=S.matches[modeId][idx];
+  const m=document.getElementById('admMain');
+  m.innerHTML=`<h1 class="adm-h1"><i class="fa-solid fa-pen"></i> Edit Match</h1>
+    <div class="adm-card">
+      <div style="color:#8a93a6;font-size:12px">Match ID</div>
+      <div class="adm-code" style="margin-bottom:12px">#${mt.matchId}</div>
+      <div class="adm-field"><label>Time</label><div class="adm-inp"><i class="fa-solid fa-clock"></i><input id="emTime" value="${mt.time}"></div></div>
+      <div class="adm-field"><label>Ban Guns</label><div class="adm-inp"><i class="fa-solid fa-ban"></i><input id="emBG" value="${mt.banGuns}"></div></div>
+      <div class="adm-field"><label>Ban Characters</label><div class="adm-inp"><i class="fa-solid fa-user-slash"></i><input id="emBC" value="${mt.banChars}"></div></div>
+      <div class="adm-field"><label>Prize Pool (₹)</label><div class="adm-inp"><i class="fa-solid fa-trophy"></i><input id="emPrize" type="number" value="${mt.prize}"></div></div>
+      <div class="adm-field"><label>Entry Fee (₹)</label><div class="adm-inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="emEntry" type="number" value="${mt.entry}"></div></div>
+      <div class="adm-field"><label>Per Kill (₹)</label><div class="adm-inp"><i class="fa-solid fa-crosshairs"></i><input id="emKill" type="number" value="${mt.kill}"></div></div>
+      <div class="adm-row"><button class="adm-btn" onclick="admSaveMatch('${modeId}',${idx})"><i class="fa-solid fa-check"></i> Save</button><button class="adm-btn sec" onclick="admGo('matches')"><i class="fa-solid fa-angle-left"></i> Back</button></div>
+    </div>`;
+}
+function admSaveMatch(modeId,idx){
+  const mt=S.matches[modeId][idx];
+  mt.time=document.getElementById('emTime').value.trim()||mt.time;
+  mt.banGuns=document.getElementById('emBG').value.trim();
+  mt.banChars=document.getElementById('emBC').value.trim();
+  mt.prize=+document.getElementById('emPrize').value||0;
+  mt.entry=+document.getElementById('emEntry').value||0;
+  mt.kill=+document.getElementById('emKill').value||0;
+  save(); toast('Match updated'); admGo('matches');
+  if(currentMode && currentMode.id===modeId) openMode(modeId);
+}
+
+function admRenderUsers(m){
+  const users=Object.values(S.users);
+  m.innerHTML=`<h1 class="adm-h1"><i class="fa-solid fa-users"></i> Users (${users.length})</h1>
+    <div class="adm-search"><div class="adm-inp"><i class="fa-solid fa-magnifying-glass"></i><input id="admUSearch" placeholder="Search by UID..." oninput="admFilterUsers()"></div></div>
+    <div id="admUList">${users.length?users.map(u=>admUserRow(u)).join(''):`<div class="adm-empty"><i class="fa-solid fa-user-slash"></i>No users yet</div>`}</div>`;
+}
+function admUserRow(u){
+  return `<div class="adm-item au-row" data-uid="${u.uid}" style="min-height:50px">
+    <div class="top"><div class="name">${u.name} ${u.blocked?'<span class="pill-s failed">BLOCKED</span>':''}</div><div style="color:#ffcf47;font-family:'Orbitron';font-weight:700">₹${u.balance}</div></div>
+    <div class="meta"><span>UID: <b style="color:#ffcf47">${u.uid}</b></span><span>Phone: <b style="color:#fff">${u.phone}</b></span><span>Pass: <b style="color:#fff">••••••••</b></span></div>
+    <div class="actions">
+      <button class="adm-btn green sm" onclick="admUserBal('${u.phone}',1)"><i class="fa-solid fa-plus"></i></button>
+      <button class="adm-btn red sm" onclick="admUserBal('${u.phone}',-1)"><i class="fa-solid fa-minus"></i></button>
+      <button class="adm-btn sec sm" onclick="admToggleBlock('${u.phone}')"><i class="fa-solid fa-${u.blocked?'unlock':'ban'}"></i> ${u.blocked?'Unblock':'Block'}</button>
+    </div>
+  </div>`;
+}
+function admFilterUsers(){
+  const q=document.getElementById('admUSearch').value.trim().toLowerCase();
+  document.querySelectorAll('.au-row').forEach(el=>{ el.style.display = el.dataset.uid.toLowerCase().includes(q)?'':'none'; });
+}
+function admUserBal(ph,sign){
+  const v=prompt('Enter amount to '+(sign>0?'add':'subtract')+':'); const n=parseInt(v||'0');
+  if(!n||n<=0) return;
+  const u=S.users[ph];
+  if(sign>0){ u.balance+=n; u.trans.push({type:'credit',amount:n,note:'Admin credit',time:Date.now()}); }
+  else { u.balance=Math.max(0,u.balance-n); u.trans.push({type:'debit',amount:n,note:'Admin debit',time:Date.now()}); }
+  save(); toast('Balance updated'); admGo('users'); if(u===S.users[S.session]) refreshAll();
+}
+function admToggleBlock(ph){ const u=S.users[ph]; u.blocked=!u.blocked; save(); toast(u.blocked?'User blocked':'User unblocked'); admGo('users'); }
+
+function admRenderPassword(m){
+  m.innerHTML=`<h1 class="adm-h1"><i class="fa-solid fa-key"></i> Change Admin Password</h1>
+    <div class="adm-card">
+      <div class="adm-field"><label>Old Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="apOld" type="password"></div></div>
+      <div class="adm-field"><label>New Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="apNew" type="password"></div></div>
+      <div class="adm-field"><label>Confirm New Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="apNew2" type="password"></div></div>
+      <button class="adm-btn" onclick="admChangePass()"><i class="fa-solid fa-check"></i> Update</button>
+    </div>`;
+}
+function admChangePass(){
+  const o=document.getElementById('apOld').value, n=document.getElementById('apNew').value, n2=document.getElementById('apNew2').value;
+  if(o!==S.admin.password) return toast('Old password incorrect');
+  if(n.length<4) return toast('Password too short');
+  if(n!==n2) return toast('Passwords do not match');
+  S.admin.password=n; save(); toast('Password updated');
+  admGo('password');
+}
+
+function admRenderGift(m){
+  const codes=Object.entries(S.giftCodes||{});
+  m.innerHTML=`<h1 class="adm-h1"><i class="fa-solid fa-gift"></i> Gift Codes</h1>
+    <div class="adm-card">
+      <h3><i class="fa-solid fa-plus"></i> Generate Code</h3>
+      <div class="adm-field"><label>Enter User Limit</label><div class="adm-inp"><i class="fa-solid fa-users"></i><input id="gcLimit" type="number" min="1" placeholder="e.g. 5"></div></div>
+      <div class="adm-field"><label>Amount (₹)</label><div class="adm-inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="gcAmt" type="number" min="1" placeholder="e.g. 50"></div></div>
+      <button class="adm-btn" onclick="admGenGift()"><i class="fa-solid fa-bolt"></i> Generate</button>
+    </div>
+    <div class="adm-card">
+      <h3><i class="fa-solid fa-list"></i> Active Codes</h3>
+      ${codes.length?codes.map(([code,g])=>{
+        const exp=g.expires? new Date(g.expires).toLocaleString():'—';
+        const active=!g.expires||Date.now()<g.expires;
+        return `<div class="adm-item"><div class="top"><div class="adm-code">${code}</div><span class="pill-s ${active?'success':'failed'}">${active?'active':'expired'}</span></div>
+          <div class="meta"><span>₹${g.amount}</span><span>Limit: ${g.limit||'∞'}</span><span>Used: ${(g.used||[]).length}</span><span>Expires: ${exp}</span></div>
+          <div class="actions"><button class="adm-btn red sm" onclick="admDelGift('${code}')"><i class="fa-solid fa-trash"></i></button></div>
+        </div>`;
+      }).join(''):`<div class="adm-empty"><i class="fa-solid fa-ticket"></i>No codes yet</div>`}
+    </div>`;
+}
+function admGenGift(){
+  const limit=parseInt(document.getElementById('gcLimit').value||'0');
+  const amt=parseInt(document.getElementById('gcAmt').value||'0');
+  if(limit<1||amt<1) return toast('Enter valid limit and amount');
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code=''; for(let i=0;i<25;i++) code+=chars[Math.floor(Math.random()*chars.length)];
+  S.giftCodes[code]={amount:amt,limit,used:[],expires:Date.now()+12*3600*1000};
+  save(); toast('Code generated (valid 12h)'); admGo('gift');
+}
+function admDelGift(code){ delete S.giftCodes[code]; save(); admGo('gift'); }
+
+/* Patch claimGift to respect limit + expiry */
+const _origClaim=claimGift;
+claimGift=function(){
+  const code=giftCode.value.trim().toUpperCase();const usr=u();
+  if(!code) return toast('Enter a code');
+  const g=S.giftCodes[code];
+  if(!g) return toast('Invalid code');
+  if(g.expires && Date.now()>g.expires) return toast('Code expired');
+  if(g.limit && (g.used||[]).length>=g.limit) return toast('Code limit reached');
+  if(g.used.includes(usr.phone)) return toast('Code already claimed');
+  g.used.push(usr.phone); usr.balance+=g.amount;
+  usr.trans.push({type:'credit',amount:g.amount,note:`Gift code ${code}`,time:Date.now()});
+  save(); refreshAll(); giftCode.value=''; toast(`Success! ₹${g.amount} credited`);
+};
+
+/* Block signed-in blocked users */
+const _origLogin=doLogin;
+doLogin=async function(){
+  const phone=lPhone.value.trim();
+  const usr=S.users[phone];
+  if(usr && usr.blocked) return toast('Account blocked. Contact support.');
+  return _origLogin();
+};
+
+/* Secure admin login (hash-based). Migrates seed plaintext on first successful login. */
+const _origAdmDo=admDoLogin;
+admDoLogin=async function(){
+  const e=document.getElementById('admEmail').value.trim().toLowerCase();
+  const p=document.getElementById('admPass').value;
+  if(e!==S.admin.email.toLowerCase()) return toast('Invalid admin credentials');
+  const stored=S.admin.password||'';
+  const ph=await hashPass(p);
+  const ok = stored.startsWith('sha256$') ? (stored===ph) : (stored===p);
+  if(!ok) return toast('Invalid admin credentials');
+  if(!stored.startsWith('sha256$')){ S.admin.password=ph; }
+  S.adminSession=true; save();
+  document.getElementById('admPass').value='';
+  document.getElementById('admLoginScreen').style.display='none';
+  document.getElementById('admBody').style.display='flex';
+  admGo('dashboard');
+};
+admChangePass=async function(){
+  const o=document.getElementById('apOld').value, n=document.getElementById('apNew').value, n2=document.getElementById('apNew2').value;
+  const oh=await hashPass(o); const stored=S.admin.password||'';
+  const okOld = stored.startsWith('sha256$') ? (stored===oh) : (stored===o);
+  if(!okOld) return toast('Old password incorrect');
+  if(n.length<4) return toast('Password too short');
+  if(n!==n2) return toast('Passwords do not match');
+  S.admin.password=await hashPass(n); save(); toast('Password updated'); admGo('password');
+};
+
+/* Delete match */
+function admDelMatch(modeId,idx){
+  if(!confirm('Delete this match permanently?')) return;
+  S.matches[modeId].splice(idx,1);
+  save(); toast('Match deleted'); admGo('matches');
+  if(currentMode && currentMode.id===modeId) openMode(modeId);
+}
+
+/* Match Requests panel */
+function admRenderMatchReq(m){
+  const list=S.matchReq||[];
+  m.innerHTML=`<h1 class="adm-h1"><i class="fa-solid fa-file-signature"></i> Match Requests</h1>
+    ${list.length?list.map(r=>`<div class="adm-item">
+      <div class="top"><div class="name">#${r.matchId} · ${r.game}</div><span class="pill-s success">JOINED</span></div>
+      <div class="meta"><span>UID: <b style="color:#ffcf47">${r.uid}</b></span><span>WA: <b style="color:#fff">${r.wa}</b></span><span>ID Name: ${r.idName}</span><span>Level ${r.level}</span></div>
+      <div class="meta"><span>Registered: <b style="color:#fff">${r.registeredName||'-'}</b></span><span>Phone: ${r.registeredPhone||'-'}</span><span>${fmtTime(r.time)}</span></div>
+    </div>`).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No match requests yet</div>`}`;
+}
+
+/* Promotions panel */
+function admRenderPromo(m){
+  const list=S.promos||[];
+  m.innerHTML=`<h1 class="adm-h1"><i class="fa-solid fa-bullhorn"></i> Add Promotion</h1>
+    <div class="adm-card">
+      <div class="adm-field"><label>Enter Title</label><div class="adm-inp"><i class="fa-solid fa-heading"></i><input id="prTitle" placeholder="Title"></div></div>
+      <div class="adm-field"><label>Description (optional)</label><div class="adm-inp"><i class="fa-solid fa-align-left"></i><input id="prDesc" placeholder="Short description"></div></div>
+      <div class="adm-field"><label>Details</label><div class="adm-inp"><i class="fa-solid fa-circle-info"></i><input id="prDet" placeholder="Details"></div></div>
+      <div class="adm-field"><label>Link</label><div class="adm-inp"><i class="fa-solid fa-link"></i><input id="prLink" placeholder="https://..."></div></div>
+      <div class="adm-field"><label>Amount (₹) user can claim</label><div class="adm-inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="prAmt" type="number" min="0" value="0"></div></div>
+      <button class="adm-btn" onclick="admAddPromo()"><i class="fa-solid fa-plus"></i> Add</button>
+    </div>
+    <div class="adm-card"><h3><i class="fa-solid fa-list"></i> Active Promotions</h3>
+      ${list.length?list.map((p,i)=>`<div class="adm-item">
+        <div class="top"><div class="name">${p.title}</div><span style="color:#ffcf47;font-family:'Orbitron';font-weight:700">₹${p.amount||0}</span></div>
+        <div class="meta"><span>${p.desc||''}</span></div>
+        <div class="meta"><span>${p.details||''}</span><span>${p.link?`<a href="${p.link}" target="_blank" style="color:#ffcf47">Link</a>`:''}</span></div>
+        <div class="actions"><button class="adm-btn red sm" onclick="admDelPromo(${i})"><i class="fa-solid fa-trash"></i> Delete</button></div>
+      </div>`).join(''):`<div class="adm-empty"><i class="fa-solid fa-bullhorn"></i>No promotions yet</div>`}
+    </div>`;
+}
+function admAddPromo(){
+  const p={title:prTitle.value.trim(),desc:prDesc.value.trim(),details:prDet.value.trim(),link:prLink.value.trim(),amount:parseInt(prAmt.value||'0'),time:Date.now()};
+  if(!p.title) return toast('Enter title');
+  S.promos=S.promos||[]; S.promos.unshift(p); save();
+  _fbSafe(db=>db.ref('promos').set(S.promos));
+  toast('Promotion added'); admGo('promo');
+}
+function admDelPromo(i){ S.promos.splice(i,1); save(); _fbSafe(db=>db.ref('promos').set(S.promos)); admGo('promo'); }
+
+/* Render promo list in app */
+function renderPromos(){
+  const list=S.promos||[];
+  document.getElementById('promoList').innerHTML=list.length?list.map(p=>`
+    <div class="h-item">
+      <div class="row1"><div class="amount" style="font-size:15px">${p.title}</div>${p.amount?`<span class="pill success">₹${p.amount}</span>`:''}</div>
+      ${p.desc?`<div class="meta"><span>${p.desc}</span></div>`:''}
+      ${p.details?`<div class="meta"><span>${p.details}</span></div>`:''}
+      ${p.link?`<div class="time"><a href="${p.link}" target="_blank" style="color:var(--gold)"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open link</a></div>`:''}
+    </div>`).join(''):empty('fa-solid fa-bullhorn','No promotions yet. Check back later!');
+}
+
+/* Sync promos from Firebase */
+_fbSafe(db=>{
+  db.ref('promos').on('value',snap=>{ const v=snap.val(); if(Array.isArray(v)){ S.promos=v; save(); if(document.getElementById('subPromo')?.classList.contains('active')) renderPromos(); } });
+});
+</script>
 
 </body>
 </html>
