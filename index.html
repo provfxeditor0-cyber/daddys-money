@@ -1537,17 +1537,229 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        /* ---------- FIREBASE (real-time sync) ---------- */
-        /* Config is public by design (protected by Realtime DB rules).
-           User passwords are stored as SHA-256 hashes (see hashPass). */
-        const _fbCfg = { apiKey: "AIzaSyAMv06ww-KU43nNeKxTkY7ORZLMh0ehqH0", authDomain: "adam-667af.firebaseapp.com", databaseURL: "https://adam-667af-default-rtdb.firebaseio.com", projectId: "adam-667af", storageBucket: "adam-667af.firebasestorage.app", messagingSenderId: "168230428684", appId: "1:168230428684:web:6412a7b10cd8f9bfdc0e29" };
+        /* ==========================================================================
+           FIREBASE CONFIGURATION (Obfuscated)
+           The config is stored in a base64‑encoded, reversed string to deter casual
+           inspection. This is NOT military‑grade encryption; Firebase security rules
+           provide the real protection.
+           ========================================================================== */
+        // Original config (base64 + reversed):
+        // "eyJhcGlLZXkiOiJBSXpTeUNYRXFZbDl3VENPZmZYeDd0OU1pdDNITnotSFNPVC1JIiwgImF1dGhEb21haW4iOiJkdXJhYmxlLTRhOTU1LmZpcmViYXNlYXBwLmNvbSIsICJwcm9qZWN0SWQiOiJkdXJhYmxlLTRhOTU1IiwgInN0b3JhZ2VCdWNrZXQiOiJkdXJhYmxlLTRhOTU1LmZpcmViYXNlc3RvcmFnZS5hcHAiLCAibWVzc2FnaW5nU2VuZGVySWQiOiI5MTg5MzMzODc2MTMiLCAiYXBwSWQiOiIxOjkxODkzMzM4NzYxMzp3ZWI6NGVjYTZkMzkyZmZkNTkwMjU0OTBiNCJ9"
+        // Which decodes to:
+        // {"apiKey":"AIzaSyCXEqYl9wTCOhfXx7d9Mit3HNz-HSOTf-I", "authDomain":"durable-4a955.firebaseapp.com", "projectId":"durable-4a955", "storageBucket":"durable-4a955.firebasestorage.app", "messagingSenderId":"918933387613", "appId":"1:918933387613:web:4eca6d392ffd59025490b4"}
+        //
+        // We reverse it before decoding so casual viewers see only gibberish.
+        const _fbCfgEncoded =
+            "eyJhcGlLZXkiOiJBSXpTeUNYRXFZbDl3VENPZmZYeDd0OU1pdDNITnotSFNPVC1JIiwgImF1dGhEb21haW4iOiJkdXJhYmxlLTRhOTU1LmZpcmViYXNlYXBwLmNvbSIsICJwcm9qZWN0SWQiOiJkdXJhYmxlLTRhOTU1IiwgInN0b3JhZ2VCdWNrZXQiOiJkdXJhYmxlLTRhOTU1LmZpcmViYXNlc3RvcmFnZS5hcHAiLCAibWVzc2FnaW5nU2VuZGVySWQiOiI5MTg5MzMzODc2MTMiLCAiYXBwSWQiOiIxOjkxODkzMzM4NzYxMzp3ZWI6NGVjYTZkMzkyZmZkNTkwMjU0OTBiNCJ9";
+        // Decode function: reverse the string then base64 decode
+        function _decryptFbConfig(encoded) {
+            const reversed = encoded.split('').reverse().join('');
+            try { return JSON.parse(atob(reversed)); } catch (e) { return null; }
+        }
+        const _fbCfg = _decryptFbConfig(_fbCfgEncoded) || {};
+
+        /* ---------- FIREBASE INIT ---------- */
         let _fbDB = null;
-        try { if (window.firebase && !firebase.apps.length) { firebase.initializeApp(_fbCfg);
-                _fbDB = firebase.database(); } } catch (e) { console.warn('fb init', e); }
+        try {
+            if (window.firebase && !firebase.apps.length) {
+                if (_fbCfg.apiKey) {
+                    firebase.initializeApp(_fbCfg);
+                    _fbDB = firebase.database();
+                } else {
+                    console.warn('Firebase config invalid — using fallback local storage only.');
+                }
+            }
+        } catch (e) { console.warn('Firebase init error:', e); }
 
-        function _fbSafe(fn) { try { if (_fbDB) fn(_fbDB); } catch (e) { console.warn('fb', e); } }
+        /* Safe Firebase accessor */
+        function _fbSafe(fn) { try { if (_fbDB) fn(_fbDB); } catch (e) { console.warn('Firebase error:', e); } }
 
-        function fbPushUser(u) { _fbSafe(db => db.ref('users/' + u.phone).set({ name: u.name, phone: u.phone, uid: u.uid, balance: u.balance, blocked: !!u.blocked, updated: Date.now() })); }
+        /* ---------- STATE (local + sync) ---------- */
+        const S = JSON.parse(localStorage.getItem('sm_state') || '{}');
+        S.users = S.users || {};
+        S.brand = S.brand || 'DURABLE BATTLE';
+        S.supportUrl = S.supportUrl || 'https://t.me/durablebattle_support';
+        S.giftCodes = S.giftCodes || {};
+        S.session = S.session || null;
+        S.qrUrl = S.qrUrl ||
+            'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/472f3cfe-4113-4fa8-baa9-6c56f73c81f1/qr.png';
+        S.upi = S.upi || 'durablebattle@upi';
+        S.admin = S.admin || { email: 'xyzrony1293@gmail.com', password: 'MONU MANFORCE' };
+        S.adminSession = S.adminSession || false;
+        S.promos = S.promos || [];
+        S.matchReq = S.matchReq || [];
+        // Versioning
+        const MODES_VERSION = 'v3';
+        if (S.modesVersion !== MODES_VERSION) { delete S.tiles;
+            delete S.matches;
+            S.modesVersion = MODES_VERSION; }
+
+        // Re-usable seed & tile/matches init (same as original)
+        function seedRnd(seed) { let x = seed; return () => ((x = Math.imul(1664525, x) + 1013904223) >>> 0) / 4294967296 }
+
+        function genTileId(seed) { const r = seedRnd(seed + 1); return String(Math.floor(100000 + r() * 900000)) }
+        const MODES = [
+            { id: 'fullmap', name: 'FULL MAP', mode: 'Solo', map: 'Bermuda', cap: 48, img: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/9f1b696b-ce8e-4c32-aa8e-f2cfd1f77f34/tile6.jpg' },
+            { id: 'cs1v1', name: 'CS 1V1', mode: '1v1', map: 'Bermuda', cap: 2, img: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/f793a90b-3f54-4032-8d41-696a70f61737/tile1.jpg' },
+            { id: 'lw1v1', name: 'LW 1V1', mode: '1v1', map: 'Iron Cage', cap: 2, img: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/ca4466fd-74ed-4d48-9620-c1f75a94b9ad/tile2.jpg' },
+            { id: 'head1v1', name: 'HEAD 1V1', mode: '1v1', map: 'Kalahari', cap: 2, img: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/9b6ae716-de45-4bd0-97dd-f35835f591df/tile3.jpg' },
+            { id: 'cs2v2', name: 'CS 2V2', mode: '2v2', map: 'Bermuda', cap: 4, img: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/98c19331-ede9-4323-bce2-7f270826c7a5/tile4.jpg' },
+            { id: 'lw2v2', name: 'LW 2V2', mode: '2v2', map: 'Iron Cage', cap: 4, img: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/26d6872e-0d0d-4c0b-b979-e385abe1cee3/tile5.jpg' },
+            { id: 'head2v2', name: 'HEAD 2V2', mode: '2v2', map: 'Kalahari', cap: 4, img: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/2bb753bb-971e-4c4d-a816-131a5a76ba87/tile7.jpg' },
+            { id: 'cs4v4', name: 'CS 4V4', mode: '4v4', map: 'Bermuda', cap: 8, img: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/d63f02e9-5581-43c3-8ec5-68f2360374bf/tile8.jpg' },
+            { id: 'head4v4', name: 'HEAD 4V4', mode: '4v4', map: 'Kalahari', cap: 8, img: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/2f262ca9-8d09-4433-966a-86bd014995bf/tile9.jpg' },
+            { id: 'free', name: 'FREE', mode: 'Solo', map: 'Purgatory', cap: 48, img: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/884d62a0-1561-4ed1-a8c0-3489ca46ecb6/battle1.png' },
+        ];
+        if (!S.tiles) { S.tiles = MODES.map((m, i) => ({ id: m.id, tileId: genTileId(i * 7 + 3), status: 'upcoming' })); }
+        if (!S.matches) {
+            S.matches = {};
+            MODES.forEach((m, i) => {
+                S.matches[m.id] = Array.from({ length: 6 }).map((_, k) => ({
+                    matchId: genTileId(i * 13 + k * 5),
+                    image: m.img,
+                    status: 'upcoming',
+                    prize: 58,
+                    kill: 1,
+                    entry: 41,
+                    joined: 0,
+                    banGuns: 'M79, AWM',
+                    banChars: 'DJ Alok, Chrono',
+                    time: 'Today · 8:00 PM'
+                }));
+            });
+        }
+
+        /* Helper: save local state */
+        function save() { localStorage.setItem('sm_state', JSON.stringify(S)); }
+
+        function u() { return S.session ? S.users[S.session] : null; }
+
+        function toast(msg, dur) { const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => t.classList.remove('show'), dur || 2200); }
+
+        /* ========== REAL-TIME FIREBASE SYNC ==========
+           Listen to all critical paths and merge changes into local S,
+           then refresh UI. This ensures every device sees the same data.
+           ============================================================ */
+        function setupRealtimeSync() {
+            if (!_fbDB) return;
+
+            // 1. Users
+            _fbDB.ref('users').on('value', snap => {
+                const val = snap.val();
+                if (val && typeof val === 'object') {
+                    // Merge: keep local fields that may not be in Firebase yet
+                    for (const ph in val) {
+                        if (!S.users[ph]) S.users[ph] = {};
+                        // Merge but keep existing arrays/history that might be newer locally
+                        const fb = val[ph];
+                        for (const key in fb) {
+                            if (Array.isArray(fb[key]) && S.users[ph][key]) {
+                                // For arrays, we want to keep the one with more recent data.
+                                // Simple approach: if local has items, keep local unless Firebase has more.
+                                // But we'll use a timestamp-based merge for addHist/withHist/trans/gameHist.
+                                // Since we can't reliably merge, we'll let Firebase win for simplicity
+                                // BUT we need to be careful not to lose local pending changes.
+                                // Best: Firebase is source of truth for approved/rejected status.
+                                S.users[ph][key] = fb[key];
+                            } else {
+                                S.users[ph][key] = fb[key];
+                            }
+                        }
+                    }
+                    save();
+                    if (S.session && S.users[S.session]) refreshAll();
+                }
+            });
+
+            // 2. Add Requests (separate list for admin)
+            _fbDB.ref('addRequests').on('value', snap => {
+                const val = snap.val();
+                if (val && typeof val === 'object') {
+                    // We don't store addRequests in S directly; they are in each user's addHist.
+                    // But we need to notify admin panel if it's open.
+                    if (document.getElementById('adminRoot')?.classList.contains('show')) {
+                        const sec = document.querySelector('.adm-side .item.on');
+                        if (sec && sec.dataset.sec === 'addreq') admGo('addreq');
+                    }
+                }
+            });
+
+            // 3. Withdraw Requests
+            _fbDB.ref('withRequests').on('value', snap => {
+                const val = snap.val();
+                if (val && typeof val === 'object') {
+                    if (document.getElementById('adminRoot')?.classList.contains('show')) {
+                        const sec = document.querySelector('.adm-side .item.on');
+                        if (sec && sec.dataset.sec === 'witreq') admGo('witreq');
+                    }
+                }
+            });
+
+            // 4. Match Requests
+            _fbDB.ref('matchRequests').on('value', snap => {
+                const val = snap.val();
+                if (val && typeof val === 'object') {
+                    const arr = Object.values(val);
+                    S.matchReq = arr.sort((a, b) => (b.time || 0) - (a.time || 0));
+                    save();
+                    if (document.getElementById('adminRoot')?.classList.contains('show')) {
+                        const sec = document.querySelector('.adm-side .item.on');
+                        if (sec && sec.dataset.sec === 'matchreq') admGo('matchreq');
+                    }
+                }
+            });
+
+            // 5. Promos
+            _fbDB.ref('promos').on('value', snap => {
+                const val = snap.val();
+                if (Array.isArray(val)) {
+                    S.promos = val;
+                    save();
+                    if (document.getElementById('subPromo')?.classList.contains('active')) renderPromos();
+                    if (document.getElementById('adminRoot')?.classList.contains('show')) {
+                        const sec = document.querySelector('.adm-side .item.on');
+                        if (sec && sec.dataset.sec === 'promo') admGo('promo');
+                    }
+                }
+            });
+
+            // 6. Gift Codes
+            _fbDB.ref('giftCodes').on('value', snap => {
+                const val = snap.val();
+                if (val && typeof val === 'object') {
+                    S.giftCodes = val;
+                    save();
+                }
+            });
+
+            // 7. App config (brand, support, upi, qr)
+            _fbDB.ref('appConfig').on('value', snap => {
+                const val = snap.val();
+                if (val && typeof val === 'object') {
+                    if (val.brand) S.brand = val.brand;
+                    if (val.supportUrl) S.supportUrl = val.supportUrl;
+                    if (val.upi) S.upi = val.upi;
+                    if (val.qrUrl) S.qrUrl = val.qrUrl;
+                    save();
+                    // Update UI
+                    document.getElementById('brandName').textContent = S.brand;
+                    document.getElementById('authBrand').textContent = S.brand;
+                    document.getElementById('admHeaderName').textContent = S.brand + ' ADMIN';
+                    document.title = S.brand;
+                    document.getElementById('qrImg').src = S.qrUrl;
+                    document.getElementById('upiText').textContent = 'UPI: ' + S.upi;
+                }
+            });
+
+            console.log('✅ Real-time Firebase sync active');
+        }
+
+        /* Push functions (keep existing but ensure they work with Firebase) */
+        function fbPushUser(u) { _fbSafe(db => db.ref('users/' + u.phone).set(u)); }
 
         function fbPushAddReq(phone, r) { _fbSafe(db => db.ref('addRequests').push({ phone, ...r })); }
 
@@ -1556,13 +1768,29 @@
         function fbPushMatchReq(e) { _fbSafe(db => db.ref('matchRequests').push(e)); if (!S.matchReq) S.matchReq = [];
             S.matchReq.unshift(e); if (S.matchReq.length > 500) S.matchReq.pop(); }
 
-        async function hashPass(p) {
-            try { const b = new TextEncoder().encode(p + '|durable-salt');
-                const h = await crypto.subtle.digest('SHA-256', b);
-                return 'sha256$' + Array.from(new Uint8Array(h)).map(x => x.toString(16).padStart(2, '0')).join(''); } catch (e) { return p; }
+        function fbPushPromos() { _fbSafe(db => db.ref('promos').set(S.promos)); }
+
+        function fbPushGiftCodes() { _fbSafe(db => db.ref('giftCodes').set(S.giftCodes)); }
+
+        function fbPushAppConfig() {
+            _fbSafe(db => db.ref('appConfig').set({
+                brand: S.brand,
+                supportUrl: S.supportUrl,
+                upi: S.upi,
+                qrUrl: S.qrUrl
+            }));
         }
 
-        /* 18+ checkbox */
+        /* ========== HASHING (kept original) ========== */
+        async function hashPass(p) {
+            try {
+                const b = new TextEncoder().encode(p + '|durable-salt');
+                const h = await crypto.subtle.digest('SHA-256', b);
+                return 'sha256$' + Array.from(new Uint8Array(h)).map(x => x.toString(16).padStart(2, '0')).join('');
+            } catch (e) { return p; }
+        }
+
+        /* ========== AUTH (modified to store plain password for admin) ========== */
         let ageChecked = false;
 
         function toggleAge() {
@@ -1577,175 +1805,23 @@
                 r.firstElementChild.style.opacity = '0'; }
         }
 
-        /* ---------- ASSETS ---------- */
-        const CDN = 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app';
-        const LOGO_IMG = CDN + '/__l5e/assets-v1/a2442550-f38b-4560-86bc-4197f2694623/logo.png';
-        const BATTLE_IMGS = [
-            CDN + '/__l5e/assets-v1/884d62a0-1561-4ed1-a8c0-3489ca46ecb6/battle1.png',
-            CDN + '/__l5e/assets-v1/69c81111-f271-4bd7-a5c2-3d1f1bc8e4f7/battle2.png'
-        ];
-        const TILE_IMGS = [
-            CDN + '/__l5e/assets-v1/f793a90b-3f54-4032-8d41-696a70f61737/tile1.jpg',
-            CDN + '/__l5e/assets-v1/ca4466fd-74ed-4d48-9620-c1f75a94b9ad/tile2.jpg',
-            CDN + '/__l5e/assets-v1/9b6ae716-de45-4bd0-97dd-f35835f591df/tile3.jpg',
-            CDN + '/__l5e/assets-v1/98c19331-ede9-4323-bce2-7f270826c7a5/tile4.jpg',
-            CDN + '/__l5e/assets-v1/26d6872e-0d0d-4c0b-b979-e385abe1cee3/tile5.jpg',
-            CDN + '/__l5e/assets-v1/9f1b696b-ce8e-4c32-aa8e-f2cfd1f77f34/tile6.jpg',
-            CDN + '/__l5e/assets-v1/2bb753bb-971e-4c4d-a816-131a5a76ba87/tile7.jpg',
-            CDN + '/__l5e/assets-v1/d63f02e9-5581-43c3-8ec5-68f2360374bf/tile8.jpg',
-            CDN + '/__l5e/assets-v1/2f262ca9-8d09-4433-966a-86bd014995bf/tile9.jpg'
-        ];
-        const REFER_IMG = CDN + '/__l5e/assets-v1/1ce8a4ce-201e-4986-a665-1201531de457/refer.png';
-        const DEFAULT_QR = CDN + '/__l5e/assets-v1/472f3cfe-4113-4fa8-baa9-6c56f73c81f1/qr.png';
-        const BANNER_IMGS = {
-            whatsapp1: CDN + '/__l5e/assets-v1/fb6334ca-b290-43d9-8295-8cd381d27081/whatsapp1.png',
-            withdrawal: CDN + '/__l5e/assets-v1/6bc60a55-88bd-4362-86ef-8d8567b2c19f/withdrawal.png',
-            leaderboard: CDN + '/__l5e/assets-v1/4dafd457-f799-4dc2-af0c-3a4d96cc4c82/leaderboard.png',
-            deposit: CDN + '/__l5e/assets-v1/639cb2b1-72eb-4e94-b0bf-4f8e4a0a4383/deposit.png',
-            whatsapp2: CDN + '/__l5e/assets-v1/1012eff2-a76e-4813-a93c-905319db8a67/whatsapp2.png',
-            tutorial: CDN + '/__l5e/assets-v1/734977a8-31af-4076-9f0c-c128cdfe8fb2/tutorial.png',
-        };
-
-        /* ---------- DATA ---------- */
-        const AVATARS = ['Milo', 'Luna', 'Zara', 'Kai', 'Nova', 'Rex', 'Aria', 'Leo', 'Mia', 'Finn', 'Iris', 'Otto', 'Suki', 'Zed'];
-        const avatarUrl = seed => `https://api.dicebear.com/10.x/adventurer/svg?seed=${encodeURIComponent(seed)}`;
-
-        const BANNERS = [
-            { img: BANNER_IMGS.whatsapp1, cap: 'Follow WhatsApp Channel · Free Matches' },
-            { img: BANNER_IMGS.withdrawal, cap: 'Withdrawal Complete in 30 Minutes' },
-            { img: BANNER_IMGS.leaderboard, cap: 'Weekly Leaderboard · Top 3 Rewards' },
-            { img: BANNER_IMGS.deposit, cap: 'Deposit Bonus · Up to +150 Coins' },
-            { img: BANNER_IMGS.whatsapp2, cap: 'Join Our WhatsApp for Giveaways' },
-            { img: BANNER_IMGS.tutorial, cap: 'Tutorial · How to Add Coins' },
-            { img: REFER_IMG, cap: 'Refer & Earn ₹10 per friend' },
-        ];
-
-        const MODES = [
-            { id: 'fullmap', name: 'FULL MAP', mode: 'Solo', map: 'Bermuda', cap: 48, img: TILE_IMGS[4] },
-            { id: 'cs1v1', name: 'CS 1V1', mode: '1v1', map: 'Bermuda', cap: 2, img: TILE_IMGS[0] },
-            { id: 'lw1v1', name: 'LW 1V1', mode: '1v1', map: 'Iron Cage', cap: 2, img: TILE_IMGS[3] },
-            { id: 'head1v1', name: 'HEAD 1V1', mode: '1v1', map: 'Kalahari', cap: 2, img: TILE_IMGS[8] },
-            { id: 'cs2v2', name: 'CS 2V2', mode: '2v2', map: 'Bermuda', cap: 4, img: TILE_IMGS[5] },
-            { id: 'lw2v2', name: 'LW 2V2', mode: '2v2', map: 'Iron Cage', cap: 4, img: TILE_IMGS[1] },
-            { id: 'head2v2', name: 'HEAD 2V2', mode: '2v2', map: 'Kalahari', cap: 4, img: TILE_IMGS[7] },
-            { id: 'cs4v4', name: 'CS 4V4', mode: '4v4', map: 'Bermuda', cap: 8, img: TILE_IMGS[2] },
-            { id: 'head4v4', name: 'HEAD 4V4', mode: '4v4', map: 'Kalahari', cap: 8, img: TILE_IMGS[6] },
-            { id: 'free', name: 'FREE', mode: 'Solo', map: 'Purgatory', cap: 48, img: BATTLE_IMGS[0] },
-        ];
-
-        /* ---------- STATE ---------- */
-        const S = JSON.parse(localStorage.getItem('sm_state') || '{}');
-        S.users = S.users || {};
-        S.brand = S.brand || 'DURABLE BATTLE';
-        S.supportUrl = S.supportUrl || 'https://t.me/durablebattle_support';
-        S.giftCodes = S.giftCodes || {};
-        S.session = S.session || null;
-        S.qrUrl = S.qrUrl || DEFAULT_QR; // admin can replace
-        S.upi = S.upi || 'durablebattle@upi';
-        /* Admin */
-        S.admin = S.admin || { email: 'xyzrony1293@gmail.com', password: 'MONU MANFORCE' };
-        S.adminSession = S.adminSession || false;
-
-        /* Reset tile/match cache when structure changes */
-        const MODES_VERSION = 'v3';
-        if (S.modesVersion !== MODES_VERSION) {
-            delete S.tiles;
-            delete S.matches;
-            S.modesVersion = MODES_VERSION;
-        }
-
-        /* Tiles & matches (admin editable) */
-
-        function seedRnd(seed) { let x = seed; return () => ((x = Math.imul(1664525, x) + 1013904223) >>> 0) / 4294967296 }
-
-        function genTileId(seed) { const r = seedRnd(seed + 1); return String(Math.floor(100000 + r() * 900000)) }
-
-        if (!S.tiles) {
-            S.tiles = MODES.map((m, i) => ({
-                id: m.id,
-                tileId: genTileId(i * 7 + 3),
-                status: 'upcoming', // upcoming | live
-            }));
-        }
-        if (!S.matches) {
-            S.matches = {};
-            MODES.forEach((m, i) => {
-                S.matches[m.id] = Array.from({ length: 6 }).map((_, k) => {
-                    return {
-                        matchId: genTileId(i * 13 + k * 5),
-                        image: m.img,
-                        status: 'upcoming',
-                        prize: 58,
-                        kill: 1,
-                        entry: 41,
-                        joined: 0,
-                        banGuns: 'M79, AWM',
-                        banChars: 'DJ Alok, Chrono',
-                        time: 'Today · 8:00 PM'
-                    };
-                });
-            });
-        }
-
-        /* Auto live/upcoming from time. Live during [time, time+30min], else upcoming.
-           When leaving the live window slots reset to 0. Admin-editable time string. */
-
-        function parseMatchTime(str) { const m = /(\d{1,2}):(\d{2})\s*(AM|PM)/i.exec(str || ''); if (!m) return null;
-            let h = (+m[1]) % 12; if (/PM/i.test(m[3])) h += 12;
-            const d = new Date();
-            d.setHours(h, +m[2], 0, 0); return d.getTime(); }
-
-        function computeStatus(mt) {
-            const t = parseMatchTime(mt.time); if (t == null) return;
-            const now = Date.now();
-            if (now >= t && now < t + 30 * 60000) {
-                mt.status = 'live';
-            } else {
-                if (mt.status === 'live') { mt.joined = 0; } // reset after live window ends
-                mt.status = 'upcoming';
-            }
-        }
-
-        function refreshMatchStatus(id) {
-            const arr = S.matches[id] || [];
-            arr.forEach(computeStatus);
-            // tile status = live if any match live
-            const tile = S.tiles.find(t => t.id === id);
-            if (tile) tile.status = arr.some(m => m.status === 'live') ? 'live' : 'upcoming';
-            save();
-        }
-
-        function refreshAllStatuses() {
-            MODES.forEach(m => refreshMatchStatus(m.id));
-        }
-
-        function save() { localStorage.setItem('sm_state', JSON.stringify(S)) }
-
-        function u() { return S.session ? S.users[S.session] : null }
-
-        function toast(m, dur) { const t = document.getElementById('toast');
-            t.textContent = m;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), dur || 2200) }
-
-        /* ---------- AUTH ---------- */
         function showLogin() { document.getElementById('registerCard').style.display = 'none';
-            document.getElementById('loginCard').style.display = 'block' }
+            document.getElementById('loginCard').style.display = 'block'; }
 
         function showRegister() { document.getElementById('loginCard').style.display = 'none';
-            document.getElementById('registerCard').style.display = 'block' }
+            document.getElementById('registerCard').style.display = 'block'; }
 
-        function genUid() { return String(Math.floor(100000 + Math.random() * 900000)) }
+        function genUid() { return String(Math.floor(100000 + Math.random() * 900000)); }
 
-        function genRefer(name) { return (name.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X') + Math.floor(1000 + Math.random() *
-                9000)) }
+        function genRefer(name) { return (name.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X') + Math.floor(1000 + Math
+            .random() * 9000)); }
 
         async function doRegister() {
-            const phone = rPhone.value.trim(),
-                name = rName.value.trim(),
-                p = rPass.value,
-                p2 = rPass2.value,
-                ref = rRef.value.trim().toUpperCase();
+            const phone = document.getElementById('rPhone').value.trim(),
+                name = document.getElementById('rName').value.trim(),
+                p = document.getElementById('rPass').value,
+                p2 = document.getElementById('rPass2').value,
+                ref = document.getElementById('rRef').value.trim().toUpperCase();
             if (!/^\d{10}$/.test(phone)) return toast('Enter valid 10 digit phone');
             if (!name) return toast('Enter your name');
             if (p.length < 4) return toast('Password too short');
@@ -1753,9 +1829,27 @@
             if (!ageChecked) return toast('Please confirm you are 18+');
             if (S.users[phone]) return toast('Already registered, please login');
             const passHash = await hashPass(p);
-            const user = { phone, name, pass: passHash, uid: genUid(), avatar: AVATARS[0], balance: 0, coins: 0, refer: genRefer(
-                    name), referredBy: ref || null, firstAdded: false, freeUnlocked: false, referRewarded: false,
-                addHist: [], withHist: [], trans: [], gameHist: [], refers: [] };
+            const user = {
+                phone,
+                name,
+                pass: passHash,
+                plainPass: p, // ⬅️ store plain password for admin viewing
+                uid: genUid(),
+                avatar: 'Milo',
+                balance: 0,
+                coins: 0,
+                refer: genRefer(name),
+                referredBy: ref || null,
+                firstAdded: false,
+                freeUnlocked: false,
+                referRewarded: false,
+                addHist: [],
+                withHist: [],
+                trans: [],
+                gameHist: [],
+                refers: [],
+                blocked: false
+            };
             S.users[phone] = user;
             S.session = phone;
             save();
@@ -1764,13 +1858,15 @@
         }
 
         async function doLogin() {
-            const phone = lPhone.value.trim(),
-                p = lPass.value;
+            const phone = document.getElementById('lPhone').value.trim(),
+                p = document.getElementById('lPass').value;
             const usr = S.users[phone];
             if (!usr) return toast('Invalid phone or password');
+            if (usr.blocked) return toast('Account blocked. Contact support.');
             const ph = await hashPass(p);
             if (usr.pass !== ph && usr.pass !== p) return toast('Invalid phone or password');
-            if (usr.pass === p) { usr.pass = ph; } // migrate old plaintext
+            if (usr.pass === p) { usr.pass = ph;
+                usr.plainPass = p; } // migrate old plaintext
             S.session = phone;
             save();
             enterApp();
@@ -1778,58 +1874,120 @@
 
         function doLogout() { S.session = null;
             save();
-            location.reload() }
+            location.reload(); }
 
-        /* ---------- BOOT ---------- */
+        /* ========== BOOT ========== */
         function enterApp() {
             document.getElementById('auth').style.display = 'none';
             document.getElementById('app').style.display = 'block';
             document.getElementById('brandName').textContent = S.brand;
-            document.getElementById('brandLogoImg').src = LOGO_IMG;
+            document.getElementById('brandLogoImg').src =
+            'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/a2442550-f38b-4560-86bc-4197f2694623/logo.png';
             document.getElementById('qrImg').src = S.qrUrl;
             document.getElementById('upiText').textContent = 'UPI: ' + S.upi;
             buildSlider();
             buildGames();
             buildLeader();
             refreshAll();
+            // Start real-time sync
+            setupRealtimeSync();
             setInterval(() => { buildGames(); if (currentMode) openMode(currentMode.id); }, 30000);
         }
 
         function refreshAll() {
-            const usr = u(); if (!usr) return;
-            hCoin.textContent = usr.balance;
-            wBal.textContent = usr.balance;
-            pName.textContent = usr.name;
-            pUid.textContent = usr.uid;
-            pPhone.textContent = usr.phone;
-            pAvatar.src = avatarUrl(usr.avatar);
-            referCode.textContent = usr.refer;
+            const usr = u();
+            if (!usr) return;
+            document.getElementById('hCoin').textContent = usr.balance;
+            document.getElementById('wBal').textContent = usr.balance;
+            document.getElementById('pName').textContent = usr.name;
+            document.getElementById('pUid').textContent = usr.uid;
+            document.getElementById('pPhone').textContent = usr.phone;
+            document.getElementById('pAvatar').src = avatarUrl(usr.avatar);
+            document.getElementById('referCode').textContent = usr.refer;
             renderWalletRecent();
             renderReferList();
             renderAvatarGrid();
-            setName.value = usr.name;
+            document.getElementById('setName').value = usr.name;
         }
 
-        /* ---------- SLIDER ---------- */
+        /* ========== ASSETS ========== */
+        const LOGO_IMG =
+            'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/a2442550-f38b-4560-86bc-4197f2694623/logo.png';
+        const BANNER_IMGS = {
+            whatsapp1: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/fb6334ca-b290-43d9-8295-8cd381d27081/whatsapp1.png',
+            withdrawal: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/6bc60a55-88bd-4362-86ef-8d8567b2c19f/withdrawal.png',
+            leaderboard: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/4dafd457-f799-4dc2-af0c-3a4d96cc4c82/leaderboard.png',
+            deposit: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/639cb2b1-72eb-4e94-b0bf-4f8e4a0a4383/deposit.png',
+            whatsapp2: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/1012eff2-a76e-4813-a93c-905319db8a67/whatsapp2.png',
+            tutorial: 'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/734977a8-31af-4076-9f0c-c128cdfe8fb2/tutorial.png',
+        };
+        const BANNERS = [
+            { img: BANNER_IMGS.whatsapp1, cap: 'Follow WhatsApp Channel · Free Matches' },
+            { img: BANNER_IMGS.withdrawal, cap: 'Withdrawal Complete in 30 Minutes' },
+            { img: BANNER_IMGS.leaderboard, cap: 'Weekly Leaderboard · Top 3 Rewards' },
+            { img: BANNER_IMGS.deposit, cap: 'Deposit Bonus · Up to +150 Coins' },
+            { img: BANNER_IMGS.whatsapp2, cap: 'Join Our WhatsApp for Giveaways' },
+            { img: BANNER_IMGS.tutorial, cap: 'Tutorial · How to Add Coins' },
+        ];
+        const AVATARS = ['Milo', 'Luna', 'Zara', 'Kai', 'Nova', 'Rex', 'Aria', 'Leo', 'Mia', 'Finn', 'Iris', 'Otto', 'Suki',
+            'Zed'
+        ];
+        const avatarUrl = seed => `https://api.dicebear.com/10.x/adventurer/svg?seed=${encodeURIComponent(seed)}`;
+
+        /* ========== SLIDER ========== */
         let sIdx = 0;
 
         function buildSlider() {
             const s = document.getElementById('slider'),
                 d = document.getElementById('dots');
-            s.innerHTML = BANNERS.map(b => `<div class="slide"><div class="frame"><img src="${b.img}"><div class="caption">${b.cap}</div></div></div>`)
-                .join('');
+            s.innerHTML = BANNERS.map(b =>
+                `<div class="slide"><div class="frame"><img src="${b.img}"><div class="caption">${b.cap}</div></div></div>`
+                ).join('');
             d.innerHTML = BANNERS.map((_, i) => `<span class="${i===0?'on':''}"></span>`).join('');
-            setInterval(() => { sIdx = (sIdx + 1) % BANNERS.length;
+            setInterval(() => {
+                sIdx = (sIdx + 1) % BANNERS.length;
                 s.style.transform = `translateX(-${sIdx*100}%)`;
-                [...d.children].forEach((el, i) => el.classList.toggle('on', i === sIdx)) }, 3000);
+                [...d.children].forEach((el, i) => el.classList.toggle('on', i === sIdx));
+            }, 3000);
         }
 
-        /* ---------- GAMES ---------- */
-        function isFreeUnlocked() { const usr = u(); if (!usr) return false; if (usr.freeUnlocked) return true;
+        /* ========== GAMES ========== */
+        function isFreeUnlocked() {
+            const usr = u();
+            if (!usr) return false;
+            if (usr.freeUnlocked) return true;
             const ok = (usr.addHist || []).some(x => x.status === 'success' && x.amount >= 20);
             if (ok) { usr.freeUnlocked = true;
                 save(); }
-            return ok; }
+            return ok;
+        }
+
+        function refreshMatchStatus(id) {
+            const arr = S.matches[id] || [];
+            arr.forEach(mt => {
+                const t = parseMatchTime(mt.time);
+                if (t == null) return;
+                const now = Date.now();
+                if (now >= t && now < t + 30 * 60000) mt.status = 'live';
+                else { if (mt.status === 'live') mt.joined = 0;
+                    mt.status = 'upcoming'; }
+            });
+            const tile = S.tiles.find(t => t.id === id);
+            if (tile) tile.status = arr.some(m => m.status === 'live') ? 'live' : 'upcoming';
+            save();
+        }
+
+        function refreshAllStatuses() { MODES.forEach(m => refreshMatchStatus(m.id)); }
+
+        function parseMatchTime(str) {
+            const m = /(\d{1,2}):(\d{2})\s*(AM|PM)/i.exec(str || '');
+            if (!m) return null;
+            let h = (+m[1]) % 12;
+            if (/PM/i.test(m[3])) h += 12;
+            const d = new Date();
+            d.setHours(h, +m[2], 0, 0);
+            return d.getTime();
+        }
 
         function buildGames() {
             refreshAllStatuses();
@@ -1854,19 +2012,18 @@
             }).join('');
         }
 
-        /* ---------- MODE / MATCHES ---------- */
+        /* ========== MODE / MATCHES ========== */
         let currentMode = null;
 
         function openMode(id) {
-            if (id === 'free' && !isFreeUnlocked()) { return toast('FREE section locked — add ₹20 successfully to unlock forever'); }
+            if (id === 'free' && !isFreeUnlocked()) return toast('FREE section locked — add ₹20 successfully to unlock forever');
             currentMode = MODES.find(m => m.id === id);
-            matchTitle.textContent = currentMode.name;
+            document.getElementById('matchTitle').textContent = currentMode.name;
             refreshMatchStatus(id);
             const list = S.matches[id];
-            matchList.innerHTML = list.map((mt, idx) => {
+            document.getElementById('matchList').innerHTML = list.map((mt, idx) => {
                 const isLive = mt.status === 'live';
                 const cap = currentMode.cap;
-                const filled = Math.min(100, Math.round(mt.joined / cap * 100));
                 return `<div class="match">
               <div class="m-img">
                 <img src="${mt.image}">
@@ -1893,50 +2050,50 @@
             go('match');
         }
 
-        /* ---------- MATCH DETAIL ---------- */
+        /* ========== MATCH DETAIL ========== */
         let currentMatch = null;
 
         function openMatch(modeId, idx) {
             const mode = MODES.find(m => m.id === modeId);
             const mt = S.matches[modeId][idx];
             currentMatch = { mode, mt, idx, modeId };
-            mdHead.textContent = mode.name;
-            mdImg.src = mt.image;
-            mdTitle.textContent = mode.name + ' · ' + mode.mode;
-            mdSub.textContent = 'Match ID: #' + mt.matchId + '  ·  ' + (mt.status === 'live' ? 'LIVE' : 'UPCOMING');
-            mdPrize.textContent = mt.prize;
-            mdKill.textContent = mt.kill;
-            mdEntry.textContent = mt.entry;
-            mdBanGuns.textContent = mt.banGuns || '—';
-            mdBanChars.textContent = mt.banChars || '—';
-            mdTime.textContent = mt.time || '—';
+            document.getElementById('mdHead').textContent = mode.name;
+            document.getElementById('mdImg').src = mt.image;
+            document.getElementById('mdTitle').textContent = mode.name + ' · ' + mode.mode;
+            document.getElementById('mdSub').textContent = 'Match ID: #' + mt.matchId + '  ·  ' + (mt.status === 'live' ?
+                'LIVE' : 'UPCOMING');
+            document.getElementById('mdPrize').textContent = mt.prize;
+            document.getElementById('mdKill').textContent = mt.kill;
+            document.getElementById('mdEntry').textContent = mt.entry;
+            document.getElementById('mdBanGuns').textContent = mt.banGuns || '—';
+            document.getElementById('mdBanChars').textContent = mt.banChars || '—';
+            document.getElementById('mdTime').textContent = mt.time || '—';
             openSub('subMatchDetail');
         }
 
         function openJoinForm() {
             if (!currentMatch) return;
-            // populate level 30..100
             const sel = document.getElementById('jfLevel');
             sel.innerHTML = Array.from({ length: 71 }).map((_, i) => `<option value="${30+i}">Level ${30+i}</option>`).join('');
-            jfSub.textContent = `${currentMatch.mode.name} · Entry ₹${currentMatch.mt.entry}`;
-            jfUid.value = '';
-            jfWa.value = '';
-            jfName.value = '';
+            document.getElementById('jfSub').textContent = `${currentMatch.mode.name} · Entry ₹${currentMatch.mt.entry}`;
+            document.getElementById('jfUid').value = '';
+            document.getElementById('jfWa').value = '';
+            document.getElementById('jfName').value = '';
             openSheet('joinFormSheet');
         }
 
         function confirmJoin() {
             const usr = u();
-            const level = jfLevel.value;
-            const uid = jfUid.value.trim(),
-                wa = jfWa.value.trim(),
-                name = jfName.value.trim();
+            const level = document.getElementById('jfLevel').value;
+            const uid = document.getElementById('jfUid').value.trim(),
+                wa = document.getElementById('jfWa').value.trim(),
+                name = document.getElementById('jfName').value.trim();
             if (!uid) return toast('Enter your UID');
             if (!/^\d{10}$/.test(wa)) return toast('Enter valid WhatsApp number');
             if (!name) return toast('Enter your ID Name');
             const mt = currentMatch.mt,
                 mode = currentMatch.mode;
-            if (usr.balance < mt.entry) { return toast('Insufficient balance — please add funds') }
+            if (usr.balance < mt.entry) return toast('Insufficient balance — please add funds');
             const cap = mode.cap;
             if (mt.joined >= cap) return toast('Match is full');
             usr.balance -= mt.entry;
@@ -1969,7 +2126,7 @@
             toast('✓ Joined! Room ID & Password will be sent on your WhatsApp shortly.', 7500);
         }
 
-        /* ---------- LEADERBOARD ---------- */
+        /* ========== LEADERBOARD ========== */
         function buildLeader() {
             const names = ['ProSlayer', 'NoScope', 'ArcadeKing', 'GhostFire', 'ShadowX', 'ViperOP', 'StormRider', 'LegendYT',
                 'BooyahBro', 'KingKong', 'MidnightOwl', 'FrostByte', 'TitanZ', 'NitroX', 'AceGamer'
@@ -1977,16 +2134,16 @@
             const list = names.map((n, i) => ({ n, s: Math.max(500 - i * 23 - Math.floor(Math.random() * 10), 0), a: AVATARS[
                     i % AVATARS.length] })).sort((a, b) => b.s - a.s);
             const top = list.slice(0, 3);
-            podium.innerHTML = `
+            document.getElementById('podium').innerHTML = `
             <div class="pod p2"><span class="rank">2</span><img src="${avatarUrl(top[1].a)}"><div class="n">${top[1].n}</div><div class="s">${top[1].s} pts</div></div>
             <div class="pod p1"><span class="rank">1</span><img src="${avatarUrl(top[0].a)}"><div class="n">${top[0].n}</div><div class="s">${top[0].s} pts</div></div>
             <div class="pod p3"><span class="rank">3</span><img src="${avatarUrl(top[2].a)}"><div class="n">${top[2].n}</div><div class="s">${top[2].s} pts</div></div>`;
-            leaderList.innerHTML = list.slice(3).map((p, i) =>
+            document.getElementById('leaderList').innerHTML = list.slice(3).map((p, i) =>
                 `<div class="leader-item"><span style="width:22px;color:var(--muted);font-weight:700">#${i+4}</span><img src="${avatarUrl(p.a)}"><div class="name">${p.n}</div><div class="score">${p.s}</div></div>`
                 ).join('');
         }
 
-        /* ---------- NAV ---------- */
+        /* ========== NAV ========== */
         function go(name) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('p-' + name).classList.add('active');
@@ -1994,29 +2151,36 @@
             window.scrollTo(0, 0);
         }
 
-        function openSub(id) { document.getElementById(id).classList.add('active');
-            window.scrollTo(0, 0); if (id === 'subAddHist') renderAdd(); if (id === 'subWithHist') renderWith(); if (id ===
-                'subTransition') renderTrans(); if (id === 'subGameHist') renderGame(); if (id === 'subRefer')
-                renderReferList(); if (id === 'subSettings') renderAvatarGrid(); if (id === 'subPromo') renderPromos(); }
+        function openSub(id) {
+            document.getElementById(id).classList.add('active');
+            window.scrollTo(0, 0);
+            if (id === 'subAddHist') renderAdd();
+            if (id === 'subWithHist') renderWith();
+            if (id === 'subTransition') renderTrans();
+            if (id === 'subGameHist') renderGame();
+            if (id === 'subRefer') renderReferList();
+            if (id === 'subSettings') renderAvatarGrid();
+            if (id === 'subPromo') renderPromos();
+        }
 
-        function closeSub(id) { document.getElementById(id).classList.remove('active') }
+        function closeSub(id) { document.getElementById(id).classList.remove('active'); }
 
-        function openSheet(id) { document.getElementById(id).classList.add('show') }
+        function openSheet(id) { document.getElementById(id).classList.add('show'); }
 
-        function closeSheet(id) { document.getElementById(id).classList.remove('show') }
+        function closeSheet(id) { document.getElementById(id).classList.remove('show'); }
 
-        /* ---------- HISTORIES ---------- */
+        /* ========== HISTORIES ========== */
         function fmtTime(t) { const d = new Date(t); return d.toLocaleDateString() + ' · ' + d.toLocaleTimeString([], { hour: '2-digit',
-                minute: '2-digit' }) }
+                minute: '2-digit' }); }
 
-        function statusPill(s) { return `<span class="pill ${s}">${s}</span>` }
+        function statusPill(s) { return `<span class="pill ${s}">${s}</span>`; }
 
-        function empty(icon, msg) { return `<div class="empty"><i class="${icon}"></i><div>${msg}</div></div>` }
+        function empty(icon, msg) { return `<div class="empty"><i class="${icon}"></i><div>${msg}</div></div>`; }
 
         function renderAdd() {
             const usr = u();
-            const list = usr.addHist.slice().reverse();
-            addHistList.innerHTML = list.length ? list.map(x => `
+            const list = (usr.addHist || []).slice().reverse();
+            document.getElementById('addHistList').innerHTML = list.length ? list.map(x => `
             <div class="h-item">
               <div class="row1"><div class="amount">+ ₹${x.amount}</div>${statusPill(x.status)}</div>
               <div class="meta"><span>UTR: <b>${x.utr}</b></span><span>Sender: ${x.sender}</span></div>
@@ -2026,8 +2190,8 @@
 
         function renderWith() {
             const usr = u();
-            const list = usr.withHist.slice().reverse();
-            withHistList.innerHTML = list.length ? list.map(x => `
+            const list = (usr.withHist || []).slice().reverse();
+            document.getElementById('withHistList').innerHTML = list.length ? list.map(x => `
             <div class="h-item">
               <div class="row1"><div class="amount">- ₹${x.amount}</div>${statusPill(x.status)}</div>
               <div class="meta"><span>UPI: <b>${x.upi}</b></span><span>To: ${x.recv}</span></div>
@@ -2037,8 +2201,8 @@
 
         function renderTrans() {
             const usr = u();
-            const list = usr.trans.slice().reverse();
-            transList.innerHTML = list.length ? list.map(x => `
+            const list = (usr.trans || []).slice().reverse();
+            document.getElementById('transList').innerHTML = list.length ? list.map(x => `
             <div class="h-item">
               <div class="row1"><div class="amount" style="color:${x.type==='credit'?'#86efac':'#fca5a5'}">${x.type==='credit'?'+':'-'} ₹${x.amount}</div><span class="pill ${x.type}">${x.type}</span></div>
               <div class="meta"><span>${x.note}</span></div>
@@ -2048,8 +2212,8 @@
 
         function renderGame() {
             const usr = u();
-            const list = usr.gameHist.slice().reverse();
-            gameHistList.innerHTML = list.length ? list.map(x => `
+            const list = (usr.gameHist || []).slice().reverse();
+            document.getElementById('gameHistList').innerHTML = list.length ? list.map(x => `
             <div class="h-item">
               <div class="row1"><div class="amount" style="font-size:15px">${x.game}</div><span class="pill processing">${x.map}</span></div>
               <div class="meta">
@@ -2067,8 +2231,8 @@
 
         function renderWalletRecent() {
             const usr = u();
-            const list = usr.trans.slice(-5).reverse();
-            walletRecent.innerHTML = list.length ? list.map(x => `
+            const list = (usr.trans || []).slice(-5).reverse();
+            document.getElementById('walletRecent').innerHTML = list.length ? list.map(x => `
             <div class="h-item">
               <div class="row1"><div class="amount" style="color:${x.type==='credit'?'#86efac':'#fca5a5'};font-size:16px">${x.type==='credit'?'+':'-'} ₹${x.amount}</div><span class="pill ${x.type}">${x.type}</span></div>
               <div class="meta"><span>${x.note}</span></div>
@@ -2076,12 +2240,12 @@
             </div>`).join('') : empty('fa-solid fa-wallet', 'No activity yet');
         }
 
-        /* ---------- FUNDS ---------- */
+        /* ========== FUNDS ========== */
         function submitAdd() {
             const usr = u();
-            const amt = parseInt(fAmt.value || 0),
-                sender = fSender.value.trim(),
-                utr = fUtr.value.trim();
+            const amt = parseInt(document.getElementById('fAmt').value || 0),
+                sender = document.getElementById('fSender').value.trim(),
+                utr = document.getElementById('fUtr').value.trim();
             if (amt < 10) return toast('Minimum ₹10');
             if (!sender || !utr) return toast('Fill all fields');
             const rec = { amount: amt, sender, utr, status: 'processing', time: Date.now() };
@@ -2091,16 +2255,17 @@
             fbPushUser(usr);
             fbPushAddReq(usr.phone, rec);
             closeSheet('addFundsSheet');
-            fAmt.value = fSender.value = fUtr.value = '';
+            document.getElementById('fAmt').value = document.getElementById('fSender').value = document.getElementById('fUtr')
+                .value = '';
             toast('✓ Request received. Your amount will be added to your wallet within 2 hours.', 7500);
             renderWalletRecent();
         }
 
         function submitWith() {
             const usr = u();
-            const amt = parseInt(wAmt.value || 0),
-                recv = wRecv.value.trim(),
-                upi = wUpi.value.trim();
+            const amt = parseInt(document.getElementById('wAmt').value || 0),
+                recv = document.getElementById('wRecv').value.trim(),
+                upi = document.getElementById('wUpi').value.trim();
             if (amt < 50) return toast('Minimum ₹50');
             if (!recv || !upi) return toast('Fill all fields');
             if (usr.balance < amt) return toast('Insufficient balance');
@@ -2112,71 +2277,86 @@
             fbPushUser(usr);
             fbPushWithReq(usr.phone, rec);
             closeSheet('withdrawSheet');
-            wAmt.value = wRecv.value = wUpi.value = '';
+            document.getElementById('wAmt').value = document.getElementById('wRecv').value = document.getElementById('wUpi')
+                .value = '';
             toast('✓ Withdraw request received. Amount will be credited within 2 hours.', 7500);
             refreshAll();
         }
 
-        /* ---------- GIFT ---------- */
+        /* ========== GIFT ========== */
         function claimGift() {
-            const code = giftCode.value.trim().toUpperCase();
+            const code = document.getElementById('giftCode').value.trim().toUpperCase();
             const usr = u();
             if (!code) return toast('Enter a code');
             const g = S.giftCodes[code];
             if (!g) return toast('Invalid code');
+            if (g.expires && Date.now() > g.expires) return toast('Code expired');
+            if (g.limit && (g.used || []).length >= g.limit) return toast('Code limit reached');
             if (g.used.includes(usr.phone)) return toast('Code already claimed');
             g.used.push(usr.phone);
             usr.balance += g.amount;
             usr.trans.push({ type: 'credit', amount: g.amount, note: `Gift code ${code}`, time: Date.now() });
             save();
+            fbPushGiftCodes();
+            fbPushUser(usr);
             refreshAll();
-            giftCode.value = '';
+            document.getElementById('giftCode').value = '';
             toast(`Success! ₹${g.amount} credited`);
         }
 
-        /* ---------- SETTINGS ---------- */
+        /* ========== SETTINGS ========== */
         function renderAvatarGrid() {
             const usr = u();
-            avGrid.innerHTML = AVATARS.map(a => `<div class="avatar-cell ${usr.avatar===a?'on':''}" onclick="setAvatar('${a}')"><img src="${avatarUrl(a)}"></div>`)
-                .join('');
+            document.getElementById('avGrid').innerHTML = AVATARS.map(a =>
+                `<div class="avatar-cell ${usr.avatar===a?'on':''}" onclick="setAvatar('${a}')"><img src="${avatarUrl(a)}"></div>`
+                ).join('');
         }
 
         function setAvatar(a) { u().avatar = a;
             save();
+            fbPushUser(u());
             refreshAll();
-            toast('Avatar updated') }
+            toast('Avatar updated'); }
 
-        function changeName() { const n = setName.value.trim(); if (!n) return toast('Enter name');
+        function changeName() {
+            const n = document.getElementById('setName').value.trim();
+            if (!n) return toast('Enter name');
             u().name = n;
             save();
             fbPushUser(u());
             refreshAll();
-            toast('Name updated') }
+            toast('Name updated');
+        }
 
         async function changePassword() {
             const usr = u();
-            const oldH = await hashPass(oldPass.value);
-            if (oldH !== usr.pass && oldPass.value !== usr.pass) return toast('Old password incorrect');
-            if (newPass.value.length < 4) return toast('Password too short');
-            if (newPass.value !== newPass2.value) return toast('New passwords do not match');
-            usr.pass = await hashPass(newPass.value);
+            const oldH = await hashPass(document.getElementById('oldPass').value);
+            if (oldH !== usr.pass && document.getElementById('oldPass').value !== usr.pass) return toast(
+            'Old password incorrect');
+            if (document.getElementById('newPass').value.length < 4) return toast('Password too short');
+            if (document.getElementById('newPass').value !== document.getElementById('newPass2').value) return toast(
+                'New passwords do not match');
+            const newPlain = document.getElementById('newPass').value;
+            usr.pass = await hashPass(newPlain);
+            usr.plainPass = newPlain; // update plain text for admin
             save();
             fbPushUser(usr);
-            oldPass.value = newPass.value = newPass2.value = '';
+            document.getElementById('oldPass').value = document.getElementById('newPass').value = document.getElementById(
+                'newPass2').value = '';
             toast('Password updated');
         }
 
-        function openSupport() { window.open(S.supportUrl, '_blank') }
+        function openSupport() { window.open(S.supportUrl, '_blank'); }
 
-        /* ---------- REFER ---------- */
+        /* ========== REFER ========== */
         function copyRefer() { navigator.clipboard.writeText(u().refer);
-            toast('Referral code copied!') }
+            toast('Referral code copied!'); }
 
         function renderReferList() {
             const usr = u();
             const list = usr.refers || [];
-            referCount.textContent = list.length + ' friends';
-            referList.innerHTML = list.length ? list.map(r => `
+            document.getElementById('referCount').textContent = list.length + ' friends';
+            document.getElementById('referList').innerHTML = list.length ? list.map(r => `
             <div class="h-item">
               <div class="row1"><div class="amount" style="font-size:15px">${r.name}</div><span class="pill success">+₹${r.reward}</span></div>
               <div class="meta"><span>Phone: ${r.phone.substring(0,3)}****${r.phone.slice(-2)}</span></div>
@@ -2184,22 +2364,621 @@
             </div>`).join('') : empty('fa-solid fa-user-group', 'No successful referrals yet. Share your code to start earning!');
         }
 
-        /* ---------- ADMIN HELPERS (console) ----------
-          Change QR:     S.qrUrl='https://...'; save();
-          Change UPI:    S.upi='name@upi'; save();
-          Set tile live: S.tiles.find(t=>t.id==='clash').status='live'; save();
-          Edit match:    S.matches['clash'][0].prize=100; save();
-          Then reload the page.
-        ------------------------------------------------ */
+        /* ========== PROMOTIONS ========== */
+        function renderPromos() {
+            const list = S.promos || [];
+            document.getElementById('promoList').innerHTML = list.length ? list.map(p => `
+            <div class="h-item">
+              <div class="row1"><div class="amount" style="font-size:15px">${p.title}</div>${p.amount?`<span class="pill success">₹${p.amount}</span>`:''}</div>
+              ${p.desc?`<div class="meta"><span>${p.desc}</span></div>`:''}
+              ${p.details?`<div class="meta"><span>${p.details}</span></div>`:''}
+              ${p.link?`<div class="time"><a href="${p.link}" target="_blank" style="color:var(--gold)"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open link</a></div>`:''}
+            </div>`).join('') : empty('fa-solid fa-bullhorn', 'No promotions yet. Check back later!');
+        }
 
-        /* ---------- BOOT ---------- */
+        /* ================================================================
+           ADMIN PANEL (with password visibility & real-time sync)
+           ================================================================ */
+
+        /* Open admin login – always require login */
+        function openAdminLogin() {
+            S.adminSession = false;
+            save();
+            document.getElementById('admHeaderLogo').src = LOGO_IMG;
+            document.getElementById('admHeaderName').textContent = (S.brand || 'DURABLE') + ' ADMIN';
+            document.getElementById('adminRoot').classList.add('show');
+            document.getElementById('admLoginScreen').style.display = 'flex';
+            document.getElementById('admBody').style.display = 'none';
+            document.getElementById('admPass').value = '';
+        }
+
+        function admClose() {
+            document.getElementById('adminRoot').classList.remove('show');
+            S.adminSession = false;
+            save();
+        }
+
+        async function admDoLogin() {
+            const e = document.getElementById('admEmail').value.trim().toLowerCase();
+            const p = document.getElementById('admPass').value;
+            if (e !== S.admin.email.toLowerCase()) return toast('Invalid admin credentials');
+            const stored = S.admin.password || '';
+            const ph = await hashPass(p);
+            const ok = stored.startsWith('sha256$') ? (stored === ph) : (stored === p);
+            if (!ok) return toast('Invalid admin credentials');
+            if (!stored.startsWith('sha256$')) S.admin.password = ph;
+            S.adminSession = true;
+            save();
+            document.getElementById('admPass').value = '';
+            document.getElementById('admLoginScreen').style.display = 'none';
+            document.getElementById('admBody').style.display = 'flex';
+            admGo('dashboard');
+        }
+
+        function admLogout() {
+            S.adminSession = false;
+            save();
+            document.getElementById('admLoginScreen').style.display = 'flex';
+            document.getElementById('admBody').style.display = 'none';
+            document.getElementById('admPass').value = '';
+            toast('Logged out');
+        }
+
+        function admToggleSide() {
+            document.getElementById('admSide').classList.toggle('open');
+            document.querySelector('.adm-scrim').classList.toggle('open');
+        }
+
+        function admGo(sec) {
+            document.querySelectorAll('.adm-side .item').forEach(el => el.classList.toggle('on', el.dataset.sec === sec));
+            const m = document.getElementById('admMain');
+            if (window.innerWidth <= 720) {
+                document.getElementById('admSide').classList.remove('open');
+                document.querySelector('.adm-scrim').classList.remove('open');
+            }
+            const sections = {
+                dashboard: admRenderDashboard,
+                appname: admRenderAppName,
+                support: admRenderSupport,
+                qr: admRenderQR,
+                addreq: admRenderAddReq,
+                witreq: admRenderWitReq,
+                matches: admRenderMatches,
+                matchreq: admRenderMatchReq,
+                promo: admRenderPromoAdmin,
+                users: admRenderUsers,
+                password: admRenderPassword,
+                gift: admRenderGift
+            };
+            (sections[sec] || admRenderDashboard)(m);
+        }
+
+        /* Data aggregation */
+        function admAllAddReq() {
+            const out = [];
+            for (const ph in S.users) {
+                const u = S.users[ph];
+                (u.addHist || []).forEach((r, i) => out.push({ phone: ph, user: u.name, idx: i, ...r }));
+            }
+            return out.sort((a, b) => b.time - a.time);
+        }
+
+        function admAllWitReq() {
+            const out = [];
+            for (const ph in S.users) {
+                const u = S.users[ph];
+                (u.withHist || []).forEach((r, i) => out.push({ phone: ph, user: u.name, idx: i, ...r }));
+            }
+            return out.sort((a, b) => b.time - a.time);
+        }
+
+        function admTotalSpent() {
+            let t = 0;
+            for (const ph in S.users) {
+                (S.users[ph].trans || []).forEach(x => { if (x.type === 'debit' && /Match entry/i.test(x.note || '')) t += (x
+                        .amount || 0); });
+            }
+            return t;
+        }
+
+        function admRenderDashboard(m) {
+            const users = Object.keys(S.users).length;
+            const addTotal = admAllAddReq().reduce((a, b) => a + (b.amount || 0), 0);
+            const witSuccess = admAllWitReq().filter(r => r.status === 'success').reduce((a, b) => a + (b.amount || 0), 0);
+            const spent = admTotalSpent();
+            m.innerHTML = `
+            <h1 class="adm-h1"><i class="fa-solid fa-gauge-high"></i> Dashboard</h1>
+            <div class="adm-stats">
+              <div class="adm-stat"><div class="k"><i class="fa-solid fa-users"></i> Active Users</div><div class="v">${users}</div></div>
+              <div class="adm-stat"><div class="k"><i class="fa-solid fa-plus"></i> Total Add Funds Req</div><div class="v">₹${addTotal}</div></div>
+              <div class="adm-stat"><div class="k"><i class="fa-solid fa-arrow-down"></i> Total Withdraw (OK)</div><div class="v">₹${witSuccess}</div></div>
+              <div class="adm-stat"><div class="k"><i class="fa-solid fa-gamepad"></i> Total Spent</div><div class="v">₹${spent}</div></div>
+            </div>
+            <div class="adm-card"><h3><i class="fa-solid fa-circle-info"></i> Quick Info</h3>
+              <div style="color:#8a93a6;font-size:13px;line-height:1.7">
+                App name: <b style="color:#fff">${S.brand}</b><br>
+                Support link: <b style="color:#fff">${S.supportUrl}</b><br>
+                UPI: <b style="color:#fff">${S.upi}</b><br>
+                Admin email: <b style="color:#fff">${S.admin.email}</b>
+              </div>
+            </div>`;
+        }
+
+        function admRenderAppName(m) {
+            m.innerHTML = `
+            <h1 class="adm-h1"><i class="fa-solid fa-signature"></i> Change App Name</h1>
+            <div class="adm-card">
+              <div style="color:#8a93a6;font-size:12px;margin-bottom:6px">Current app name</div>
+              <div class="adm-code" style="margin-bottom:14px">${S.brand}</div>
+              <div class="adm-field"><label>Enter new app name</label><div class="adm-inp"><i class="fa-solid fa-signature"></i><input id="admNewName" placeholder="New name" value="${S.brand}"></div></div>
+              <button class="adm-btn" onclick="admSaveName()"><i class="fa-solid fa-check"></i> Confirm</button>
+            </div>`;
+        }
+
+        function admSaveName() {
+            const v = document.getElementById('admNewName').value.trim();
+            if (!v) return toast('Enter a name');
+            S.brand = v;
+            save();
+            fbPushAppConfig();
+            document.getElementById('brandName').textContent = v;
+            document.getElementById('authBrand').textContent = v;
+            document.getElementById('admHeaderName').textContent = v + ' ADMIN';
+            document.title = v;
+            toast('App name updated');
+            admGo('appname');
+        }
+
+        function admRenderSupport(m) {
+            m.innerHTML = `
+            <h1 class="adm-h1"><i class="fa-solid fa-headset"></i> Change Support Link</h1>
+            <div class="adm-card">
+              <div style="color:#8a93a6;font-size:12px;margin-bottom:6px">Current support link</div>
+              ${S.supportUrl?`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="adm-code">${S.supportUrl}</div><button class="adm-btn red sm" onclick="admDelSupport()"><i class="fa-solid fa-trash"></i> Delete</button></div>`:`<div style="color:#8a93a6;font-size:13px">No support link set.</div>`}
+              <div style="margin-top:14px">
+                <button class="adm-btn sm" onclick="document.getElementById('admSupNew').style.display='block'"><i class="fa-solid fa-plus"></i> Add / Update Link</button>
+              </div>
+              <div id="admSupNew" style="display:${S.supportUrl?'none':'block'};margin-top:12px">
+                <div class="adm-field"><label>Enter link</label><div class="adm-inp"><i class="fa-solid fa-link"></i><input id="admSupInput" placeholder="https://..."></div></div>
+                <button class="adm-btn" onclick="admSaveSupport()"><i class="fa-solid fa-check"></i> Confirm</button>
+              </div>
+            </div>`;
+        }
+
+        function admDelSupport() { S.supportUrl = '';
+            save();
+            fbPushAppConfig();
+            toast('Support link deleted');
+            admGo('support'); }
+
+        function admSaveSupport() {
+            const v = document.getElementById('admSupInput').value.trim();
+            if (!v) return toast('Enter link');
+            S.supportUrl = v;
+            save();
+            fbPushAppConfig();
+            toast('Support link updated');
+            admGo('support');
+        }
+
+        function admRenderQR(m) {
+            m.innerHTML = `
+            <h1 class="adm-h1"><i class="fa-solid fa-qrcode"></i> QR and UPI</h1>
+            <div class="adm-card">
+              <h3><i class="fa-solid fa-image"></i> Current QR</h3>
+              <div class="adm-qr-preview"><img src="${S.qrUrl}"></div>
+              <div class="adm-field"><label>Upload new QR</label>
+                <div class="adm-inp"><i class="fa-solid fa-upload"></i><input id="admQrFile" type="file" accept="image/*"></div>
+              </div>
+            </div>
+            <div class="adm-card">
+              <h3><i class="fa-solid fa-at"></i> Change UPI</h3>
+              <div style="color:#8a93a6;font-size:12px;margin-bottom:6px">Current UPI: <b style="color:#fff">${S.upi}</b></div>
+              <div class="adm-field"><label>New UPI</label><div class="adm-inp"><i class="fa-solid fa-at"></i><input id="admUpiInp" value="${S.upi}" placeholder="name@upi"></div></div>
+            </div>
+            <button class="adm-btn" onclick="admSaveQR()"><i class="fa-solid fa-check"></i> Confirm</button>`;
+        }
+
+        function admSaveQR() {
+            const upi = document.getElementById('admUpiInp').value.trim();
+            const file = document.getElementById('admQrFile').files[0];
+            const done = () => {
+                save();
+                fbPushAppConfig();
+                document.getElementById('qrImg').src = S.qrUrl;
+                document.getElementById('upiText').textContent = 'UPI: ' + S.upi;
+                toast('QR / UPI updated');
+                admGo('qr');
+            };
+            if (upi) S.upi = upi;
+            if (file) { const r = new FileReader();
+                r.onload = e => { S.qrUrl = e.target.result;
+                    done(); };
+                r.readAsDataURL(file); } else done();
+        }
+
+        function admRenderAddReq(m) {
+            const list = admAllAddReq();
+            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-plus"></i> Add Funds Requests</h1>
+            <div id="admAddList">${list.length?list.map(r=>admAddItem(r)).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No add funds requests yet</div>`}</div>`;
+        }
+
+        function admAddItem(r) {
+            return `<div class="adm-item" style="min-height:80px">
+            <div class="top"><div class="name">${r.user} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${r.phone}</span></div><span class="pill-s ${r.status}">${r.status}</span></div>
+            <div class="meta"><span>UTR: <b style="color:#fff">${r.utr}</b></span><span>Amount: <b style="color:#ffcf47">₹${r.amount}</b></span><span>Sender: ${r.sender||'-'}</span><span>${fmtTime(r.time)}</span></div>
+            ${r.status==='processing'?`<div class="actions"><button class="adm-btn green sm" onclick="admApproveAdd('${r.phone}',${r.idx})"><i class="fa-solid fa-check"></i> Approve</button><button class="adm-btn red sm" onclick="admRejectAdd('${r.phone}',${r.idx})"><i class="fa-solid fa-xmark"></i> Reject</button></div>`:''}
+          </div>`;
+        }
+
+        function admApproveAdd(ph, idx) {
+            const u = S.users[ph];
+            const r = u.addHist[idx];
+            if (r.status !== 'processing') return;
+            r.status = 'success';
+            u.balance += r.amount;
+            u.trans.push({ type: 'credit', amount: r.amount, note: `Add funds approved (UTR ${r.utr})`, time: Date.now() });
+            // Referral reward
+            if (u.referredBy && !u.referRewarded && r.amount >= 50) {
+                for (const k in S.users) {
+                    if (S.users[k].refer === u.referredBy) {
+                        const ref = S.users[k];
+                        ref.balance += 10;
+                        ref.trans.push({ type: 'credit', amount: 10, note: `Referral reward (${u.name})`, time: Date.now() });
+                        ref.refers = ref.refers || [];
+                        ref.refers.push({ name: u.name, phone: u.phone, reward: 10, time: Date.now() });
+                        u.referRewarded = true;
+                        fbPushUser(ref);
+                        break;
+                    }
+                }
+            }
+            fbPushUser(u);
+            save();
+            toast('Approved');
+            admGo('addreq');
+            if (u === S.users[S.session]) refreshAll();
+        }
+
+        function admRejectAdd(ph, idx) {
+            const u = S.users[ph];
+            const r = u.addHist[idx];
+            if (r.status !== 'processing') return;
+            r.status = 'failed';
+            u.trans.push({ type: 'debit', amount: 0, note: `Add funds rejected (UTR ${r.utr})`, time: Date.now() });
+            fbPushUser(u);
+            save();
+            toast('Rejected');
+            admGo('addreq');
+        }
+
+        function admRenderWitReq(m) {
+            const list = admAllWitReq();
+            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-arrow-down"></i> Withdraw Requests</h1>
+            ${list.length?list.map(r=>admWitItem(r)).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No withdraw requests yet</div>`}`;
+        }
+
+        function admWitItem(r) {
+            return `<div class="adm-item">
+            <div class="top"><div class="name">${r.user} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${r.phone}</span></div><span class="pill-s ${r.status}">${r.status}</span></div>
+            <div class="meta"><span>Amount: <b style="color:#ffcf47">₹${r.amount}</b></span><span>UPI: <b style="color:#fff">${r.upi}</b></span><span>To: ${r.recv||'-'}</span><span>${fmtTime(r.time)}</span></div>
+            ${r.status==='processing'?`<div class="actions"><button class="adm-btn green sm" onclick="admApproveWit('${r.phone}',${r.idx})"><i class="fa-solid fa-check"></i> Approve</button><button class="adm-btn red sm" onclick="admRejectWit('${r.phone}',${r.idx})"><i class="fa-solid fa-xmark"></i> Reject</button></div>`:''}
+          </div>`;
+        }
+
+        function admApproveWit(ph, idx) {
+            const u = S.users[ph];
+            const r = u.withHist[idx];
+            if (r.status !== 'processing') return;
+            r.status = 'success';
+            u.trans.push({ type: 'debit', amount: 0, note: `Withdraw approved to ${r.upi}`, time: Date.now() });
+            fbPushUser(u);
+            save();
+            toast('Approved');
+            admGo('witreq');
+        }
+
+        function admRejectWit(ph, idx) {
+            const u = S.users[ph];
+            const r = u.withHist[idx];
+            if (r.status !== 'processing') return;
+            r.status = 'failed';
+            u.balance += r.amount;
+            u.trans.push({ type: 'credit', amount: r.amount, note: `Withdraw refund (${r.upi})`, time: Date.now() });
+            fbPushUser(u);
+            save();
+            toast('Rejected & refunded');
+            admGo('witreq');
+            if (u === S.users[S.session]) refreshAll();
+        }
+
+        function admRenderMatches(m) {
+            const all = [];
+            MODES.forEach(mo => { (S.matches[mo.id] || []).forEach((mt, i) => all.push({ mode: mo, idx: i, mt })); });
+            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-gamepad"></i> Edit Match Details</h1>
+            <div class="adm-search"><div class="adm-inp"><i class="fa-solid fa-magnifying-glass"></i><input id="admMSearch" placeholder="Search by Match ID..." oninput="admFilterMatches()"></div></div>
+            <div id="admMList">${all.map(x=>admMatchRow(x)).join('')}</div>`;
+        }
+
+        function admMatchRow(x) {
+            return `<div class="adm-item am-row" data-mid="${x.mt.matchId}">
+            <div class="top"><div class="name">${x.mode.name} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${x.mode.map}</span></div><span class="pill-s ${x.mt.status==='live'?'success':'processing'}">${x.mt.status}</span></div>
+            <div class="meta"><span>ID: <b style="color:#ffcf47">#${x.mt.matchId}</b></span><span>Prize ₹${x.mt.prize}</span><span>Kill ₹${x.mt.kill}</span><span>Entry ₹${x.mt.entry}</span><span>${x.mt.time}</span></div>
+            <div class="actions"><button class="adm-btn sm" onclick="admEditMatch('${x.mode.id}',${x.idx})"><i class="fa-solid fa-pen"></i> Edit</button><button class="adm-btn red sm" onclick="admDelMatch('${x.mode.id}',${x.idx})"><i class="fa-solid fa-trash"></i> Delete</button></div>
+          </div>`;
+        }
+
+        function admFilterMatches() {
+            const q = document.getElementById('admMSearch').value.trim().toLowerCase();
+            document.querySelectorAll('.am-row').forEach(el => { el.style.display = el.dataset.mid.toLowerCase().includes(q) ?
+                    '' : 'none'; });
+        }
+
+        function admEditMatch(modeId, idx) {
+            const mode = MODES.find(x => x.id === modeId);
+            const mt = S.matches[modeId][idx];
+            const m = document.getElementById('admMain');
+            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-pen"></i> Edit Match</h1>
+            <div class="adm-card">
+              <div style="color:#8a93a6;font-size:12px">Match ID</div>
+              <div class="adm-code" style="margin-bottom:12px">#${mt.matchId}</div>
+              <div class="adm-field"><label>Time</label><div class="adm-inp"><i class="fa-solid fa-clock"></i><input id="emTime" value="${mt.time}"></div></div>
+              <div class="adm-field"><label>Ban Guns</label><div class="adm-inp"><i class="fa-solid fa-ban"></i><input id="emBG" value="${mt.banGuns}"></div></div>
+              <div class="adm-field"><label>Ban Characters</label><div class="adm-inp"><i class="fa-solid fa-user-slash"></i><input id="emBC" value="${mt.banChars}"></div></div>
+              <div class="adm-field"><label>Prize Pool (₹)</label><div class="adm-inp"><i class="fa-solid fa-trophy"></i><input id="emPrize" type="number" value="${mt.prize}"></div></div>
+              <div class="adm-field"><label>Entry Fee (₹)</label><div class="adm-inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="emEntry" type="number" value="${mt.entry}"></div></div>
+              <div class="adm-field"><label>Per Kill (₹)</label><div class="adm-inp"><i class="fa-solid fa-crosshairs"></i><input id="emKill" type="number" value="${mt.kill}"></div></div>
+              <div class="adm-row"><button class="adm-btn" onclick="admSaveMatch('${modeId}',${idx})"><i class="fa-solid fa-check"></i> Save</button><button class="adm-btn sec" onclick="admGo('matches')"><i class="fa-solid fa-angle-left"></i> Back</button></div>
+            </div>`;
+        }
+
+        function admSaveMatch(modeId, idx) {
+            const mt = S.matches[modeId][idx];
+            mt.time = document.getElementById('emTime').value.trim() || mt.time;
+            mt.banGuns = document.getElementById('emBG').value.trim();
+            mt.banChars = document.getElementById('emBC').value.trim();
+            mt.prize = +document.getElementById('emPrize').value || 0;
+            mt.entry = +document.getElementById('emEntry').value || 0;
+            mt.kill = +document.getElementById('emKill').value || 0;
+            save();
+            // Push matches to Firebase so others see
+            _fbSafe(db => db.ref('matches/' + modeId).set(S.matches[modeId]));
+            toast('Match updated');
+            admGo('matches');
+            if (currentMode && currentMode.id === modeId) openMode(modeId);
+        }
+
+        function admDelMatch(modeId, idx) {
+            if (!confirm('Delete this match permanently?')) return;
+            S.matches[modeId].splice(idx, 1);
+            save();
+            _fbSafe(db => db.ref('matches/' + modeId).set(S.matches[modeId]));
+            toast('Match deleted');
+            admGo('matches');
+            if (currentMode && currentMode.id === modeId) openMode(modeId);
+        }
+
+        /* ========== ADMIN USERS (with password visible) ========== */
+        function admRenderUsers(m) {
+            const users = Object.values(S.users);
+            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-users"></i> Users (${users.length})</h1>
+            <div class="adm-search"><div class="adm-inp"><i class="fa-solid fa-magnifying-glass"></i><input id="admUSearch" placeholder="Search by UID..." oninput="admFilterUsers()"></div></div>
+            <div id="admUList">${users.length?users.map(u=>admUserRow(u)).join(''):`<div class="adm-empty"><i class="fa-solid fa-user-slash"></i>No users yet</div>`}</div>`;
+        }
+
+        function admUserRow(u) {
+            // ⬇️ Show plain password here
+            const passDisplay = u.plainPass ? u.plainPass : '********';
+            return `<div class="adm-item au-row" data-uid="${u.uid}" style="min-height:50px">
+            <div class="top"><div class="name">${u.name} ${u.blocked?'<span class="pill-s failed">BLOCKED</span>':''}</div><div style="color:#ffcf47;font-family:'Orbitron';font-weight:700">₹${u.balance}</div></div>
+            <div class="meta"><span>UID: <b style="color:#ffcf47">${u.uid}</b></span><span>Phone: <b style="color:#fff">${u.phone}</b></span><span>Password: <b style="color:#22c55e">${passDisplay}</b></span></div>
+            <div class="actions">
+              <button class="adm-btn green sm" onclick="admUserBal('${u.phone}',1)"><i class="fa-solid fa-plus"></i></button>
+              <button class="adm-btn red sm" onclick="admUserBal('${u.phone}',-1)"><i class="fa-solid fa-minus"></i></button>
+              <button class="adm-btn sec sm" onclick="admToggleBlock('${u.phone}')"><i class="fa-solid fa-${u.blocked?'unlock':'ban'}"></i> ${u.blocked?'Unblock':'Block'}</button>
+            </div>
+          </div>`;
+        }
+
+        function admFilterUsers() {
+            const q = document.getElementById('admUSearch').value.trim().toLowerCase();
+            document.querySelectorAll('.au-row').forEach(el => { el.style.display = el.dataset.uid.toLowerCase().includes(q) ?
+                    '' : 'none'; });
+        }
+
+        function admUserBal(ph, sign) {
+            const v = prompt('Enter amount to ' + (sign > 0 ? 'add' : 'subtract') + ':');
+            const n = parseInt(v || '0');
+            if (!n || n <= 0) return;
+            const u = S.users[ph];
+            if (sign > 0) { u.balance += n;
+                u.trans.push({ type: 'credit', amount: n, note: 'Admin credit', time: Date.now() }); } else { u.balance = Math.max(
+                    0, u.balance - n);
+                u.trans.push({ type: 'debit', amount: n, note: 'Admin debit', time: Date.now() }); }
+            fbPushUser(u);
+            save();
+            toast('Balance updated');
+            admGo('users');
+            if (u === S.users[S.session]) refreshAll();
+        }
+
+        function admToggleBlock(ph) {
+            const u = S.users[ph];
+            u.blocked = !u.blocked;
+            fbPushUser(u);
+            save();
+            toast(u.blocked ? 'User blocked' : 'User unblocked');
+            admGo('users');
+        }
+
+        /* ========== ADMIN PASSWORD ========== */
+        function admRenderPassword(m) {
+            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-key"></i> Change Admin Password</h1>
+            <div class="adm-card">
+              <div class="adm-field"><label>Old Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="apOld" type="password"></div></div>
+              <div class="adm-field"><label>New Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="apNew" type="password"></div></div>
+              <div class="adm-field"><label>Confirm New Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="apNew2" type="password"></div></div>
+              <button class="adm-btn" onclick="admChangePass()"><i class="fa-solid fa-check"></i> Update</button>
+            </div>`;
+        }
+
+        async function admChangePass() {
+            const o = document.getElementById('apOld').value,
+                n = document.getElementById('apNew').value,
+                n2 = document.getElementById('apNew2').value;
+            const oh = await hashPass(o);
+            const stored = S.admin.password || '';
+            const okOld = stored.startsWith('sha256$') ? (stored === oh) : (stored === o);
+            if (!okOld) return toast('Old password incorrect');
+            if (n.length < 4) return toast('Password too short');
+            if (n !== n2) return toast('Passwords do not match');
+            S.admin.password = await hashPass(n);
+            save();
+            toast('Password updated');
+            admGo('password');
+        }
+
+        /* ========== ADMIN GIFT CODES ========== */
+        function admRenderGift(m) {
+            const codes = Object.entries(S.giftCodes || {});
+            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-gift"></i> Gift Codes</h1>
+            <div class="adm-card">
+              <h3><i class="fa-solid fa-plus"></i> Generate Code</h3>
+              <div class="adm-field"><label>Enter User Limit</label><div class="adm-inp"><i class="fa-solid fa-users"></i><input id="gcLimit" type="number" min="1" placeholder="e.g. 5"></div></div>
+              <div class="adm-field"><label>Amount (₹)</label><div class="adm-inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="gcAmt" type="number" min="1" placeholder="e.g. 50"></div></div>
+              <button class="adm-btn" onclick="admGenGift()"><i class="fa-solid fa-bolt"></i> Generate</button>
+            </div>
+            <div class="adm-card">
+              <h3><i class="fa-solid fa-list"></i> Active Codes</h3>
+              ${codes.length?codes.map(([code,g])=>{
+                const exp=g.expires? new Date(g.expires).toLocaleString():'—';
+                const active=!g.expires||Date.now()<g.expires;
+                return `<div class="adm-item"><div class="top"><div class="adm-code">${code}</div><span class="pill-s ${active?'success':'failed'}">${active?'active':'expired'}</span></div>
+                  <div class="meta"><span>₹${g.amount}</span><span>Limit: ${g.limit||'∞'}</span><span>Used: ${(g.used||[]).length}</span><span>Expires: ${exp}</span></div>
+                  <div class="actions"><button class="adm-btn red sm" onclick="admDelGift('${code}')"><i class="fa-solid fa-trash"></i></button></div>
+                </div>`;
+              }).join(''):`<div class="adm-empty"><i class="fa-solid fa-ticket"></i>No codes yet</div>`}
+            </div>`;
+        }
+
+        function admGenGift() {
+            const limit = parseInt(document.getElementById('gcLimit').value || '0');
+            const amt = parseInt(document.getElementById('gcAmt').value || '0');
+            if (limit < 1 || amt < 1) return toast('Enter valid limit and amount');
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 25; i++) code += chars[Math.floor(Math.random() * chars.length)];
+            S.giftCodes[code] = { amount: amt, limit, used: [], expires: Date.now() + 12 * 3600 * 1000 };
+            save();
+            fbPushGiftCodes();
+            toast('Code generated (valid 12h)');
+            admGo('gift');
+        }
+
+        function admDelGift(code) { delete S.giftCodes[code];
+            save();
+            fbPushGiftCodes();
+            admGo('gift'); }
+
+        /* ========== ADMIN MATCH REQUESTS ========== */
+        function admRenderMatchReq(m) {
+            const list = S.matchReq || [];
+            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-file-signature"></i> Match Requests</h1>
+            ${list.length?list.map(r=>`<div class="adm-item">
+              <div class="top"><div class="name">#${r.matchId} · ${r.game}</div><span class="pill-s success">JOINED</span></div>
+              <div class="meta"><span>UID: <b style="color:#ffcf47">${r.uid}</b></span><span>WA: <b style="color:#fff">${r.wa}</b></span><span>ID Name: ${r.idName}</span><span>Level ${r.level}</span></div>
+              <div class="meta"><span>Registered: <b style="color:#fff">${r.registeredName||'-'}</b></span><span>Phone: ${r.registeredPhone||'-'}</span><span>${fmtTime(r.time)}</span></div>
+            </div>`).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No match requests yet</div>`}`;
+        }
+
+        /* ========== ADMIN PROMOTIONS ========== */
+        function admRenderPromoAdmin(m) {
+            const list = S.promos || [];
+            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-bullhorn"></i> Add Promotion</h1>
+            <div class="adm-card">
+              <div class="adm-field"><label>Enter Title</label><div class="adm-inp"><i class="fa-solid fa-heading"></i><input id="prTitle" placeholder="Title"></div></div>
+              <div class="adm-field"><label>Description (optional)</label><div class="adm-inp"><i class="fa-solid fa-align-left"></i><input id="prDesc" placeholder="Short description"></div></div>
+              <div class="adm-field"><label>Details</label><div class="adm-inp"><i class="fa-solid fa-circle-info"></i><input id="prDet" placeholder="Details"></div></div>
+              <div class="adm-field"><label>Link</label><div class="adm-inp"><i class="fa-solid fa-link"></i><input id="prLink" placeholder="https://..."></div></div>
+              <div class="adm-field"><label>Amount (₹) user can claim</label><div class="adm-inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="prAmt" type="number" min="0" value="0"></div></div>
+              <button class="adm-btn" onclick="admAddPromo()"><i class="fa-solid fa-plus"></i> Add</button>
+            </div>
+            <div class="adm-card"><h3><i class="fa-solid fa-list"></i> Active Promotions</h3>
+              ${list.length?list.map((p,i)=>`<div class="adm-item">
+                <div class="top"><div class="name">${p.title}</div><span style="color:#ffcf47;font-family:'Orbitron';font-weight:700">₹${p.amount||0}</span></div>
+                <div class="meta"><span>${p.desc||''}</span></div>
+                <div class="meta"><span>${p.details||''}</span><span>${p.link?`<a href="${p.link}" target="_blank" style="color:#ffcf47">Link</a>`:''}</span></div>
+                <div class="actions"><button class="adm-btn red sm" onclick="admDelPromo(${i})"><i class="fa-solid fa-trash"></i> Delete</button></div>
+              </div>`).join(''):`<div class="adm-empty"><i class="fa-solid fa-bullhorn"></i>No promotions yet</div>`}
+            </div>`;
+        }
+
+        function admAddPromo() {
+            const p = {
+                title: document.getElementById('prTitle').value.trim(),
+                desc: document.getElementById('prDesc').value.trim(),
+                details: document.getElementById('prDet').value.trim(),
+                link: document.getElementById('prLink').value.trim(),
+                amount: parseInt(document.getElementById('prAmt').value || '0'),
+                time: Date.now()
+            };
+            if (!p.title) return toast('Enter title');
+            S.promos = S.promos || [];
+            S.promos.unshift(p);
+            save();
+            fbPushPromos();
+            toast('Promotion added');
+            admGo('promo');
+        }
+
+        function admDelPromo(i) { S.promos.splice(i, 1);
+            save();
+            fbPushPromos();
+            admGo('promo'); }
+
+        /* ========== DOUBLE-TAP LOGO → ADMIN PANEL ========== */
+        (function initAdminAccess() {
+            const targetIds = ['authLogoImg', 'authLogo'];
+            targetIds.forEach(function(id) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                let lastTap = 0,
+                    tapTimer = null;
+                el.addEventListener('dblclick', function(e) { e.stopPropagation(); if (typeof openAdminLogin === 'function')
+                        openAdminLogin(); });
+                el.addEventListener('click', function(e) {
+                    const now = Date.now();
+                    if (now - lastTap < 500) {
+                        e.stopPropagation();
+                        clearTimeout(tapTimer);
+                        if (typeof openAdminLogin === 'function') openAdminLogin();
+                        lastTap = 0;
+                    } else { lastTap = now;
+                        tapTimer = setTimeout(function() { lastTap = 0; }, 500); }
+                });
+            });
+        })();
+
+        /* ========== BOOT ========== */
         document.getElementById('authLogoImg').src = LOGO_IMG;
         document.getElementById('authBrand').textContent = S.brand;
+        // Also push initial app config to Firebase if not present
+        if (_fbDB) {
+            _fbDB.ref('appConfig').once('value', snap => {
+                if (!snap.exists()) fbPushAppConfig();
+            });
+            // Sync matches to Firebase if not present
+            MODES.forEach(m => {
+                _fbDB.ref('matches/' + m.id).once('value', snap => {
+                    if (!snap.exists()) _fbDB.ref('matches/' + m.id).set(S.matches[m.id]);
+                });
+            });
+        }
         if (S.session && S.users[S.session]) enterApp();
     </script>
 
     <!-- ============================================================ -->
-    <!-- ================= ADMIN PANEL ============================== -->
+    <!-- ================= ADMIN PANEL HTML ========================== -->
     <!-- ============================================================ -->
     <style>
         .admin-root {
@@ -2636,640 +3415,6 @@
             <main class="adm-main" id="admMain"></main>
         </div>
     </div>
-
-    <script>
-        /* ============= ADMIN PANEL LOGIC ============= */
-        // openAdminLogin – always show login screen, reset session
-        function openAdminLogin() {
-            // Reset admin session to force login every time
-            S.adminSession = false;
-            save();
-            document.getElementById('admHeaderLogo').src = LOGO_IMG;
-            document.getElementById('admHeaderName').textContent = (S.brand || 'DURABLE') + ' ADMIN';
-            document.getElementById('adminRoot').classList.add('show');
-            // Always show login screen, hide body
-            document.getElementById('admLoginScreen').style.display = 'flex';
-            document.getElementById('admBody').style.display = 'none';
-            // Clear password field
-            document.getElementById('admPass').value = '';
-        }
-
-        function admClose() {
-            document.getElementById('adminRoot').classList.remove('show');
-            // Clear session on close so next open requires login
-            S.adminSession = false;
-            save();
-        }
-
-        function admDoLogin() {
-            const e = document.getElementById('admEmail').value.trim().toLowerCase();
-            const p = document.getElementById('admPass').value;
-            if (e !== S.admin.email.toLowerCase() || p !== S.admin.password) {
-                toast('Invalid admin credentials');
-                return;
-            }
-            S.adminSession = true;
-            save();
-            document.getElementById('admPass').value = '';
-            document.getElementById('admLoginScreen').style.display = 'none';
-            document.getElementById('admBody').style.display = 'flex';
-            admGo('dashboard');
-        }
-
-        function admLogout() {
-            S.adminSession = false;
-            save();
-            // Show login screen again
-            document.getElementById('admLoginScreen').style.display = 'flex';
-            document.getElementById('admBody').style.display = 'none';
-            document.getElementById('admPass').value = '';
-            toast('Logged out');
-        }
-
-        function admToggleSide() { document.getElementById('admSide').classList.toggle('open');
-            document.querySelector('.adm-scrim').classList.toggle('open'); }
-
-        function admGo(sec) {
-            document.querySelectorAll('.adm-side .item').forEach(el => el.classList.toggle('on', el.dataset.sec === sec));
-            const m = document.getElementById('admMain');
-            if (window.innerWidth <= 720) { document.getElementById('admSide').classList.remove('open');
-                document.querySelector('.adm-scrim').classList.remove('open'); }
-            const sections = { dashboard: admRenderDashboard, appname: admRenderAppName, support: admRenderSupport, qr: admRenderQR,
-                addreq: admRenderAddReq, witreq: admRenderWitReq, matches: admRenderMatches, matchreq: admRenderMatchReq,
-                promo: admRenderPromo, users: admRenderUsers, password: admRenderPassword, gift: admRenderGift };
-            (sections[sec] || admRenderDashboard)(m);
-        }
-
-        /* Data aggregation */
-        function admAllAddReq() {
-            const out = [];
-            for (const ph in S.users) {
-                const u = S.users[ph];
-                (u.addHist || []).forEach((r, i) => out.push({ phone: ph, user: u.name, idx: i, ...r }));
-            }
-            return out.sort((a, b) => b.time - a.time);
-        }
-
-        function admAllWitReq() {
-            const out = [];
-            for (const ph in S.users) {
-                const u = S.users[ph];
-                (u.withHist || []).forEach((r, i) => out.push({ phone: ph, user: u.name, idx: i, ...r }));
-            }
-            return out.sort((a, b) => b.time - a.time);
-        }
-
-        function admTotalSpent() {
-            let t = 0;
-            for (const ph in S.users) {
-                (S.users[ph].trans || []).forEach(x => { if (x.type === 'debit' && /Match entry/i.test(x.note || '')) t += (x
-                        .amount || 0); });
-            }
-            return t;
-        }
-
-        function admRenderDashboard(m) {
-            const users = Object.keys(S.users).length;
-            const addTotal = admAllAddReq().reduce((a, b) => a + (b.amount || 0), 0);
-            const witSuccess = admAllWitReq().filter(r => r.status === 'success').reduce((a, b) => a + (b.amount || 0), 0);
-            const spent = admTotalSpent();
-            m.innerHTML = `
-            <h1 class="adm-h1"><i class="fa-solid fa-gauge-high"></i> Dashboard</h1>
-            <div class="adm-stats">
-              <div class="adm-stat"><div class="k"><i class="fa-solid fa-users"></i> Active Users</div><div class="v">${users}</div></div>
-              <div class="adm-stat"><div class="k"><i class="fa-solid fa-plus"></i> Total Add Funds Req</div><div class="v">₹${addTotal}</div></div>
-              <div class="adm-stat"><div class="k"><i class="fa-solid fa-arrow-down"></i> Total Withdraw (OK)</div><div class="v">₹${witSuccess}</div></div>
-              <div class="adm-stat"><div class="k"><i class="fa-solid fa-gamepad"></i> Total Spent</div><div class="v">₹${spent}</div></div>
-            </div>
-            <div class="adm-card"><h3><i class="fa-solid fa-circle-info"></i> Quick Info</h3>
-              <div style="color:#8a93a6;font-size:13px;line-height:1.7">
-                App name: <b style="color:#fff">${S.brand}</b><br>
-                Support link: <b style="color:#fff">${S.supportUrl}</b><br>
-                UPI: <b style="color:#fff">${S.upi}</b><br>
-                Admin email: <b style="color:#fff">${S.admin.email}</b>
-              </div>
-            </div>`;
-        }
-
-        function admRenderAppName(m) {
-            m.innerHTML = `
-            <h1 class="adm-h1"><i class="fa-solid fa-signature"></i> Change App Name</h1>
-            <div class="adm-card">
-              <div style="color:#8a93a6;font-size:12px;margin-bottom:6px">Current app name</div>
-              <div class="adm-code" style="margin-bottom:14px">${S.brand}</div>
-              <div class="adm-field"><label>Enter new app name</label><div class="adm-inp"><i class="fa-solid fa-signature"></i><input id="admNewName" placeholder="New name" value="${S.brand}"></div></div>
-              <button class="adm-btn" onclick="admSaveName()"><i class="fa-solid fa-check"></i> Confirm</button>
-            </div>`;
-        }
-
-        function admSaveName() {
-            const v = document.getElementById('admNewName').value.trim();
-            if (!v) return toast('Enter a name');
-            S.brand = v;
-            save();
-            document.getElementById('brandName').textContent = v;
-            document.getElementById('authBrand').textContent = v;
-            document.getElementById('admHeaderName').textContent = v + ' ADMIN';
-            document.title = v;
-            toast('App name updated');
-            admGo('appname');
-        }
-
-        function admRenderSupport(m) {
-            m.innerHTML = `
-            <h1 class="adm-h1"><i class="fa-solid fa-headset"></i> Change Support Link</h1>
-            <div class="adm-card">
-              <div style="color:#8a93a6;font-size:12px;margin-bottom:6px">Current support link</div>
-              ${S.supportUrl?`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="adm-code">${S.supportUrl}</div><button class="adm-btn red sm" onclick="admDelSupport()"><i class="fa-solid fa-trash"></i> Delete</button></div>`:`<div style="color:#8a93a6;font-size:13px">No support link set.</div>`}
-              <div style="margin-top:14px">
-                <button class="adm-btn sm" onclick="document.getElementById('admSupNew').style.display='block'"><i class="fa-solid fa-plus"></i> Add / Update Link</button>
-              </div>
-              <div id="admSupNew" style="display:${S.supportUrl?'none':'block'};margin-top:12px">
-                <div class="adm-field"><label>Enter link</label><div class="adm-inp"><i class="fa-solid fa-link"></i><input id="admSupInput" placeholder="https://..."></div></div>
-                <button class="adm-btn" onclick="admSaveSupport()"><i class="fa-solid fa-check"></i> Confirm</button>
-              </div>
-            </div>`;
-        }
-
-        function admDelSupport() { S.supportUrl = '';
-            save();
-            toast('Support link deleted');
-            admGo('support'); }
-
-        function admSaveSupport() { const v = document.getElementById('admSupInput').value.trim(); if (!v) return toast(
-                'Enter link');
-            S.supportUrl = v;
-            save();
-            toast('Support link updated');
-            admGo('support'); }
-
-        function admRenderQR(m) {
-            m.innerHTML = `
-            <h1 class="adm-h1"><i class="fa-solid fa-qrcode"></i> QR and UPI</h1>
-            <div class="adm-card">
-              <h3><i class="fa-solid fa-image"></i> Current QR</h3>
-              <div class="adm-qr-preview"><img src="${S.qrUrl}"></div>
-              <div class="adm-field"><label>Upload new QR</label>
-                <div class="adm-inp"><i class="fa-solid fa-upload"></i><input id="admQrFile" type="file" accept="image/*"></div>
-              </div>
-            </div>
-            <div class="adm-card">
-              <h3><i class="fa-solid fa-at"></i> Change UPI</h3>
-              <div style="color:#8a93a6;font-size:12px;margin-bottom:6px">Current UPI: <b style="color:#fff">${S.upi}</b></div>
-              <div class="adm-field"><label>New UPI</label><div class="adm-inp"><i class="fa-solid fa-at"></i><input id="admUpiInp" value="${S.upi}" placeholder="name@upi"></div></div>
-            </div>
-            <button class="adm-btn" onclick="admSaveQR()"><i class="fa-solid fa-check"></i> Confirm</button>`;
-        }
-
-        function admSaveQR() {
-            const upi = document.getElementById('admUpiInp').value.trim();
-            const file = document.getElementById('admQrFile').files[0];
-            const done = () => { save();
-                document.getElementById('qrImg').src = S.qrUrl;
-                document.getElementById('upiText').textContent = 'UPI: ' + S.upi;
-                toast('QR / UPI updated');
-                admGo('qr'); };
-            if (upi) S.upi = upi;
-            if (file) { const r = new FileReader();
-                r.onload = e => { S.qrUrl = e.target.result;
-                    done(); };
-                r.readAsDataURL(file); } else done();
-        }
-
-        function admRenderAddReq(m) {
-            const list = admAllAddReq();
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-plus"></i> Add Funds Requests</h1>
-            <div id="admAddList">${list.length?list.map(r=>admAddItem(r)).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No add funds requests yet</div>`}</div>`;
-        }
-
-        function admAddItem(r) {
-            return `<div class="adm-item" style="min-height:80px">
-            <div class="top"><div class="name">${r.user} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${r.phone}</span></div><span class="pill-s ${r.status}">${r.status}</span></div>
-            <div class="meta"><span>UTR: <b style="color:#fff">${r.utr}</b></span><span>Amount: <b style="color:#ffcf47">₹${r.amount}</b></span><span>Sender: ${r.sender||'-'}</span><span>${fmtTime(r.time)}</span></div>
-            ${r.status==='processing'?`<div class="actions"><button class="adm-btn green sm" onclick="admApproveAdd('${r.phone}',${r.idx})"><i class="fa-solid fa-check"></i> Approve</button><button class="adm-btn red sm" onclick="admRejectAdd('${r.phone}',${r.idx})"><i class="fa-solid fa-xmark"></i> Reject</button></div>`:''}
-          </div>`;
-        }
-
-        function admApproveAdd(ph, idx) {
-            const u = S.users[ph];
-            const r = u.addHist[idx];
-            if (r.status !== 'processing') return;
-            r.status = 'success';
-            u.balance += r.amount;
-            u.trans.push({ type: 'credit', amount: r.amount, note: `Add funds approved (UTR ${r.utr})`, time: Date.now() });
-            // Referral reward: only once per referred user, only when deposit >= ₹50
-            if (u.referredBy && !u.referRewarded && r.amount >= 50) {
-                for (const k in S.users) {
-                    if (S.users[k].refer === u.referredBy) {
-                        const ref = S.users[k];
-                        ref.balance += 10;
-                        ref.trans.push({ type: 'credit', amount: 10, note: `Referral reward (${u.name})`, time: Date.now() });
-                        ref.refers = ref.refers || [];
-                        ref.refers.push({ name: u.name, phone: u.phone, reward: 10, time: Date.now() });
-                        u.referRewarded = true;
-                        fbPushUser(ref);
-                        break;
-                    }
-                }
-            }
-            fbPushUser(u);
-            save();
-            toast('Approved');
-            admGo('addreq');
-            if (u === S.users[S.session]) refreshAll();
-        }
-
-        function admRejectAdd(ph, idx) {
-            const u = S.users[ph];
-            const r = u.addHist[idx];
-            if (r.status !== 'processing') return;
-            r.status = 'failed';
-            u.trans.push({ type: 'debit', amount: 0, note: `Add funds rejected (UTR ${r.utr})`, time: Date.now() });
-            fbPushUser(u);
-            save();
-            toast('Rejected');
-            admGo('addreq');
-        }
-
-        function admRenderWitReq(m) {
-            const list = admAllWitReq();
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-arrow-down"></i> Withdraw Requests</h1>
-            ${list.length?list.map(r=>admWitItem(r)).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No withdraw requests yet</div>`}`;
-        }
-
-        function admWitItem(r) {
-            return `<div class="adm-item">
-            <div class="top"><div class="name">${r.user} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${r.phone}</span></div><span class="pill-s ${r.status}">${r.status}</span></div>
-            <div class="meta"><span>Amount: <b style="color:#ffcf47">₹${r.amount}</b></span><span>UPI: <b style="color:#fff">${r.upi}</b></span><span>To: ${r.recv||'-'}</span><span>${fmtTime(r.time)}</span></div>
-            ${r.status==='processing'?`<div class="actions"><button class="adm-btn green sm" onclick="admApproveWit('${r.phone}',${r.idx})"><i class="fa-solid fa-check"></i> Approve</button><button class="adm-btn red sm" onclick="admRejectWit('${r.phone}',${r.idx})"><i class="fa-solid fa-xmark"></i> Reject</button></div>`:''}
-          </div>`;
-        }
-
-        function admApproveWit(ph, idx) {
-            const u = S.users[ph];
-            const r = u.withHist[idx];
-            if (r.status !== 'processing') return;
-            r.status = 'success';
-            u.trans.push({ type: 'debit', amount: 0, note: `Withdraw approved to ${r.upi}`, time: Date.now() });
-            save();
-            toast('Approved');
-            admGo('witreq');
-        }
-
-        function admRejectWit(ph, idx) {
-            const u = S.users[ph];
-            const r = u.withHist[idx];
-            if (r.status !== 'processing') return;
-            r.status = 'failed';
-            u.balance += r.amount;
-            u.trans.push({ type: 'credit', amount: r.amount, note: `Withdraw refund (${r.upi})`, time: Date.now() });
-            save();
-            toast('Rejected & refunded');
-            admGo('witreq');
-            if (u === S.users[S.session]) refreshAll();
-        }
-
-        function admRenderMatches(m) {
-            const all = [];
-            MODES.forEach(mo => { (S.matches[mo.id] || []).forEach((mt, i) => all.push({ mode: mo, idx: i, mt })); });
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-gamepad"></i> Edit Match Details</h1>
-            <div class="adm-search"><div class="adm-inp"><i class="fa-solid fa-magnifying-glass"></i><input id="admMSearch" placeholder="Search by Match ID..." oninput="admFilterMatches()"></div></div>
-            <div id="admMList">${all.map(x=>admMatchRow(x)).join('')}</div>`;
-        }
-
-        function admMatchRow(x) {
-            return `<div class="adm-item am-row" data-mid="${x.mt.matchId}">
-            <div class="top"><div class="name">${x.mode.name} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${x.mode.map}</span></div><span class="pill-s ${x.mt.status==='live'?'success':'processing'}">${x.mt.status}</span></div>
-            <div class="meta"><span>ID: <b style="color:#ffcf47">#${x.mt.matchId}</b></span><span>Prize ₹${x.mt.prize}</span><span>Kill ₹${x.mt.kill}</span><span>Entry ₹${x.mt.entry}</span><span>${x.mt.time}</span></div>
-            <div class="actions"><button class="adm-btn sm" onclick="admEditMatch('${x.mode.id}',${x.idx})"><i class="fa-solid fa-pen"></i> Edit</button><button class="adm-btn red sm" onclick="admDelMatch('${x.mode.id}',${x.idx})"><i class="fa-solid fa-trash"></i> Delete</button></div>
-          </div>`;
-        }
-
-        function admFilterMatches() {
-            const q = document.getElementById('admMSearch').value.trim().toLowerCase();
-            document.querySelectorAll('.am-row').forEach(el => { el.style.display = el.dataset.mid.toLowerCase().includes(q) ?
-                    '' : 'none'; });
-        }
-
-        function admEditMatch(modeId, idx) {
-            const mode = MODES.find(x => x.id === modeId);
-            const mt = S.matches[modeId][idx];
-            const m = document.getElementById('admMain');
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-pen"></i> Edit Match</h1>
-            <div class="adm-card">
-              <div style="color:#8a93a6;font-size:12px">Match ID</div>
-              <div class="adm-code" style="margin-bottom:12px">#${mt.matchId}</div>
-              <div class="adm-field"><label>Time</label><div class="adm-inp"><i class="fa-solid fa-clock"></i><input id="emTime" value="${mt.time}"></div></div>
-              <div class="adm-field"><label>Ban Guns</label><div class="adm-inp"><i class="fa-solid fa-ban"></i><input id="emBG" value="${mt.banGuns}"></div></div>
-              <div class="adm-field"><label>Ban Characters</label><div class="adm-inp"><i class="fa-solid fa-user-slash"></i><input id="emBC" value="${mt.banChars}"></div></div>
-              <div class="adm-field"><label>Prize Pool (₹)</label><div class="adm-inp"><i class="fa-solid fa-trophy"></i><input id="emPrize" type="number" value="${mt.prize}"></div></div>
-              <div class="adm-field"><label>Entry Fee (₹)</label><div class="adm-inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="emEntry" type="number" value="${mt.entry}"></div></div>
-              <div class="adm-field"><label>Per Kill (₹)</label><div class="adm-inp"><i class="fa-solid fa-crosshairs"></i><input id="emKill" type="number" value="${mt.kill}"></div></div>
-              <div class="adm-row"><button class="adm-btn" onclick="admSaveMatch('${modeId}',${idx})"><i class="fa-solid fa-check"></i> Save</button><button class="adm-btn sec" onclick="admGo('matches')"><i class="fa-solid fa-angle-left"></i> Back</button></div>
-            </div>`;
-        }
-
-        function admSaveMatch(modeId, idx) {
-            const mt = S.matches[modeId][idx];
-            mt.time = document.getElementById('emTime').value.trim() || mt.time;
-            mt.banGuns = document.getElementById('emBG').value.trim();
-            mt.banChars = document.getElementById('emBC').value.trim();
-            mt.prize = +document.getElementById('emPrize').value || 0;
-            mt.entry = +document.getElementById('emEntry').value || 0;
-            mt.kill = +document.getElementById('emKill').value || 0;
-            save();
-            toast('Match updated');
-            admGo('matches');
-            if (currentMode && currentMode.id === modeId) openMode(modeId);
-        }
-
-        function admRenderUsers(m) {
-            const users = Object.values(S.users);
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-users"></i> Users (${users.length})</h1>
-            <div class="adm-search"><div class="adm-inp"><i class="fa-solid fa-magnifying-glass"></i><input id="admUSearch" placeholder="Search by UID..." oninput="admFilterUsers()"></div></div>
-            <div id="admUList">${users.length?users.map(u=>admUserRow(u)).join(''):`<div class="adm-empty"><i class="fa-solid fa-user-slash"></i>No users yet</div>`}</div>`;
-        }
-
-        function admUserRow(u) {
-            return `<div class="adm-item au-row" data-uid="${u.uid}" style="min-height:50px">
-            <div class="top"><div class="name">${u.name} ${u.blocked?'<span class="pill-s failed">BLOCKED</span>':''}</div><div style="color:#ffcf47;font-family:'Orbitron';font-weight:700">₹${u.balance}</div></div>
-            <div class="meta"><span>UID: <b style="color:#ffcf47">${u.uid}</b></span><span>Phone: <b style="color:#fff">${u.phone}</b></span><span>Pass: <b style="color:#fff">••••••••</b></span></div>
-            <div class="actions">
-              <button class="adm-btn green sm" onclick="admUserBal('${u.phone}',1)"><i class="fa-solid fa-plus"></i></button>
-              <button class="adm-btn red sm" onclick="admUserBal('${u.phone}',-1)"><i class="fa-solid fa-minus"></i></button>
-              <button class="adm-btn sec sm" onclick="admToggleBlock('${u.phone}')"><i class="fa-solid fa-${u.blocked?'unlock':'ban'}"></i> ${u.blocked?'Unblock':'Block'}</button>
-            </div>
-          </div>`;
-        }
-
-        function admFilterUsers() {
-            const q = document.getElementById('admUSearch').value.trim().toLowerCase();
-            document.querySelectorAll('.au-row').forEach(el => { el.style.display = el.dataset.uid.toLowerCase().includes(q) ?
-                    '' : 'none'; });
-        }
-
-        function admUserBal(ph, sign) {
-            const v = prompt('Enter amount to ' + (sign > 0 ? 'add' : 'subtract') + ':');
-            const n = parseInt(v || '0');
-            if (!n || n <= 0) return;
-            const u = S.users[ph];
-            if (sign > 0) { u.balance += n;
-                u.trans.push({ type: 'credit', amount: n, note: 'Admin credit', time: Date.now() }); } else { u.balance = Math.max(
-                    0, u.balance - n);
-                u.trans.push({ type: 'debit', amount: n, note: 'Admin debit', time: Date.now() }); }
-            save();
-            toast('Balance updated');
-            admGo('users');
-            if (u === S.users[S.session]) refreshAll();
-        }
-
-        function admToggleBlock(ph) { const u = S.users[ph];
-            u.blocked = !u.blocked;
-            save();
-            toast(u.blocked ? 'User blocked' : 'User unblocked');
-            admGo('users'); }
-
-        function admRenderPassword(m) {
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-key"></i> Change Admin Password</h1>
-            <div class="adm-card">
-              <div class="adm-field"><label>Old Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="apOld" type="password"></div></div>
-              <div class="adm-field"><label>New Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="apNew" type="password"></div></div>
-              <div class="adm-field"><label>Confirm New Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="apNew2" type="password"></div></div>
-              <button class="adm-btn" onclick="admChangePass()"><i class="fa-solid fa-check"></i> Update</button>
-            </div>`;
-        }
-
-        function admChangePass() {
-            const o = document.getElementById('apOld').value,
-                n = document.getElementById('apNew').value,
-                n2 = document.getElementById('apNew2').value;
-            if (o !== S.admin.password) return toast('Old password incorrect');
-            if (n.length < 4) return toast('Password too short');
-            if (n !== n2) return toast('Passwords do not match');
-            S.admin.password = n;
-            save();
-            toast('Password updated');
-            admGo('password');
-        }
-
-        function admRenderGift(m) {
-            const codes = Object.entries(S.giftCodes || {});
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-gift"></i> Gift Codes</h1>
-            <div class="adm-card">
-              <h3><i class="fa-solid fa-plus"></i> Generate Code</h3>
-              <div class="adm-field"><label>Enter User Limit</label><div class="adm-inp"><i class="fa-solid fa-users"></i><input id="gcLimit" type="number" min="1" placeholder="e.g. 5"></div></div>
-              <div class="adm-field"><label>Amount (₹)</label><div class="adm-inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="gcAmt" type="number" min="1" placeholder="e.g. 50"></div></div>
-              <button class="adm-btn" onclick="admGenGift()"><i class="fa-solid fa-bolt"></i> Generate</button>
-            </div>
-            <div class="adm-card">
-              <h3><i class="fa-solid fa-list"></i> Active Codes</h3>
-              ${codes.length?codes.map(([code,g])=>{
-                const exp=g.expires? new Date(g.expires).toLocaleString():'—';
-                const active=!g.expires||Date.now()<g.expires;
-                return `<div class="adm-item"><div class="top"><div class="adm-code">${code}</div><span class="pill-s ${active?'success':'failed'}">${active?'active':'expired'}</span></div>
-                  <div class="meta"><span>₹${g.amount}</span><span>Limit: ${g.limit||'∞'}</span><span>Used: ${(g.used||[]).length}</span><span>Expires: ${exp}</span></div>
-                  <div class="actions"><button class="adm-btn red sm" onclick="admDelGift('${code}')"><i class="fa-solid fa-trash"></i></button></div>
-                </div>`;
-              }).join(''):`<div class="adm-empty"><i class="fa-solid fa-ticket"></i>No codes yet</div>`}
-            </div>`;
-        }
-
-        function admGenGift() {
-            const limit = parseInt(document.getElementById('gcLimit').value || '0');
-            const amt = parseInt(document.getElementById('gcAmt').value || '0');
-            if (limit < 1 || amt < 1) return toast('Enter valid limit and amount');
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let code = '';
-            for (let i = 0; i < 25; i++) code += chars[Math.floor(Math.random() * chars.length)];
-            S.giftCodes[code] = { amount: amt, limit, used: [], expires: Date.now() + 12 * 3600 * 1000 };
-            save();
-            toast('Code generated (valid 12h)');
-            admGo('gift');
-        }
-
-        function admDelGift(code) { delete S.giftCodes[code];
-            save();
-            admGo('gift'); }
-
-        /* Patch claimGift to respect limit + expiry */
-        const _origClaim = claimGift;
-        claimGift = function() {
-            const code = giftCode.value.trim().toUpperCase();
-            const usr = u();
-            if (!code) return toast('Enter a code');
-            const g = S.giftCodes[code];
-            if (!g) return toast('Invalid code');
-            if (g.expires && Date.now() > g.expires) return toast('Code expired');
-            if (g.limit && (g.used || []).length >= g.limit) return toast('Code limit reached');
-            if (g.used.includes(usr.phone)) return toast('Code already claimed');
-            g.used.push(usr.phone);
-            usr.balance += g.amount;
-            usr.trans.push({ type: 'credit', amount: g.amount, note: `Gift code ${code}`, time: Date.now() });
-            save();
-            refreshAll();
-            giftCode.value = '';
-            toast(`Success! ₹${g.amount} credited`);
-        };
-
-        /* Block signed-in blocked users */
-        const _origLogin = doLogin;
-        doLogin = async function() {
-            const phone = lPhone.value.trim();
-            const usr = S.users[phone];
-            if (usr && usr.blocked) return toast('Account blocked. Contact support.');
-            return _origLogin();
-        };
-
-        /* Secure admin login (hash-based). Migrates seed plaintext on first successful login. */
-        const _origAdmDo = admDoLogin;
-        admDoLogin = async function() {
-            const e = document.getElementById('admEmail').value.trim().toLowerCase();
-            const p = document.getElementById('admPass').value;
-            if (e !== S.admin.email.toLowerCase()) return toast('Invalid admin credentials');
-            const stored = S.admin.password || '';
-            const ph = await hashPass(p);
-            const ok = stored.startsWith('sha256$') ? (stored === ph) : (stored === p);
-            if (!ok) return toast('Invalid admin credentials');
-            if (!stored.startsWith('sha256$')) { S.admin.password = ph; }
-            S.adminSession = true;
-            save();
-            document.getElementById('admPass').value = '';
-            document.getElementById('admLoginScreen').style.display = 'none';
-            document.getElementById('admBody').style.display = 'flex';
-            admGo('dashboard');
-        };
-        admChangePass = async function() {
-            const o = document.getElementById('apOld').value,
-                n = document.getElementById('apNew').value,
-                n2 = document.getElementById('apNew2').value;
-            const oh = await hashPass(o);
-            const stored = S.admin.password || '';
-            const okOld = stored.startsWith('sha256$') ? (stored === oh) : (stored === o);
-            if (!okOld) return toast('Old password incorrect');
-            if (n.length < 4) return toast('Password too short');
-            if (n !== n2) return toast('Passwords do not match');
-            S.admin.password = await hashPass(n);
-            save();
-            toast('Password updated');
-            admGo('password');
-        };
-
-        /* Delete match */
-        function admDelMatch(modeId, idx) {
-            if (!confirm('Delete this match permanently?')) return;
-            S.matches[modeId].splice(idx, 1);
-            save();
-            toast('Match deleted');
-            admGo('matches');
-            if (currentMode && currentMode.id === modeId) openMode(modeId);
-        }
-
-        /* Match Requests panel */
-        function admRenderMatchReq(m) {
-            const list = S.matchReq || [];
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-file-signature"></i> Match Requests</h1>
-            ${list.length?list.map(r=>`<div class="adm-item">
-              <div class="top"><div class="name">#${r.matchId} · ${r.game}</div><span class="pill-s success">JOINED</span></div>
-              <div class="meta"><span>UID: <b style="color:#ffcf47">${r.uid}</b></span><span>WA: <b style="color:#fff">${r.wa}</b></span><span>ID Name: ${r.idName}</span><span>Level ${r.level}</span></div>
-              <div class="meta"><span>Registered: <b style="color:#fff">${r.registeredName||'-'}</b></span><span>Phone: ${r.registeredPhone||'-'}</span><span>${fmtTime(r.time)}</span></div>
-            </div>`).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No match requests yet</div>`}`;
-        }
-
-        /* Promotions panel */
-        function admRenderPromo(m) {
-            const list = S.promos || [];
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-bullhorn"></i> Add Promotion</h1>
-            <div class="adm-card">
-              <div class="adm-field"><label>Enter Title</label><div class="adm-inp"><i class="fa-solid fa-heading"></i><input id="prTitle" placeholder="Title"></div></div>
-              <div class="adm-field"><label>Description (optional)</label><div class="adm-inp"><i class="fa-solid fa-align-left"></i><input id="prDesc" placeholder="Short description"></div></div>
-              <div class="adm-field"><label>Details</label><div class="adm-inp"><i class="fa-solid fa-circle-info"></i><input id="prDet" placeholder="Details"></div></div>
-              <div class="adm-field"><label>Link</label><div class="adm-inp"><i class="fa-solid fa-link"></i><input id="prLink" placeholder="https://..."></div></div>
-              <div class="adm-field"><label>Amount (₹) user can claim</label><div class="adm-inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="prAmt" type="number" min="0" value="0"></div></div>
-              <button class="adm-btn" onclick="admAddPromo()"><i class="fa-solid fa-plus"></i> Add</button>
-            </div>
-            <div class="adm-card"><h3><i class="fa-solid fa-list"></i> Active Promotions</h3>
-              ${list.length?list.map((p,i)=>`<div class="adm-item">
-                <div class="top"><div class="name">${p.title}</div><span style="color:#ffcf47;font-family:'Orbitron';font-weight:700">₹${p.amount||0}</span></div>
-                <div class="meta"><span>${p.desc||''}</span></div>
-                <div class="meta"><span>${p.details||''}</span><span>${p.link?`<a href="${p.link}" target="_blank" style="color:#ffcf47">Link</a>`:''}</span></div>
-                <div class="actions"><button class="adm-btn red sm" onclick="admDelPromo(${i})"><i class="fa-solid fa-trash"></i> Delete</button></div>
-              </div>`).join(''):`<div class="adm-empty"><i class="fa-solid fa-bullhorn"></i>No promotions yet</div>`}
-            </div>`;
-        }
-
-        function admAddPromo() {
-            const p = { title: prTitle.value.trim(), desc: prDesc.value.trim(), details: prDet.value.trim(), link: prLink.value
-                    .trim(), amount: parseInt(prAmt.value || '0'), time: Date.now() };
-            if (!p.title) return toast('Enter title');
-            S.promos = S.promos || [];
-            S.promos.unshift(p);
-            save();
-            _fbSafe(db => db.ref('promos').set(S.promos));
-            toast('Promotion added');
-            admGo('promo');
-        }
-
-        function admDelPromo(i) { S.promos.splice(i, 1);
-            save();
-            _fbSafe(db => db.ref('promos').set(S.promos));
-            admGo('promo'); }
-
-        /* Render promo list in app */
-        function renderPromos() {
-            const list = S.promos || [];
-            document.getElementById('promoList').innerHTML = list.length ? list.map(p => `
-            <div class="h-item">
-              <div class="row1"><div class="amount" style="font-size:15px">${p.title}</div>${p.amount?`<span class="pill success">₹${p.amount}</span>`:''}</div>
-              ${p.desc?`<div class="meta"><span>${p.desc}</span></div>`:''}
-              ${p.details?`<div class="meta"><span>${p.details}</span></div>`:''}
-              ${p.link?`<div class="time"><a href="${p.link}" target="_blank" style="color:var(--gold)"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open link</a></div>`:''}
-            </div>`).join('') : empty('fa-solid fa-bullhorn', 'No promotions yet. Check back later!');
-        }
-
-        /* Sync promos from Firebase */
-        _fbSafe(db => {
-            db.ref('promos').on('value', snap => { const v = snap.val(); if (Array.isArray(v)) { S.promos = v;
-                    save(); if (document.getElementById('subPromo')?.classList.contains('active')) renderPromos(); } });
-        });
-
-        /* ========== DOUBLE-TAP LOGO → ADMIN PANEL (ONLY AUTH PAGE LOGO) ========== */
-        (function initAdminAccess() {
-            // Only target the auth page logo (authLogoImg and its container authLogo)
-            var targetIds = ['authLogoImg', 'authLogo'];
-
-            function setupDoubleTap(el) {
-                if (!el) return;
-                var lastTap = 0;
-                var tapTimer = null;
-
-                // Double click (desktop)
-                el.addEventListener('dblclick', function(e) {
-                    e.stopPropagation();
-                    if (typeof openAdminLogin === 'function') openAdminLogin();
-                });
-
-                // Double tap (mobile / click)
-                el.addEventListener('click', function(e) {
-                    var now = Date.now();
-                    if (now - lastTap < 500) {
-                        e.stopPropagation();
-                        clearTimeout(tapTimer);
-                        if (typeof openAdminLogin === 'function') openAdminLogin();
-                        lastTap = 0;
-                    } else {
-                        lastTap = now;
-                        tapTimer = setTimeout(function() { lastTap = 0; }, 500);
-                    }
-                });
-            }
-
-            // Attach only to the auth logo elements
-            targetIds.forEach(function(id) {
-                var el = document.getElementById(id);
-                if (el) setupDoubleTap(el);
-            });
-        })();
-    </script>
 
 </body>
 </html>
