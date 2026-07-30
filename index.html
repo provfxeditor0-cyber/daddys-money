@@ -1538,25 +1538,17 @@
 
     <script>
         /* ==========================================================================
-           FIREBASE CONFIGURATION (Obfuscated)
-           The config is stored in a base64‑encoded, reversed string to deter casual
-           inspection. This is NOT military‑grade encryption; Firebase security rules
-           provide the real protection.
+           FIREBASE CONFIGURATION
            ========================================================================== */
-        // Original config (base64 + reversed):
-        // "eyJhcGlLZXkiOiJBSXpTeUNYRXFZbDl3VENPZmZYeDd0OU1pdDNITnotSFNPVC1JIiwgImF1dGhEb21haW4iOiJkdXJhYmxlLTRhOTU1LmZpcmViYXNlYXBwLmNvbSIsICJwcm9qZWN0SWQiOiJkdXJhYmxlLTRhOTU1IiwgInN0b3JhZ2VCdWNrZXQiOiJkdXJhYmxlLTRhOTU1LmZpcmViYXNlc3RvcmFnZS5hcHAiLCAibWVzc2FnaW5nU2VuZGVySWQiOiI5MTg5MzMzODc2MTMiLCAiYXBwSWQiOiIxOjkxODkzMzM4NzYxMzp3ZWI6NGVjYTZkMzkyZmZkNTkwMjU0OTBiNCJ9"
-        // Which decodes to:
-        // {"apiKey":"AIzaSyCXEqYl9wTCOhfXx7d9Mit3HNz-HSOTf-I", "authDomain":"durable-4a955.firebaseapp.com", "projectId":"durable-4a955", "storageBucket":"durable-4a955.firebasestorage.app", "messagingSenderId":"918933387613", "appId":"1:918933387613:web:4eca6d392ffd59025490b4"}
-        //
-        // We reverse it before decoding so casual viewers see only gibberish.
-        const _fbCfgEncoded =
-            "eyJhcGlLZXkiOiJBSXpTeUNYRXFZbDl3VENPZmZYeDd0OU1pdDNITnotSFNPVC1JIiwgImF1dGhEb21haW4iOiJkdXJhYmxlLTRhOTU1LmZpcmViYXNlYXBwLmNvbSIsICJwcm9qZWN0SWQiOiJkdXJhYmxlLTRhOTU1IiwgInN0b3JhZ2VCdWNrZXQiOiJkdXJhYmxlLTRhOTU1LmZpcmViYXNlc3RvcmFnZS5hcHAiLCAibWVzc2FnaW5nU2VuZGVySWQiOiI5MTg5MzMzODc2MTMiLCAiYXBwSWQiOiIxOjkxODkzMzM4NzYxMzp3ZWI6NGVjYTZkMzkyZmZkNTkwMjU0OTBiNCJ9";
-        // Decode function: reverse the string then base64 decode
-        function _decryptFbConfig(encoded) {
-            const reversed = encoded.split('').reverse().join('');
-            try { return JSON.parse(atob(reversed)); } catch (e) { return null; }
-        }
-        const _fbCfg = _decryptFbConfig(_fbCfgEncoded) || {};
+        const _fbCfg = {
+            apiKey: "AIzaSyCXEqYl9wTCOhfXx7d9Mit3HNz-HSOTf-I",
+            authDomain: "durable-4a955.firebaseapp.com",
+            databaseURL: "https://durable-4a955-default-rtdb.firebaseio.com",
+            projectId: "durable-4a955",
+            storageBucket: "durable-4a955.firebasestorage.app",
+            messagingSenderId: "918933387613",
+            appId: "1:918933387613:web:4eca6d392ffd59025490b4"
+        };
 
         /* ---------- FIREBASE INIT ---------- */
         let _fbDB = null;
@@ -1565,6 +1557,7 @@
                 if (_fbCfg.apiKey) {
                     firebase.initializeApp(_fbCfg);
                     _fbDB = firebase.database();
+                    console.log('✅ Firebase initialized successfully');
                 } else {
                     console.warn('Firebase config invalid — using fallback local storage only.');
                 }
@@ -1645,7 +1638,10 @@
            then refresh UI. This ensures every device sees the same data.
            ============================================================ */
         function setupRealtimeSync() {
-            if (!_fbDB) return;
+            if (!_fbDB) {
+                console.warn('⚠️ Firebase not available — real-time sync disabled.');
+                return;
+            }
 
             // 1. Users
             _fbDB.ref('users').on('value', snap => {
@@ -1654,7 +1650,6 @@
                     // Merge: keep local fields that may not be in Firebase yet
                     for (const ph in val) {
                         if (!S.users[ph]) S.users[ph] = {};
-                        // Merge but keep existing arrays/history that might be newer locally
                         const fb = val[ph];
                         for (const key in fb) {
                             if (Array.isArray(fb[key]) && S.users[ph][key]) {
@@ -1753,6 +1748,22 @@
                     document.getElementById('qrImg').src = S.qrUrl;
                     document.getElementById('upiText').textContent = 'UPI: ' + S.upi;
                 }
+            });
+
+            // 8. Matches (so match edits reflect across devices)
+            MODES.forEach(m => {
+                _fbDB.ref('matches/' + m.id).on('value', snap => {
+                    const val = snap.val();
+                    if (val && typeof val === 'object' && Array.isArray(val)) {
+                        S.matches[m.id] = val;
+                        save();
+                        if (currentMode && currentMode.id === m.id) openMode(m.id);
+                        if (document.getElementById('adminRoot')?.classList.contains('show')) {
+                            const sec = document.querySelector('.adm-side .item.on');
+                            if (sec && sec.dataset.sec === 'matches') admGo('matches');
+                        }
+                    }
+                });
             });
 
             console.log('✅ Real-time Firebase sync active');
