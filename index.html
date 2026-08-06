@@ -666,25 +666,14 @@
     <script>
         /* ================================================================
            OBFUSCATED FIREBASE CONFIG
-           Values are base64 encoded and reversed for basic obfuscation
            ================================================================ */
-
-        // Encoded config parts (base64 + reversed)
-        // To decode: reverse + atob
         const _cfgEnc = {
-            // "AIzaSyDxCV7OGMIBp7nkBMwCB4W9MPRyyXiOvZ0" -> base64 -> reverse
             k: "wolPdiXy5PR1MQU9W4BCwmTknb7p7pBIMGO7VChDxSy5azIA",
-            // "rebets-ffeb8.firebaseapp.com" -> base64 -> reverse
             a: "==bvbuaesaebaiF.ml4bbff-zteber",
-            // "https://rebets-ffeb8-default-rtdb.firebaseio.com" -> base64 -> reverse
             u: "tnoc.oaiesbaferif.bdtr-tlufaed-8bbff-stebeper//:sptth",
-            // "rebets-ffeb8" -> base64 -> reverse
             p: "8bbff-stebeper",
-            // "rebets-ffeb8.firebasestorage.app" -> base64 -> reverse
             s: "==ppa.egarotsesaberef.ml4bbff-zteber",
-            // "56304898018" -> base64 -> reverse
             m: "81089840365",
-            // "1:56304898018:web:90a46b28257585d79ef3bb" -> base64 -> reverse
             i: "bb3fe97d58575282b64a09:bew:81089840365:1"
         };
 
@@ -705,13 +694,12 @@
         }
 
         const _fbCfg = _decodeConfig();
-
         let _fbDB = null;
         try {
             if (window.firebase && !firebase.apps.length && _fbCfg && _fbCfg.apiKey) {
                 firebase.initializeApp(_fbCfg);
                 _fbDB = firebase.database();
-                console.log('✅ Firebase initialized (obfuscated)');
+                console.log('✅ Firebase initialized');
             } else if (!_fbCfg || !_fbCfg.apiKey) {
                 console.warn('⚠️ Firebase config decode failed');
             }
@@ -720,7 +708,7 @@
         function _fbSafe(fn) { try { if (_fbDB) fn(_fbDB); } catch (e) { console.warn('Firebase error:', e); } }
 
         /* ==========================================================================
-           STATE (shared with main app via localStorage)
+           STATE
            ========================================================================== */
         const S = JSON.parse(localStorage.getItem('sm_state') || '{}');
         S.users = S.users || {};
@@ -835,14 +823,28 @@
             document.getElementById('admPass').value = '';
             document.getElementById('admLoginScreen').style.display = 'none';
             document.getElementById('admBody').style.display = 'flex';
-            // highlight dashboard by default
+
+            // Authorize password for this session (so sidebar clicks don't ask again)
+            _pwAuthorized = true;
+
+            // On mobile, ensure sidebar is hidden initially (default) – will be toggled by menu button
+            // But we want to show dashboard immediately
             document.querySelectorAll('.adm-side .item').forEach(el => el.classList.toggle('on', el.dataset.sec ===
             'dashboard'));
             admRenderSection('dashboard');
+
+            // If on mobile, sidebar is hidden by default; we keep it hidden, user can open via menu.
+            // But we can add a class to ensure it's closed initially.
+            if (window.innerWidth <= 720) {
+                document.getElementById('admSide').classList.remove('open');
+                document.querySelector('.adm-scrim').classList.remove('open');
+            }
+            toast('Welcome Admin!');
         }
 
         function admLogout() {
             S.adminSession = false;
+            _pwAuthorized = false;
             save();
             document.getElementById('admLoginScreen').style.display = 'flex';
             document.getElementById('admBody').style.display = 'none';
@@ -858,10 +860,9 @@
         /* ===== PASSWORD MODAL ===== */
         let _pwResolve = null;
         let _pwTargetSec = null;
-        let _pwAuthorized = false; // session-based unlock
+        let _pwAuthorized = false;
 
         function pwShow(sec) {
-            // If already authorized in this session, skip modal
             if (_pwAuthorized) {
                 if (sec) {
                     document.querySelectorAll('.adm-side .item').forEach(el => el.classList.toggle('on', el.dataset.sec ===
@@ -912,7 +913,7 @@
             if (e.key === 'Escape') pwCancel();
         });
 
-        /* ===== SIDEBAR NAVIGATION with password ===== */
+        /* ===== SIDEBAR NAVIGATION ===== */
         function admGo(sec) {
             if (!sec) return;
             const currentOn = document.querySelector('.adm-side .item.on');
@@ -947,7 +948,6 @@
         }
 
         /* ---------- Helper functions ---------- */
-        // ONLY successful add funds
         function admAllAddReqSuccess() {
             const out = [];
             for (const ph in S.users) {
@@ -961,7 +961,6 @@
             return out.sort((a, b) => b.time - a.time);
         }
 
-        // ONLY successful withdrawals
         function admAllWitReqSuccess() {
             const out = [];
             for (const ph in S.users) {
@@ -975,7 +974,6 @@
             return out.sort((a, b) => b.time - a.time);
         }
 
-        // ALL add requests (for the Add Funds page)
         function admAllAddReqAll() {
             const out = [];
             for (const ph in S.users) {
@@ -985,7 +983,6 @@
             return out.sort((a, b) => b.time - a.time);
         }
 
-        // ALL withdraw requests (for the Withdraw page)
         function admAllWitReqAll() {
             const out = [];
             for (const ph in S.users) {
@@ -1402,10 +1399,13 @@
         /* ==========================================================================
            INIT – ALWAYS SHOW LOGIN PAGE on app open
            ========================================================================== */
+        // Show login screen, hide body
         document.getElementById('admLoginScreen').style.display = 'flex';
         document.getElementById('admBody').style.display = 'none';
 
+        // Reset session and auth flag
         S.adminSession = false;
+        _pwAuthorized = false;
         save();
         console.log('🔐 Login page shown (forced on every open)');
     </script>
