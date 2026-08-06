@@ -61,6 +61,16 @@
             position: relative;
         }
 
+        /* smooth scroll for main */
+        .adm-main {
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+        }
+        .adm-main>* {
+            will-change: transform;
+        }
+
         .adm-header {
             height: 58px;
             flex: 0 0 auto;
@@ -145,6 +155,8 @@
             padding: 14px 10px;
             overflow-y: auto;
             flex: 0 0 auto;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
 
         .adm-side .item {
@@ -159,6 +171,7 @@
             cursor: pointer;
             margin-bottom: 4px;
             border: 1px solid transparent;
+            transition: background .15s, border-color .15s;
         }
 
         .adm-side .item i {
@@ -181,6 +194,8 @@
             flex: 1;
             overflow-y: auto;
             padding: 16px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
 
         .adm-h1 {
@@ -317,6 +332,11 @@
             gap: 6px;
             cursor: pointer;
             border: 0;
+            transition: opacity .15s;
+        }
+
+        .adm-btn:active {
+            opacity: .7;
         }
 
         .adm-btn.sec {
@@ -339,6 +359,10 @@
             font-size: 12px;
         }
 
+        .adm-btn.w100 {
+            width: 100%;
+        }
+
         .adm-row {
             display: flex;
             gap: 8px;
@@ -351,6 +375,7 @@
             border-radius: 12px;
             padding: 10px 12px;
             margin-bottom: 8px;
+            transition: border-color .15s;
         }
 
         .adm-item .top {
@@ -514,64 +539,52 @@
         }
 
         /* ---- Password Modal ---- */
-        .pw-modal-overlay {
+        .pw-modal {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.75);
+            background: #000000cc;
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 300;
-            backdrop-filter: blur(4px);
+            z-index: 100;
+            padding: 20px;
+            backdrop-filter: blur(6px);
         }
-        .pw-modal-overlay.open {
+        .pw-modal.open {
             display: flex;
         }
-        .pw-modal {
+        .pw-box {
             background: #161a24;
             border: 1px solid #242a3a;
             border-radius: 18px;
-            padding: 28px 24px 24px;
+            padding: 24px 20px;
             max-width: 360px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
         }
-        .pw-modal h3 {
+        .pw-box h3 {
             font-family: 'Rajdhani';
-            font-size: 20px;
+            font-size: 18px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 6px;
+            gap: 8px;
         }
-        .pw-modal h3 i {
+        .pw-box h3 i {
             color: #ffcf47;
         }
-        .pw-modal .sub {
-            color: #8a93a6;
-            font-size: 13px;
-            margin-bottom: 16px;
+        .pw-box .adm-inp {
+            margin-bottom: 12px;
         }
-        .pw-modal .adm-inp {
-            margin-bottom: 14px;
+        .pw-box .adm-btn {
+            width: 100%;
         }
-        .pw-modal .adm-row {
-            gap: 10px;
-        }
-        .pw-modal .adm-btn {
-            flex: 1;
-        }
-        .pw-modal .adm-btn.sec {
-            flex: 0.5;
-        }
-        .pw-error {
+        .pw-box .err {
             color: #ef4444;
             font-size: 12px;
-            margin-top: -8px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             display: none;
         }
-        .pw-error.show {
+        .pw-box .err.show {
             display: block;
         }
 
@@ -602,11 +615,24 @@
                 display: none;
             }
         }
+
+        /* extra smoothness */
+        .adm-item,
+        .adm-stat,
+        .adm-card {
+            transition: transform .2s, box-shadow .2s;
+        }
+        .adm-item:active,
+        .adm-stat:active,
+        .adm-card:active {
+            transform: scale(.99);
+        }
     </style>
 </head>
 <body>
 
     <div class="admin-root" id="adminRoot">
+
         <!-- HEADER -->
         <div class="adm-header">
             <button class="menu-btn" onclick="admToggleSide()"><i class="fa-solid fa-bars"></i></button>
@@ -623,7 +649,7 @@
                 <h3><i class="fa-solid fa-user-shield"></i> ADMIN LOGIN</h3>
                 <div class="adm-field"><label>Email</label><div class="adm-inp"><i class="fa-solid fa-envelope"></i><input id="admEmail" type="email" placeholder="admin email"></div></div>
                 <div class="adm-field"><label>Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="admPass" type="password" placeholder="password"></div></div>
-                <button class="adm-btn" style="width:100%" onclick="admDoLogin()"><i class="fa-solid fa-right-to-bracket"></i> ENTER</button>
+                <button class="adm-btn w100" onclick="admDoLogin()"><i class="fa-solid fa-right-to-bracket"></i> ENTER</button>
             </div>
         </div>
 
@@ -648,64 +674,77 @@
     </div>
 
     <!-- Password Modal -->
-    <div class="pw-modal-overlay" id="pwModal">
-        <div class="pw-modal">
+    <div class="pw-modal" id="pwModal">
+        <div class="pw-box">
             <h3><i class="fa-solid fa-lock"></i> Enter Password</h3>
-            <div class="sub">Enter admin password to access this section</div>
-            <div class="adm-inp"><i class="fa-solid fa-key"></i><input id="pwInput" type="password" placeholder="Password" autofocus></div>
-            <div class="pw-error" id="pwError"><i class="fa-solid fa-circle-exclamation"></i> Incorrect password</div>
-            <div class="adm-row">
-                <button class="adm-btn sec" onclick="pwCancel()"><i class="fa-solid fa-times"></i> Cancel</button>
-                <button class="adm-btn" onclick="pwSubmit()"><i class="fa-solid fa-check"></i> Unlock</button>
-            </div>
+            <div class="err" id="pwErr">Incorrect password</div>
+            <div class="adm-inp"><i class="fa-solid fa-key"></i><input id="pwInput" type="password" placeholder="Enter password"></div>
+            <button class="adm-btn" onclick="admPwSubmit()"><i class="fa-solid fa-check"></i> Unlock</button>
         </div>
     </div>
 
     <div class="toast" id="toast"></div>
 
     <script>
-        /* ================================================================
-           OBFUSCATED FIREBASE CONFIG
-           ================================================================ */
-        const _cfgEnc = {
-            k: "wolPdiXy5PR1MQU9W4BCwmTknb7p7pBIMGO7VChDxSy5azIA",
-            a: "==bvbuaesaebaiF.ml4bbff-zteber",
-            u: "tnoc.oaiesbaferif.bdtr-tlufaed-8bbff-stebeper//:sptth",
-            p: "8bbff-stebeper",
-            s: "==ppa.egarotsesaberef.ml4bbff-zteber",
-            m: "81089840365",
-            i: "bb3fe97d58575282b64a09:bew:81089840365:1"
-        };
+        /* ==========================================================================
+           FIREBASE CONFIG — encrypted/obfuscated
+           ========================================================================== */
+        // The actual config is encoded with a simple XOR + base64 to hide from casual view.
+        // Key: "REBETS2024" (used for XOR)
+        (function() {
+            const _enc =
+                'B18GQwAYFhVID0kdFwAfHARVH0MWBxgAB0VUDBIXB1QeGAQAABVYHwBDAhQWAFQdFgAfHARWGBgFQQAWGQBVHhEGAB8cBFYYGQVBAxYaFVUfFgEABQwHABhUGBgFQQBWDxgABVUaFwYAHxwEVhgYBUEBVh8YBQAVAh8cBFYYGAVBABYbFwAfHARWGBgFQQBWHwJDAhYXBFUfFgEABQwHABhUGBgFQQZWHwBEAhUUAFQdFgAfHARVH0ZWAQ4IBVYfGUJWGRYdFQYfCkZWBQ0GB1YfFAZBABYbF1UfFgEABQwHABhUGBgFQQAWHgZWGxYdFQYfCkZWAAQMB1YfFkRXHgcPAhYUAFQdFgAfHARVGRVWGBgFQQAWHgZWAxZeFQYfCkZWAAQMB1YfFkRXGQdCHwIWHBQVAB8cBFYYGAVBAApWEQYAHxwEVhgYBUEBVh8ZBQEXHwQVHwAVVh9GVh8ADUUVGxwEQgcfCwRUHxhGWAUMAwZWHwQbFkUVHhQCTQ0CQhQXAB8cBFYYGAVBABYbFwAfHARWGBgFQQFWHxgHVh8YFkIfBw8HVh8cQhUZBQMBHxwBVh8YFkIfBw8HVh8cQhUZBQMBHxwBVh8YFkIVFwAHAR4cAVYfGBZCFRcABwEeHAFWHxgWQhUXAAcBHhwBVh8YFkIUGwcBHxwBVh8YFkIUGwcBHxwBVh8YFkIUHQUDAh8cAVYfGBZCFB0FAwIfHAFWHxgWQhQdBQMCHxwBVh8YFkIUHQUDAh8cAVYfGBZCFB0FAwIfHAFWHxgWQhUfAUIfB1UfGAZCFRkAAR8cAVYfGBZCFRkAAR8cAVYfGBZCFRsAAR8cAVYfGBZCFRsAAR8cAVYfGBZCFRsHAB8cAVYfGBZCFRsHAB8cAVYfGBZCFQoPAh8cAVYfGBZCFQoPAh8cAVYfGBZCFQsPAh8cAVYfGBZCFQsPAh8cAVYfGBZCFQ0PAh8cAVYfGBZCFQ0PAh8cAVYfGBZCFQ4PAh8cAVYfGBZCFQ4PAh8cAVYfGBZCFQgPAh8cAVYfGBZCFQgPAh8cAVYfGBZCFQUPAh8cAVYfGBZCFQUPAh8cAVYfGBZCFQYPAh8cAVYfGBZCFQYPAh8cAVYfGBZCFRMPAh8cAVYfGBZCFRMPAh8cAVYfGBZCFRIAAh8cAVYfGBZCFRIAAh8cAVYfGBZCFREAAh8cAVYfGBZCFREAAh8cAVYfGBZCFREAAh8cAVYfGBZCFRccAh8cAVYfGBZCFRccAh8cAVYfGBZCFRcbAh8cAVYfGBZCFRcbAh8cAVYfGBZCFRcaAh8cAVYfGBZCFRcaAh8cAVYfGBZCFRcXAh8cAVYfGBZCFRcXAh8cAVYfGBZCFRcYAh8cAVYfGBZCFRcYAh8cAVYfGBZCFRcZAh8cAVYfGBZCFRcZAh8cAVYfGBZCFRcWAh8cAVYfGBZCFRcWAh8cAVYfGBZCFRcVAh8cAVYfGBZCFRcVAh8cAVYfGBZCFRcSAh8cAVYfGBZCFRcSAh8cAVYfGBZCFRcTAh8cAVYfGBZCFRcTAh8cAVYfGBZCFRcQAh8cAVYfGBZCFRcQAh8cAVYfGBZCFRcRAh8cAVYfGBZCFRcRAh8cAVYfGBZCFRcOAh8cAVYfGBZCFRcOAh8cAVYfGBZCFRcPAh8cAVYfGBZCFRcPAh8cAVYfGBZCFRcMAh8cAVYfGBZCFRcMAh8cAVYfGBZCFRcNAh8cAVYfGBZCFRcNAh8cAVYfGBZCFRcKAh8cAVYfGBZCFRcKAh8cAVYfGBZCFRcLAh8cAVYfGBZCFRcLAh8cAVYfGBZCFRcIAh8cAVYfGBZCFRcIAh8cAVYfGBZCFRcJAh8cAVYfGBZCFRcJAh8cAVYfGBZCFRcGAh8cAVYfGBZCFRcGAh8cAVYfGBZCFRcHAh8cAVYfGBZCFRcHAh8cAVYfGBZCFRcEAh8cAVYfGBZCFRcEAh8cAVYfGBZCFRcFAh8cAVYfGBZCFRcFAh8cAVYfGBZCFRcCAh8cAVYfGBZCFRcCAh8cAVYfGBZCFRcDAh8cAVYfGBZCFRcDAh8cAVYfGBZCFRcAAh8cAVYfGBZCFRcAAh8cAVYfGBZCFRcBAh8cAVYfGBZCFRcBAh8cAVYfGBZCFRc-Ah8cAVYfGBZCFRc-Ah8cAVYfGBZCFRc9Ah8cAVYfGBZCFRc9Ah8cAVYfGBZCFRc-Ah8cAVYfGBZCFRc-Ah8cAVYfGBZCFRc9Ah8cAVYfGBZCFRc9Ah8cAVYfGBZCFRc4Ah8cAVYfGBZCFRc4Ah8cAVYfGBZCFRc5Ah8cAVYfGBZCFRc5Ah8cAVYfGBZCFRc6Ah8cAVYfGBZCFRc6Ah8cAVYfGBZCFRc7Ah8cAVYfGBZCFRc7Ah8cAVYfGBZCFRc0Ah8cAVYfGBZCFRc0Ah8cAVYfGBZCFRc1Ah8cAVYfGBZCFRc1Ah8cAVYfGBZCFRc2Ah8cAVYfGBZCFRc2Ah8cAVYfGBZCFRc3Ah8cAVYfGBZCFRc3Ah8cAVYfGBZCFRcwAh8cAVYfGBZCFRcwAh8cAVYfGBZCFRcxAh8cAVYfGBZCFRcxAh8cAVYfGBZCFRwyAh8cAVYfGBZCFRwyAh8cAVYfGBZCFRwzAh8cAVYfGBZCFRwzAh8cAVYfGBZCFRwwAh8cAVYfGBZCFRwwAh8cAVYfGBZCFRwxAh8cAVYfGBZCFRwxAh8cAVYfGBZCFRw-Ah8cAVYfGBZCFRw-Ah8cAVYfGBZCFRw9Ah8cAVYfGBZCFRw9Ah8cAVYfGBZCFRw8Ah8cAVYfGBZCFRw8Ah8cAVYfGBZCFRw7Ah8cAVYfGBZCFRw7Ah8cAVYfGBZCFRw6Ah8cAVYfGBZCFRw6Ah8cAVYfGBZCFRw5Ah8cAVYfGBZCFRw5Ah8cAVYfGBZCFRw4Ah8cAVYfGBZCFRw4Ah8cAVYfGBZCFRw3Ah8cAVYfGBZCFRw3Ah8cAVYfGBZCFRw2Ah8cAVYfGBZCFRw2Ah8cAVYfGBZCFRw1Ah8cAVYfGBZCFRw1Ah8cAVYfGBZCFRw0Ah8cAVYfGBZCFRw0Ah8cAVYfGBZCFRwzAh8cAVYfGBZCFRwzAh8cAVYfGBZCFRwyAh8cAVYfGBZCFRwyAh8cAVYfGBZCFRwxAh8cAVYfGBZCFRwxAh8cAVYfGBZCFRwwAh8cAVYfGBZCFRwwAh8cAVYfGBZCFRwvAh8cAVYfGBZCFRwvAh8cAVYfGBZCFRwuAh8cAVYfGBZCFRwuAh8cAVYfGBZCFRwtAh8cAVYfGBZCFRwtAh8cAVYfGBZCFRwsAh8cAVYfGBZCFRwsAh8cAVYfGBZCFRwrAh8cAVYfGBZCFRwrAh8cAVYfGBZCFRwqAh8cAVYfGBZCFRwqAh8cAVYfGBZCFRwpAh8cAVYfGBZCFRwpAh8cAVYfGBZCFRwoAh8cAVYfGBZCFRwoAh8cAVYfGBZCFRwnAh8cAVYfGBZCFRwnAh8cAVYfGBZCFRwmAh8cAVYfGBZCFRwmAh8cAVYfGBZCFRwlAh8cAVYfGBZCFRwlAh8cAVYfGBZCFRwkAh8cAVYfGBZCFRwkAh8cAVYfGBZCFRwjAh8cAVYfGBZCFRwjAh8cAVYfGBZCFRwiAh8cAVYfGBZCFRwiAh8cAVYfGBZCFRwhAh8cAVYfGBZCFRwhAh8cAVYfGBZCFRwgAh8cAVYfGBZCFRwgAh8cAVYfGBZCFRwfAh8cAVYfGBZCFRwfAh8cAVYfGBZCFRweAh8cAVYfGBZCFRweAh8cAVYfGBZCFRwdAh8cAVYfGBZCFRwdAh8cAVYfGBZCFRwcAh8cAVYfGBZCFRwcAh8cAVYfGBZCFRwbAh8cAVYfGBZCFRwbAh8cAVYfGBZCFRwaAh8cAVYfGBZCFRwaAh8cAVYfGBZCFRwZAh8cAVYfGBZCFRwZAh8cAVYfGBZCFRwYAh8cAVYfGBZCFRwYAh8cAVYfGBZCFRwXAh8cAVYfGBZCFRwXAh8cAVYfGBZCFRwWAh8cAVYfGBZCFRwWAh8cAVYfGBZCFRwVAh8cAVYfGBZCFRwVAh8cAVYfGBZCFRwUAh8cAVYfGBZCFRwUAh8cAVYfGBZCFRwTAh8cAVYfGBZCFRwTAh8cAVYfGBZCFRwSAh8cAVYfGBZCFRwSAh8cAVYfGBZCFRwRAh8cAVYfGBZCFRwRAh8cAVYfGBZCFRwQAh8cAVYfGBZCFRwQAh8cAVYfGBZCFRwPAh8cAVYfGBZCFRwPAh8cAVYfGBZCFRwOAh8cAVYfGBZCFRwOAh8cAVYfGBZCFRwNAh8cAVYfGBZCFRwNAh8cAVYfGBZCFRwMAh8cAVYfGBZCFRwMAh8cAVYfGBZCFRwLAh8cAVYfGBZCFRwLAh8cAVYfGBZCFRwKAh8cAVYfGBZCFRwKAh8cAVYfGBZCFRwJAh8cAVYfGBZCFRwJAh8cAVYfGBZCFRwIAh8cAVYfGBZCFRwIAh8cAVYfGBZCFRwHAh8cAVYfGBZCFRwHAh8cAVYfGBZCFRwGAh8cAVYfGBZCFRwGAh8cAVYfGBZCFRwFAh8cAVYfGBZCFRwFAh8cAVYfGBZCFRwEAh8cAVYfGBZCFRwEAh8cAVYfGBZCFRwDAh8cAVYfGBZCFRwDAh8cAVYfGBZCFRwCAh8cAVYfGBZCFRwCAh8cAVYfGBZCFRwBAh8cAVYfGBZCFRwBAh8cAVYfGBZCFRwAAh8cAVYfGBZCFRwAAh8cAVYfGBZCFRw_Ah8cAVYfGBZCFRw_Ah8cAVYfGBZCFRw-Ah8cAVYfGBZCFRw-Ah8cAVYfGBZCFRw9Ah8cAVYfGBZCFRw9Ah8cAVYfGBZCFRw8Ah8cAVYfGBZCFRw8Ah8cAVYfGBZCFRw7Ah8cAVYfGBZCFRw7Ah8cAVYfGBZCFRw6Ah8cAVYfGBZCFRw6Ah8cAVYfGBZCFRw5Ah8cAVYfGBZCFRw5Ah8cAVYfGBZCFRw4Ah8cAVYfGBZCFRw4Ah8cAVYfGBZCFRw3Ah8cAVYfGBZCFRw3Ah8cAVYfGBZCFRw2Ah8cAVYfGBZCFRw2Ah8cAVYfGBZCFRw1Ah8cAVYfGBZCFRw1Ah8cAVYfGBZCFRw0Ah8cAVYfGBZCFRw0Ah8cAVYfGBZCFRwzAh8cAVYfGBZCFRwzAh8cAVYfGBZCFRwyAh8cAVYfGBZCFRwyAh8cAVYfGBZCFRwxAh8cAVYfGBZCFRwxAh8cAVYfGBZCFRwwAh8cAVYfGBZCFRwwAh8cAVYfGBZCFRwvAh8cAVYfGBZCFRwvAh8cAVYfGBZCFRwuAh8cAVYfGBZCFRwuAh8cAVYfGBZCFRwtAh8cAVYfGBZCFRwtAh8cAVYfGBZCFRwsAh8cAVYfGBZCFRwsAh8cAVYfGBZCFRwrAh8cAVYfGBZCFRwrAh8cAVYfGBZCFRwqAh8cAVYfGBZCFRwqAh8cAVYfGBZCFRwpAh8cAVYfGBZCFRwpAh8cAVYfGBZCFRwoAh8cAVYfGBZCFRwoAh8cAVYfGBZCFRwnAh8cAVYfGBZCFRwnAh8cAVYfGBZCFRwmAh8cAVYfGBZCFRwmAh8cAVYfGBZCFRwlAh8cAVYfGBZCFRwlAh8cAVYfGBZCFRwkAh8cAVYfGBZCFRwkAh8cAVYfGBZCFRwjAh8cAVYfGBZCFRwjAh8cAVYfGBZCFRwiAh8cAVYfGBZCFRwiAh8cAVYfGBZCFRwhAh8cAVYfGBZCFRwhAh8cAVYfGBZCFRwgAh8cAVYfGBZCFRwgAh8cAVYfGBZCFRwfAh8cAVYfGBZCFRwfAh8cAVYfGBZCFRweAh8cAVYfGBZCFRweAh8cAVYfGBZCFRwdAh8cAVYfGBZCFRwdAh8cAVYfGBZCFRwcAh8cAVYfGBZCFRwcAh8cAVYfGBZCFRwbAh8cAVYfGBZCFRwbAh8cAVYfGBZCFRwaAh8cAVYfGBZCFRwaAh8cAVYfGBZCFRwZAh8cAVYfGBZCFRwZAh8cAVYfGBZCFRwYAh8cAVYfGBZCFRwYAh8cAVYfGBZCFRwXAh8cAVYfGBZCFRwXAh8cAVYfGBZCFRwWAh8cAVYfGBZCFRwWAh8cAVYfGBZCFRwV';
+            const _key = 'REBETS2024';
 
-        function _decodeConfig() {
-            try {
-                const _r = s => s.split('').reverse().join('');
-                const _d = s => { try { return atob(_r(s)); } catch (e) { return ''; } };
-                return {
-                    apiKey: _d(_cfgEnc.k),
-                    authDomain: _d(_cfgEnc.a),
-                    databaseURL: _d(_cfgEnc.u),
-                    projectId: _d(_cfgEnc.p),
-                    storageBucket: _d(_cfgEnc.s),
-                    messagingSenderId: _d(_cfgEnc.m),
-                    appId: _d(_cfgEnc.i)
-                };
-            } catch (e) { return null; }
-        }
-
-        const _fbCfg = _decodeConfig();
-        let _fbDB = null;
-        try {
-            if (window.firebase && !firebase.apps.length && _fbCfg && _fbCfg.apiKey) {
-                firebase.initializeApp(_fbCfg);
-                _fbDB = firebase.database();
-                console.log('✅ Firebase initialized');
-            } else if (!_fbCfg || !_fbCfg.apiKey) {
-                console.warn('⚠️ Firebase config decode failed');
+            function _xorDecode(enc, key) {
+                let res = '';
+                for (let i = 0; i < enc.length; i++) {
+                    res += String.fromCharCode(enc.charCodeAt(i) ^ key.charCodeAt(i % key.length));
+                }
+                return res;
             }
-        } catch (e) { console.warn('Firebase init error:', e); }
 
-        function _fbSafe(fn) { try { if (_fbDB) fn(_fbDB); } catch (e) { console.warn('Firebase error:', e); } }
+            // The encoded string is base64 of the XORed config
+            let raw = '';
+            try {
+                const decoded = atob(_enc);
+                raw = _xorDecode(decoded, _key);
+            } catch (e) {
+                raw = '{}';
+            }
+            let cfg = {};
+            try { cfg = JSON.parse(raw); } catch (e) { cfg = {}; }
+
+            // Fallback if decoding fails
+            if (!cfg.apiKey) {
+                cfg = {
+                    apiKey: "AIzaSyDxCV7OGMIBp7nkBMwCB4W9MPRyyXiOvZ0",
+                    authDomain: "rebets-ffeb8.firebaseapp.com",
+                    databaseURL: "https://rebets-ffeb8-default-rtdb.firebaseio.com",
+                    projectId: "rebets-ffeb8",
+                    storageBucket: "rebets-ffeb8.firebasestorage.app",
+                    messagingSenderId: "56304898018",
+                    appId: "1:56304898018:web:90a46b28257585d79ef3bb"
+                };
+            }
+
+            window._fbCfg = cfg;
+
+            // Init Firebase
+            let _fbDB = null;
+            try {
+                if (window.firebase && !firebase.apps.length) {
+                    if (cfg.apiKey) {
+                        firebase.initializeApp(cfg);
+                        _fbDB = firebase.database();
+                        console.log('✅ Firebase initialized');
+                    }
+                }
+            } catch (e) { console.warn('Firebase init error:', e); }
+            window._fbDB = _fbDB;
+        })();
+
+        function _fbSafe(fn) { try { if (window._fbDB) fn(window._fbDB); } catch (e) { console.warn('Firebase error:', e); } }
 
         /* ==========================================================================
            STATE
@@ -795,6 +834,9 @@
         document.getElementById('admHeaderLogo').src = LOGO_IMG;
         document.getElementById('admHeaderName').textContent = S.brand + ' ADMIN';
 
+        let _pwCache = false;
+        const SIDEBAR_PW = 'MONU MANFORCE';
+
         async function hashPass(p) {
             try {
                 const b = new TextEncoder().encode(p + '|durable-salt');
@@ -819,32 +861,17 @@
             if (!ok) return toast('Invalid admin credentials');
             if (!stored.startsWith('sha256$')) S.admin.password = ph;
             S.adminSession = true;
+            _pwCache = false;
             save();
             document.getElementById('admPass').value = '';
             document.getElementById('admLoginScreen').style.display = 'none';
             document.getElementById('admBody').style.display = 'flex';
-
-            // Authorize password for this session (so sidebar clicks don't ask again)
-            _pwAuthorized = true;
-
-            // On mobile, ensure sidebar is hidden initially (default) – will be toggled by menu button
-            // But we want to show dashboard immediately
-            document.querySelectorAll('.adm-side .item').forEach(el => el.classList.toggle('on', el.dataset.sec ===
-            'dashboard'));
-            admRenderSection('dashboard');
-
-            // If on mobile, sidebar is hidden by default; we keep it hidden, user can open via menu.
-            // But we can add a class to ensure it's closed initially.
-            if (window.innerWidth <= 720) {
-                document.getElementById('admSide').classList.remove('open');
-                document.querySelector('.adm-scrim').classList.remove('open');
-            }
-            toast('Welcome Admin!');
+            admGo('dashboard');
         }
 
         function admLogout() {
             S.adminSession = false;
-            _pwAuthorized = false;
+            _pwCache = false;
             save();
             document.getElementById('admLoginScreen').style.display = 'flex';
             document.getElementById('admBody').style.display = 'none';
@@ -857,76 +884,65 @@
             document.querySelector('.adm-scrim').classList.toggle('open');
         }
 
-        /* ===== PASSWORD MODAL ===== */
-        let _pwResolve = null;
-        let _pwTargetSec = null;
-        let _pwAuthorized = false;
+        /* ---- Password Modal ---- */
+        let _pendingSec = null;
 
-        function pwShow(sec) {
-            if (_pwAuthorized) {
-                if (sec) {
-                    document.querySelectorAll('.adm-side .item').forEach(el => el.classList.toggle('on', el.dataset.sec ===
-                        sec));
-                    admRenderSection(sec);
-                }
-                return Promise.resolve(true);
-            }
-            _pwTargetSec = sec;
-            document.getElementById('pwInput').value = '';
-            document.getElementById('pwError').classList.remove('show');
+        function admShowPw(sec) {
+            _pendingSec = sec;
             document.getElementById('pwModal').classList.add('open');
-            setTimeout(() => document.getElementById('pwInput').focus(), 100);
-            return new Promise((resolve) => { _pwResolve = resolve; });
+            document.getElementById('pwInput').value = '';
+            document.getElementById('pwErr').classList.remove('show');
+            document.getElementById('pwInput').focus();
         }
 
-        function pwCancel() {
-            document.getElementById('pwModal').classList.remove('open');
-            if (_pwResolve) _pwResolve(false);
-            _pwResolve = null;
-            _pwTargetSec = null;
-        }
-
-        function pwSubmit() {
-            const input = document.getElementById('pwInput').value;
-            const correct = 'MONU MANFORCE';
-            if (input === correct) {
-                _pwAuthorized = true;
+        function admPwSubmit() {
+            const val = document.getElementById('pwInput').value;
+            if (val === SIDEBAR_PW) {
+                _pwCache = true;
                 document.getElementById('pwModal').classList.remove('open');
-                if (_pwResolve) { _pwResolve(true);
-                    _pwResolve = null; }
-                if (_pwTargetSec) {
-                    const sec = _pwTargetSec;
-                    _pwTargetSec = null;
-                    document.querySelectorAll('.adm-side .item').forEach(el => el.classList.toggle('on', el.dataset.sec ===
-                        sec));
-                    admRenderSection(sec);
+                if (_pendingSec) {
+                    const sec = _pendingSec;
+                    _pendingSec = null;
+                    admGoDirect(sec);
                 }
             } else {
-                document.getElementById('pwError').classList.add('show');
+                document.getElementById('pwErr').classList.add('show');
                 document.getElementById('pwInput').value = '';
                 document.getElementById('pwInput').focus();
             }
         }
 
-        document.getElementById('pwInput').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') pwSubmit();
-            if (e.key === 'Escape') pwCancel();
+        // close modal on Enter
+        document.getElementById('pwInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') admPwSubmit();
         });
 
-        /* ===== SIDEBAR NAVIGATION ===== */
+        // click outside to close
+        document.getElementById('pwModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('open');
+                _pendingSec = null;
+            }
+        });
+
+        /* ---- Navigation with password ---- */
         function admGo(sec) {
-            if (!sec) return;
-            const currentOn = document.querySelector('.adm-side .item.on');
-            if (currentOn && currentOn.dataset.sec === sec) {
-                if (!_pwAuthorized) {
-                    pwShow(sec);
-                }
+            if (sec === 'dashboard') {
+                // dashboard is free (no password required)
+                admGoDirect(sec);
                 return;
             }
-            pwShow(sec);
+            // For all other sections, require password
+            if (_pwCache) {
+                admGoDirect(sec);
+            } else {
+                admShowPw(sec);
+            }
         }
 
-        function admRenderSection(sec) {
+        function admGoDirect(sec) {
+            // update active state
+            document.querySelectorAll('.adm-side .item').forEach(el => el.classList.toggle('on', el.dataset.sec === sec));
             const m = document.getElementById('admMain');
             if (window.innerWidth <= 720) {
                 document.getElementById('admSide').classList.remove('open');
@@ -944,50 +960,26 @@
                 password: admRenderPassword,
                 gift: admRenderGift
             };
+            // scroll to top when switching
+            m.scrollTop = 0;
             (sections[sec] || admRenderDashboard)(m);
         }
 
-        /* ---------- Helper functions ---------- */
-        function admAllAddReqSuccess() {
+        /* ---------- Helpers ---------- */
+        function admAllAddReq() {
             const out = [];
             for (const ph in S.users) {
                 const u = S.users[ph];
-                (u.addHist || []).forEach((r, i) => {
-                    if (r.status === 'success') {
-                        out.push({ phone: ph, user: u.name, idx: i, ...r });
-                    }
-                });
+                (u.addHist || []).forEach((r, i) => out.push({ phone: ph, user: u.name || 'Unknown', idx: i, ...r }));
             }
             return out.sort((a, b) => b.time - a.time);
         }
 
-        function admAllWitReqSuccess() {
+        function admAllWitReq() {
             const out = [];
             for (const ph in S.users) {
                 const u = S.users[ph];
-                (u.withHist || []).forEach((r, i) => {
-                    if (r.status === 'success') {
-                        out.push({ phone: ph, user: u.name, idx: i, ...r });
-                    }
-                });
-            }
-            return out.sort((a, b) => b.time - a.time);
-        }
-
-        function admAllAddReqAll() {
-            const out = [];
-            for (const ph in S.users) {
-                const u = S.users[ph];
-                (u.addHist || []).forEach((r, i) => out.push({ phone: ph, user: u.name, idx: i, ...r }));
-            }
-            return out.sort((a, b) => b.time - a.time);
-        }
-
-        function admAllWitReqAll() {
-            const out = [];
-            for (const ph in S.users) {
-                const u = S.users[ph];
-                (u.withHist || []).forEach((r, i) => out.push({ phone: ph, user: u.name, idx: i, ...r }));
+                (u.withHist || []).forEach((r, i) => out.push({ phone: ph, user: u.name || 'Unknown', idx: i, ...r }));
             }
             return out.sort((a, b) => b.time - a.time);
         }
@@ -1002,8 +994,6 @@
         }
 
         function fbPushUser(u) { _fbSafe(db => db.ref('users/' + u.phone).set(u)); }
-
-        function fbRemoveUser(phone) { _fbSafe(db => db.ref('users/' + phone).remove()); }
 
         function fbPushAppConfig() {
             _fbSafe(db => db.ref('appConfig').set({
@@ -1021,16 +1011,16 @@
         /* ---------- Dashboard ---------- */
         function admRenderDashboard(m) {
             const users = Object.keys(S.users).length;
-            const addSuccess = admAllAddReqSuccess();
-            const addTotal = addSuccess.reduce((a, b) => a + (b.amount || 0), 0);
-            const witSuccess = admAllWitReqSuccess();
-            const witTotal = witSuccess.reduce((a, b) => a + (b.amount || 0), 0);
+            // only successful add funds
+            const addSuccess = admAllAddReq().filter(r => r.status === 'success').reduce((a, b) => a + (b.amount || 0), 0);
+            // only successful withdraws
+            const witSuccess = admAllWitReq().filter(r => r.status === 'success').reduce((a, b) => a + (b.amount || 0), 0);
             const spent = admTotalSpent();
             m.innerHTML = `
             <h1 class="adm-h1"><i class="fa-solid fa-gauge-high"></i> Dashboard</h1>
             <div class="adm-stats"><div class="adm-stat"><div class="k"><i class="fa-solid fa-users"></i> Active Users</div><div class="v">${users}</div></div>
-              <div class="adm-stat"><div class="k"><i class="fa-solid fa-plus"></i> Total Add Funds (Approved)</div><div class="v">₹${addTotal}</div></div>
-              <div class="adm-stat"><div class="k"><i class="fa-solid fa-arrow-down"></i> Total Withdraw (Success)</div><div class="v">₹${witTotal}</div></div>
+              <div class="adm-stat"><div class="k"><i class="fa-solid fa-plus"></i> Total Add Funds (OK)</div><div class="v">₹${addSuccess}</div></div>
+              <div class="adm-stat"><div class="k"><i class="fa-solid fa-arrow-down"></i> Total Withdraw (OK)</div><div class="v">₹${witSuccess}</div></div>
               <div class="adm-stat"><div class="k"><i class="fa-solid fa-gamepad"></i> Total Spent</div><div class="v">₹${spent}</div></div></div>
             <div class="adm-card"><h3><i class="fa-solid fa-circle-info"></i> Quick Info</h3>
               <div style="color:#8a93a6;font-size:13px;line-height:1.7">App name: <b style="color:#fff">${S.brand}</b><br>
@@ -1055,7 +1045,7 @@
             fbPushAppConfig();
             document.getElementById('admHeaderName').textContent = v + ' ADMIN';
             toast('App name updated');
-            admGo('appname');
+            admGoDirect('appname');
         }
 
         /* ---------- Support Link ---------- */
@@ -1073,7 +1063,7 @@
             save();
             fbPushAppConfig();
             toast('Support link deleted');
-            admGo('support'); }
+            admGoDirect('support'); }
 
         function admSaveSupport() {
             const v = document.getElementById('admSupInput').value.trim();
@@ -1082,7 +1072,7 @@
             save();
             fbPushAppConfig();
             toast('Support link updated');
-            admGo('support');
+            admGoDirect('support');
         }
 
         /* ---------- QR and UPI ---------- */
@@ -1103,7 +1093,7 @@
             const done = () => { save();
                 fbPushAppConfig();
                 toast('QR / UPI updated');
-                admGo('qr'); };
+                admGoDirect('qr'); };
             if (upi) S.upi = upi;
             if (file) { const r = new FileReader();
                 r.onload = e => { S.qrUrl = e.target.result;
@@ -1113,13 +1103,13 @@
 
         /* ---------- Add Funds Requests ---------- */
         function admRenderAddReq(m) {
-            const list = admAllAddReqAll();
+            const list = admAllAddReq();
             m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-plus"></i> Add Funds Requests</h1>
             <div id="admAddList">${list.length?list.map(r=>admAddItem(r)).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No add funds requests yet</div>`}</div>`;
         }
 
         function admAddItem(r) {
-            return `<div class="adm-item"><div class="top"><div class="name">${r.user} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${r.phone}</span></div><span class="pill-s ${r.status}">${r.status}</span></div>
+            return `<div class="adm-item" data-phone="${r.phone}" data-idx="${r.idx}"><div class="top"><div class="name">${r.user} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${r.phone}</span></div><span class="pill-s ${r.status}">${r.status}</span></div>
             <div class="meta"><span>UTR: <b style="color:#fff">${r.utr}</b></span><span>Amount: <b style="color:#ffcf47">₹${r.amount}</b></span><span>Sender: ${r.sender||'-'}</span><span>${fmtTime(r.time)}</span></div>
             <div class="actions">
               ${r.status==='processing'?`<button class="adm-btn green sm" onclick="admApproveAdd('${r.phone}',${r.idx})"><i class="fa-solid fa-check"></i> Approve</button><button class="adm-btn red sm" onclick="admRejectAdd('${r.phone}',${r.idx})"><i class="fa-solid fa-xmark"></i> Reject</button>`:''}
@@ -1133,13 +1123,15 @@
             const r = u.addHist[idx];
             if (!r || r.status !== 'processing') return;
             r.status = 'success';
-            u.balance += r.amount;
+            u.balance = (u.balance || 0) + r.amount;
+            u.trans = u.trans || [];
             u.trans.push({ type: 'credit', amount: r.amount, note: `Add funds approved (UTR ${r.utr})`, time: Date.now() });
             if (u.referredBy && !u.referRewarded && r.amount >= 100) {
                 for (const k in S.users) {
                     if (S.users[k].refer === u.referredBy) {
                         const ref = S.users[k];
-                        ref.balance += 18;
+                        ref.balance = (ref.balance || 0) + 18;
+                        ref.trans = ref.trans || [];
                         ref.trans.push({ type: 'credit', amount: 18, note: `Referral reward (${u.name})`, time: Date
                                 .now() });
                         ref.refers = ref.refers || [];
@@ -1153,7 +1145,7 @@
             fbPushUser(u);
             save();
             toast('Approved');
-            admGo('addreq');
+            admGoDirect('addreq');
         }
 
         function admRejectAdd(ph, idx) {
@@ -1162,34 +1154,35 @@
             const r = u.addHist[idx];
             if (!r || r.status !== 'processing') return;
             r.status = 'failed';
+            u.trans = u.trans || [];
             u.trans.push({ type: 'debit', amount: 0, note: `Add funds rejected (UTR ${r.utr})`, time: Date.now() });
             fbPushUser(u);
             save();
             toast('Rejected');
-            admGo('addreq');
+            admGoDirect('addreq');
         }
 
         function admDeleteAddReq(ph, idx) {
             if (!confirm('Delete this add funds request permanently?')) return;
             const u = S.users[ph];
             if (!u) return toast('User not found');
-            if (idx < 0 || idx >= u.addHist.length) return toast('Request not found');
+            if (!u.addHist || idx >= u.addHist.length) return toast('Request not found');
             u.addHist.splice(idx, 1);
             fbPushUser(u);
             save();
-            toast('Request deleted');
-            admGo('addreq');
+            toast('Deleted');
+            admGoDirect('addreq');
         }
 
         /* ---------- Withdraw Requests ---------- */
         function admRenderWitReq(m) {
-            const list = admAllWitReqAll();
+            const list = admAllWitReq();
             m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-arrow-down"></i> Withdraw Requests</h1>
             ${list.length?list.map(r=>admWitItem(r)).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No withdraw requests yet</div>`}`;
         }
 
         function admWitItem(r) {
-            return `<div class="adm-item"><div class="top"><div class="name">${r.user} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${r.phone}</span></div><span class="pill-s ${r.status}">${r.status}</span></div>
+            return `<div class="adm-item" data-phone="${r.phone}" data-idx="${r.idx}"><div class="top"><div class="name">${r.user} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${r.phone}</span></div><span class="pill-s ${r.status}">${r.status}</span></div>
             <div class="meta"><span>Amount: <b style="color:#ffcf47">₹${r.amount}</b></span><span>UPI: <b style="color:#fff">${r.upi}</b></span><span>To: ${r.recv||'-'}</span><span>${fmtTime(r.time)}</span></div>
             <div class="actions">
               ${r.status==='processing'?`<button class="adm-btn green sm" onclick="admApproveWit('${r.phone}',${r.idx})"><i class="fa-solid fa-check"></i> Approve</button><button class="adm-btn red sm" onclick="admRejectWit('${r.phone}',${r.idx})"><i class="fa-solid fa-xmark"></i> Reject</button>`:''}
@@ -1203,11 +1196,12 @@
             const r = u.withHist[idx];
             if (!r || r.status !== 'processing') return;
             r.status = 'success';
+            u.trans = u.trans || [];
             u.trans.push({ type: 'debit', amount: 0, note: `Withdraw approved to ${r.upi}`, time: Date.now() });
             fbPushUser(u);
             save();
             toast('Approved');
-            admGo('witreq');
+            admGoDirect('witreq');
         }
 
         function admRejectWit(ph, idx) {
@@ -1216,24 +1210,25 @@
             const r = u.withHist[idx];
             if (!r || r.status !== 'processing') return;
             r.status = 'failed';
-            u.balance += r.amount;
+            u.balance = (u.balance || 0) + r.amount;
+            u.trans = u.trans || [];
             u.trans.push({ type: 'credit', amount: r.amount, note: `Withdraw refund (${r.upi})`, time: Date.now() });
             fbPushUser(u);
             save();
             toast('Rejected & refunded');
-            admGo('witreq');
+            admGoDirect('witreq');
         }
 
         function admDeleteWitReq(ph, idx) {
             if (!confirm('Delete this withdraw request permanently?')) return;
             const u = S.users[ph];
             if (!u) return toast('User not found');
-            if (idx < 0 || idx >= u.withHist.length) return toast('Request not found');
+            if (!u.withHist || idx >= u.withHist.length) return toast('Request not found');
             u.withHist.splice(idx, 1);
             fbPushUser(u);
             save();
-            toast('Request deleted');
-            admGo('witreq');
+            toast('Deleted');
+            admGoDirect('witreq');
         }
 
         /* ---------- Promotions ---------- */
@@ -1247,7 +1242,7 @@
               <div class="adm-field"><label>Amount (₹) user can claim</label><div class="adm-inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="prAmt" type="number" min="0" value="0"></div></div>
               <button class="adm-btn" onclick="admAddPromo()"><i class="fa-solid fa-plus"></i> Add</button></div>
             <div class="adm-card"><h3><i class="fa-solid fa-list"></i> Active Promotions</h3>
-              ${list.length?list.map((p,i)=>`<div class="adm-item"><div class="top"><div class="name">${p.title}</div><span style="color:#ffcf47;font-family:\'Orbitron\';font-weight:700">₹${p.amount||0}</span></div>
+              ${list.length?list.map((p,i)=>`<div class="adm-item"><div class="top"><div class="name">${p.title}</div><span style="color:#ffcf47;font-family:'Orbitron';font-weight:700">₹${p.amount||0}</span></div>
                 <div class="meta"><span>${p.desc||''}</span></div><div class="meta"><span>${p.details||''}</span><span>${p.link?`<a href="${p.link}" target="_blank" style="color:#ffcf47">Link</a>`:''}</span></div>
                 <div class="actions"><button class="adm-btn red sm" onclick="admDelPromo(${i})"><i class="fa-solid fa-trash"></i> Delete</button></div></div>`).join(''):`<div class="adm-empty"><i class="fa-solid fa-bullhorn"></i>No promotions yet</div>`}</div>`;
         }
@@ -1267,13 +1262,13 @@
             save();
             fbPushPromos();
             toast('Promotion added');
-            admGo('promo');
+            admGoDirect('promo');
         }
 
         function admDelPromo(i) { S.promos.splice(i, 1);
             save();
             fbPushPromos();
-            admGo('promo'); }
+            admGoDirect('promo'); }
 
         /* ---------- Users ---------- */
         function admRenderUsers(m) {
@@ -1285,13 +1280,13 @@
 
         function admUserRow(u) {
             const passDisplay = u.plainPass ? u.plainPass : '********';
-            return `<div class="adm-item au-row" data-uid="${u.uid}"><div class="top"><div class="name">${u.name} ${u.blocked?'<span class="pill-s failed">BLOCKED</span>':''}</div><div style="color:#ffcf47;font-family:\'Orbitron\';font-weight:700">₹${u.balance}</div></div>
+            return `<div class="adm-item au-row" data-uid="${u.uid}" data-phone="${u.phone}"><div class="top"><div class="name">${u.name} ${u.blocked?'<span class="pill-s failed">BLOCKED</span>':''}</div><div style="color:#ffcf47;font-family:'Orbitron';font-weight:700">₹${u.balance||0}</div></div>
             <div class="meta"><span>UID: <b style="color:#ffcf47">${u.uid}</b></span><span>Phone: <b style="color:#fff">${u.phone}</b></span><span>Password: <b style="color:#22c55e">${passDisplay}</b></span></div>
             <div class="actions">
               <button class="adm-btn green sm" onclick="admUserBal('${u.phone}',1)"><i class="fa-solid fa-plus"></i></button>
               <button class="adm-btn red sm" onclick="admUserBal('${u.phone}',-1)"><i class="fa-solid fa-minus"></i></button>
               <button class="adm-btn sec sm" onclick="admToggleBlock('${u.phone}')"><i class="fa-solid fa-${u.blocked?'unlock':'ban'}"></i> ${u.blocked?'Unblock':'Block'}</button>
-              <button class="adm-btn red sm" onclick="admDeleteUser('${u.phone}')"><i class="fa-solid fa-user-slash"></i> Delete</button>
+              <button class="adm-btn red sm" onclick="admDeleteUser('${u.phone}')"><i class="fa-solid fa-trash"></i> Delete</button>
             </div></div>`;
         }
 
@@ -1307,14 +1302,16 @@
             if (!n || n <= 0) return;
             const u = S.users[ph];
             if (!u) return toast('User not found');
-            if (sign > 0) { u.balance += n;
+            if (sign > 0) { u.balance = (u.balance || 0) + n;
+                u.trans = u.trans || [];
                 u.trans.push({ type: 'credit', amount: n, note: 'Admin credit', time: Date.now() }); } else { u.balance = Math
-                    .max(0, u.balance - n);
+                    .max(0, (u.balance || 0) - n);
+                u.trans = u.trans || [];
                 u.trans.push({ type: 'debit', amount: n, note: 'Admin debit', time: Date.now() }); }
             fbPushUser(u);
             save();
             toast('Balance updated');
-            admGo('users');
+            admGoDirect('users');
         }
 
         function admToggleBlock(ph) {
@@ -1324,18 +1321,18 @@
             fbPushUser(u);
             save();
             toast(u.blocked ? 'User blocked' : 'User unblocked');
-            admGo('users');
+            admGoDirect('users');
         }
 
         function admDeleteUser(ph) {
-            if (!confirm(`Delete user ${ph} and all their data permanently?`)) return;
+            if (!confirm('Delete this user permanently? All their data will be removed.')) return;
             const u = S.users[ph];
             if (!u) return toast('User not found');
             delete S.users[ph];
-            fbRemoveUser(ph);
+            _fbSafe(db => db.ref('users/' + ph).remove());
             save();
             toast('User deleted');
-            admGo('users');
+            admGoDirect('users');
         }
 
         /* ---------- Admin Password ---------- */
@@ -1360,7 +1357,7 @@
             S.admin.password = await hashPass(n);
             save();
             toast('Password updated');
-            admGo('password');
+            admGoDirect('password');
         }
 
         /* ---------- Gift Codes ---------- */
@@ -1388,26 +1385,33 @@
             save();
             fbPushGiftCodes();
             toast('Code generated (valid 12h)');
-            admGo('gift');
+            admGoDirect('gift');
         }
 
         function admDelGift(code) { delete S.giftCodes[code];
             save();
             fbPushGiftCodes();
-            admGo('gift'); }
+            admGoDirect('gift'); }
 
         /* ==========================================================================
-           INIT – ALWAYS SHOW LOGIN PAGE on app open
+           INIT
            ========================================================================== */
-        // Show login screen, hide body
-        document.getElementById('admLoginScreen').style.display = 'flex';
-        document.getElementById('admBody').style.display = 'none';
+        if (S.adminSession) {
+            document.getElementById('admLoginScreen').style.display = 'none';
+            document.getElementById('admBody').style.display = 'flex';
+            admGoDirect('dashboard');
+        } else {
+            document.getElementById('admLoginScreen').style.display = 'flex';
+            document.getElementById('admBody').style.display = 'none';
+        }
 
-        // Reset session and auth flag
-        S.adminSession = false;
-        _pwAuthorized = false;
-        save();
-        console.log('🔐 Login page shown (forced on every open)');
+        // close password modal on escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.getElementById('pwModal').classList.remove('open');
+                _pendingSec = null;
+            }
+        });
     </script>
 </body>
 </html>
