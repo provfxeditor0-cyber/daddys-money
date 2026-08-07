@@ -1,1461 +1,588 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <title>Admin Panel - REBETS CLUB</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Orbitron:wght@600;800;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js">
-    </script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js">
-    </script>
-    <style>
-        /* ===== ADMIN PANEL STYLES ===== */
-        :root {
-            --bg: #0a0c11;
-            --bg-2: #11141c;
-            --card: #161a24;
-            --card-2: #1c2130;
-            --line: #242a3a;
-            --text: #eef1f7;
-            --muted: #8a93a6;
-            --gold: #ffcf47;
-            --gold-2: #ffb000;
-            --green: #22c55e;
-            --red: #ef4444;
-            --primary: #ff2e5b;
-            --primary-2: #ff7a18;
-            --grad: linear-gradient(135deg, #ff2e5b, #ff7a18);
-            --grad-2: linear-gradient(135deg, #8b5cf6, #3b82f6);
-            --grad-gold: linear-gradient(135deg, #ffb000, #ffcf47);
-            --header-height: 74px;
-            --sidebar-width: 250px;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Poppins', system-ui, sans-serif;
-            overflow: hidden;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .admin-root {
-            width: 100%;
-            max-width: 1200px;
-            height: 100vh;
-            background: var(--bg);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* --- HEADER (taller, centered brand) --- */
-        .adm-header {
-            height: var(--header-height);
-            flex: 0 0 auto;
-            background: linear-gradient(180deg, #12151f, #0f1219);
-            border-bottom: 1px solid #242a3a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 16px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            gap: 12px;
-            position: relative;
-        }
-
-        .adm-header .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        .adm-header .brand .lg {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: #dff2d8;
-            display: grid;
-            place-items: center;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .adm-header .brand .lg img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            padding: 4px;
-        }
-
-        .adm-header .brand .nm {
-            font-family: 'Orbitron';
-            font-weight: 900;
-            letter-spacing: 1.8px;
-            font-size: 20px;
-            background: linear-gradient(135deg, #ffcf47, #ffb000);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 0 30px #ffcf4730;
-        }
-
-        .adm-header .close {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            background: #161a24;
-            border: 1px solid #242a3a;
-            display: grid;
-            place-items: center;
-            color: #eef1f7;
-            cursor: pointer;
-            font-size: 18px;
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .adm-header .menu-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            background: #161a24;
-            border: 1px solid #242a3a;
-            display: none;
-            place-items: center;
-            color: #eef1f7;
-            cursor: pointer;
-            font-size: 18px;
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        /* --- BODY (flex row with sidebar) --- */
-        .adm-body {
-            flex: 1;
-            display: flex;
-            min-height: 0;
-            position: relative;
-        }
-
-        /* --- SIDEBAR (left) --- */
-        .adm-side {
-            width: var(--sidebar-width);
-            background: #0d1018;
-            border-right: 1px solid #242a3a;
-            padding: 14px 10px;
-            overflow-y: auto;
-            flex: 0 0 auto;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .adm-side .item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 12px;
-            border-radius: 10px;
-            color: #c6ccdb;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 4px;
-            border: 1px solid transparent;
-            transition: background .15s, border-color .15s;
-        }
-
-        .adm-side .item i {
-            width: 18px;
-            text-align: center;
-            color: #ffcf47;
-        }
-
-        .adm-side .item:hover {
-            background: #161a24;
-        }
-
-        .adm-side .item.on {
-            background: linear-gradient(135deg, #ff2e5b25, #ff7a1825);
-            border-color: #ff2e5b40;
-            color: #fff;
-        }
-
-        .adm-side .item.logout-item {
-            border-color: #ef444430;
-        }
-        .adm-side .item.logout-item i {
-            color: #ff5c5c;
-        }
-        .adm-side .item.logout-item:hover {
-            background: #ef444420;
-            border-color: #ef444460;
-        }
-
-        /* --- MAIN (scrollable) --- */
-        .adm-main {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px 16px 8px;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-            overscroll-behavior: contain;
-        }
-
-        /* --- LOGIN SCREEN --- */
-        #admLoginScreen {
-            flex: 1;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        #admLoginScreen .adm-card {
-            width: 100%;
-            max-width: 360px;
-        }
-
-        /* --- CARDS / COMPONENTS --- */
-        .adm-h1 {
-            font-family: 'Rajdhani';
-            font-weight: 700;
-            font-size: 22px;
-            letter-spacing: .5px;
-            margin: 0 0 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .adm-h1 i {
-            color: #ffcf47;
-        }
-
-        .adm-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .adm-stat {
-            background: linear-gradient(135deg, #161a24, #1c2130);
-            border: 1px solid #242a3a;
-            border-radius: 16px;
-            padding: 14px;
-        }
-
-        .adm-stat .k {
-            font-size: 11px;
-            color: #8a93a6;
-            letter-spacing: .6px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .adm-stat .v {
-            font-family: 'Orbitron';
-            font-weight: 900;
-            font-size: 22px;
-            margin-top: 6px;
-            background: linear-gradient(135deg, #ffb000, #ffcf47);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .adm-stat i {
-            color: #ffcf47;
-            margin-right: 6px;
-        }
-
-        .adm-card {
-            background: #161a24;
-            border: 1px solid #242a3a;
-            border-radius: 14px;
-            padding: 14px;
-            margin-bottom: 12px;
-        }
-
-        .adm-card h3 {
-            margin: 0 0 10px;
-            font-family: 'Rajdhani';
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .adm-card h3 i {
-            color: #ffcf47;
-        }
-
-        .adm-field {
-            margin-bottom: 10px;
-        }
-
-        .adm-field label {
-            display: block;
-            font-size: 11px;
-            color: #8a93a6;
-            margin-bottom: 6px;
-            letter-spacing: .4px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .adm-inp {
-            display: flex;
-            align-items: center;
-            background: #1c2130;
-            border: 1px solid #242a3a;
-            border-radius: 10px;
-            padding: 0 10px;
-            height: 42px;
-            gap: 8px;
-        }
-
-        .adm-inp i {
-            color: #8a93a6;
-            width: 16px;
-            text-align: center;
-        }
-
-        .adm-inp input,
-        .adm-inp select,
-        .adm-inp textarea {
-            flex: 1;
-            background: none;
-            border: 0;
-            color: #eef1f7;
-            height: 100%;
-            outline: none;
-            font-size: 13px;
-            font-family: inherit;
-        }
-
-        .adm-btn {
-            height: 42px;
-            padding: 0 16px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #ff2e5b, #ff7a18);
-            color: #fff;
-            font-weight: 800;
-            letter-spacing: .6px;
-            font-family: 'Rajdhani';
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            cursor: pointer;
-            border: 0;
-            transition: opacity .15s;
-        }
-
-        .adm-btn:active {
-            opacity: .7;
-        }
-
-        .adm-btn.sec {
-            background: #1c2130;
-            border: 1px solid #242a3a;
-            color: #eef1f7;
-        }
-
-        .adm-btn.green {
-            background: linear-gradient(135deg, #16a34a, #22c55e);
-        }
-
-        .adm-btn.red {
-            background: linear-gradient(135deg, #dc2626, #ef4444);
-        }
-
-        .adm-btn.sm {
-            height: 34px;
-            padding: 0 10px;
-            font-size: 12px;
-        }
-
-        .adm-btn.w100 {
-            width: 100%;
-        }
-
-        .adm-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .adm-item {
-            background: #1c2130;
-            border: 1px solid #242a3a;
-            border-radius: 12px;
-            padding: 10px 12px;
-            margin-bottom: 8px;
-            transition: border-color .15s;
-        }
-
-        .adm-item .top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
-        }
-
-        .adm-item .top .name {
-            font-weight: 700;
-            font-size: 14px;
-        }
-
-        .adm-item .meta {
-            color: #8a93a6;
-            font-size: 12px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .adm-item .actions {
-            display: flex;
-            gap: 6px;
-            margin-top: 8px;
-            flex-wrap: wrap;
-        }
-
-        .pill-s {
-            padding: 3px 8px;
-            border-radius: 99px;
-            font-size: 10px;
-            font-weight: 800;
-            letter-spacing: .6px;
-            text-transform: uppercase;
-        }
-
-        .pill-s.processing {
-            background: #3b82f620;
-            color: #93c5fd;
-            border: 1px solid #3b82f640;
-        }
-
-        .pill-s.success {
-            background: #22c55e20;
-            color: #86efac;
-            border: 1px solid #22c55e40;
-        }
-
-        .pill-s.failed {
-            background: #ef444420;
-            color: #fca5a5;
-            border: 1px solid #ef444440;
-        }
-
-        .adm-empty {
-            padding: 30px 10px;
-            text-align: center;
-            color: #8a93a6;
-        }
-
-        .adm-empty i {
-            font-size: 34px;
-            display: block;
-            margin-bottom: 8px;
-            color: #3a4258;
-        }
-
-        .adm-search {
-            margin-bottom: 12px;
-        }
-
-        .adm-code {
-            font-family: 'Orbitron';
-            font-weight: 900;
-            letter-spacing: 1px;
-            background: #0d1018;
-            padding: 8px 10px;
-            border-radius: 8px;
-            border: 1px solid #242a3a;
-            font-size: 13px;
-            color: #ffcf47;
-            display: inline-block;
-            word-break: break-all;
-        }
-
-        .adm-qr-preview {
-            width: 150px;
-            height: 150px;
-            background: #fff;
-            border-radius: 12px;
-            padding: 8px;
-            margin: 8px 0;
-        }
-
-        .adm-qr-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1a1f2e;
-            border: 1px solid #242a3a;
-            color: #fff;
-            padding: 10px 16px;
-            border-radius: 12px;
-            font-size: 13px;
-            z-index: 200;
-            box-shadow: 0 10px 30px -10px #000;
-            display: none;
-            max-width: 90%;
-            text-align: center;
-        }
-
-        .toast.show {
-            display: block;
-            animation: t .3s;
-        }
-
-        @keyframes t {
-            from {
-                opacity: 0;
-                transform: translateX(-50%) translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(-50%) translateY(0);
-            }
-        }
-
-        /* --- PASSWORD MODAL --- */
-        .pw-modal {
-            position: fixed;
-            inset: 0;
-            background: #000000cc;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            padding: 20px;
-            backdrop-filter: blur(6px);
-        }
-        .pw-modal.open {
-            display: flex;
-        }
-        .pw-box {
-            background: #161a24;
-            border: 1px solid #242a3a;
-            border-radius: 18px;
-            padding: 24px 20px;
-            max-width: 360px;
-            width: 100%;
-        }
-        .pw-box h3 {
-            font-family: 'Rajdhani';
-            font-size: 18px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .pw-box h3 i {
-            color: #ffcf47;
-        }
-        .pw-box .adm-inp {
-            margin-bottom: 12px;
-        }
-        .pw-box .adm-btn {
-            width: 100%;
-        }
-        .pw-box .err {
-            color: #ef4444;
-            font-size: 12px;
-            margin-bottom: 10px;
-            display: none;
-        }
-        .pw-box .err.show {
-            display: block;
-        }
-
-        /* --- Scrim for mobile overlay --- */
-        .adm-scrim {
-            display: none;
-            position: absolute;
-            inset: 0;
-            background: #000000a0;
-            z-index: 15;
-        }
-        .adm-scrim.open {
-            display: block;
-        }
-
-        /* --- responsive --- */
-        @media (max-width:720px) {
-            .adm-side {
-                position: absolute;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                transform: translateX(-100%);
-                transition: transform .25s;
-                z-index: 20;
-                box-shadow: 20px 0 40px -10px #000;
-                width: 260px;
-            }
-            .adm-side.open {
-                transform: translateX(0);
-            }
-            .adm-scrim.open {
-                display: block;
-            }
-            .adm-header .menu-btn {
-                display: grid;
-            }
-            .adm-header .brand .nm {
-                font-size: 16px;
-                letter-spacing: 1.2px;
-            }
-            .adm-header .brand .lg {
-                width: 36px;
-                height: 36px;
-            }
-            .adm-main {
-                padding: 12px 12px 4px;
-            }
-            .adm-h1 {
-                font-size: 18px;
-            }
-            .adm-stat .v {
-                font-size: 18px;
-            }
-            .adm-stats {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
-            }
-        }
-
-        @media (min-width:721px) {
-            .adm-header .menu-btn {
-                display: none;
-            }
-        }
-
-        @media (max-width:420px) {
-            :root {
-                --header-height: 58px;
-            }
-            .adm-header .brand .nm {
-                font-size: 14px;
-                letter-spacing: .8px;
-            }
-            .adm-header .brand .lg {
-                width: 30px;
-                height: 30px;
-            }
-            .adm-stats {
-                grid-template-columns: 1fr 1fr;
-                gap: 6px;
-            }
-            .adm-stat {
-                padding: 10px;
-            }
-            .adm-stat .v {
-                font-size: 16px;
-            }
-        }
-
-        /* smoothness */
-        .adm-item,
-        .adm-stat,
-        .adm-card {
-            transition: transform .2s, box-shadow .2s;
-        }
-        .adm-item:active,
-        .adm-stat:active,
-        .adm-card:active {
-            transform: scale(.99);
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZILLA 4 PANEL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #05060a;
+  --s1:     #0a0c12;
+  --s2:     #0f1118;
+  --s3:     #141720;
+  --border: rgba(255,255,255,0.06);
+  --b2:     rgba(255,255,255,0.1);
+  --cyan:   #22d3ee;
+  --cyan2:  #67e8f9;
+  --cg:     rgba(34,211,238,0.12);
+  --red:    #ef4444;
+  --yellow: #fde68a;
+  --blue:   #93c5fd;
+  --t1:  #e8eaf0;
+  --t2:  rgba(232,234,240,0.55);
+  --t3:  rgba(232,234,240,0.28);
+  --t4:  rgba(232,234,240,0.10);
+  --mono:    'Share Tech Mono', monospace;
+  --orb:     'Orbitron', sans-serif;
+  --grotesk: 'Space Grotesk', sans-serif;
+}
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+html, body { height:100%; overflow:hidden; }
+body {
+  background: var(--bg);
+  color: var(--t1);
+  font-family: var(--grotesk);
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+}
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(34,211,238,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34,211,238,0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+  pointer-events:none; z-index:0;
+}
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background: radial-gradient(ellipse 110% 110% at 50% 50%, transparent 30%, rgba(5,6,10,0.92) 100%);
+  pointer-events:none; z-index:0;
+}
+.scanlines {
+  position:fixed; inset:0; z-index:1; pointer-events:none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.05) 2px, rgba(0,0,0,0.05) 4px);
+}
+
+/* ── PAGES ── */
+.page { display:none; width:100%; height:100%; position:fixed; inset:0; align-items:center; justify-content:center; z-index:10; }
+.page.active { display:flex; }
+
+/* ══════════════════════════
+   LOGIN PAGE
+══════════════════════════ */
+#loginPage { flex-direction:column; align-items:center; }
+
+.scan-bar {
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+  opacity:0.45;
+  animation: scanMove 5s linear infinite;
+}
+@keyframes scanMove { 0%{top:0;opacity:0;} 5%{opacity:0.45;} 95%{opacity:0.45;} 100%{top:100%;opacity:0;} }
+
+.corner { position:absolute; width:48px; height:48px; }
+.corner svg { width:48px; height:48px; }
+.corner.tl { top:22px; left:22px; }
+.corner.tr { top:22px; right:22px; transform:scaleX(-1); }
+.corner.bl { bottom:22px; left:22px; transform:scaleY(-1); }
+.corner.br { bottom:22px; right:22px; transform:scale(-1,-1); }
+.corner svg path { stroke:rgba(34,211,238,0.22); fill:none; stroke-width:1.5; stroke-linecap:square; }
+
+.login-wrap {
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; align-items:center;
+  animation: fadeIn 0.8s ease both;
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(18px);} to{opacity:1;transform:translateY(0);} }
+
+/* AVATAR */
+.avatar-ring {
+  position:relative; width:160px; height:160px; margin-bottom:26px;
+}
+.avatar-ring::before, .avatar-ring::after {
+  content:''; position:absolute; border-radius:50%;
+  border:1px solid rgba(34,211,238,0.2);
+  animation:ringPulse 3s ease-in-out infinite;
+}
+.avatar-ring::before { inset:-7px; animation-delay:0s; }
+.avatar-ring::after  { inset:-16px; opacity:0.5; animation-delay:0.7s; }
+@keyframes ringPulse { 0%,100%{transform:scale(1);opacity:0.5;} 50%{transform:scale(1.03);opacity:1;} }
+
+.avatar-tick { position:absolute; width:12px; height:12px; border-color:var(--cyan); border-style:solid; opacity:0.6; }
+.avatar-tick.tl { top:-3px;left:-3px;border-width:2px 0 0 2px; }
+.avatar-tick.tr { top:-3px;right:-3px;border-width:2px 2px 0 0; }
+.avatar-tick.bl { bottom:-3px;left:-3px;border-width:0 0 2px 2px; }
+.avatar-tick.br { bottom:-3px;right:-3px;border-width:0 2px 2px 0; }
+
+.avatar-img {
+  width:160px; height:160px; border-radius:50%; display:block;
+  border:2px solid rgba(34,211,238,0.28);
+  background:var(--s2);
+}
+
+.login-brand {
+  font-family:var(--mono); font-size:9px; letter-spacing:3.5px;
+  color:var(--t4); text-transform:uppercase; margin-bottom:10px;
+}
+.login-title {
+  font-family:var(--orb); font-size:clamp(18px,3.5vw,26px); font-weight:800;
+  letter-spacing:3px; color:var(--t1); text-align:center;
+  margin-bottom:5px; text-transform:uppercase; line-height:1.3;
+}
+.login-title span { color:var(--cyan); }
+.login-sub {
+  font-family:var(--mono); font-size:10px; letter-spacing:2px;
+  color:var(--t4); text-transform:uppercase; margin-bottom:36px;
+}
+
+.key-wrap { position:relative; width:310px; margin-bottom:10px; }
+.key-label {
+  font-family:var(--mono); font-size:9px; letter-spacing:2px;
+  color:var(--t4); text-transform:uppercase; margin-bottom:8px; display:block;
+  transition:color 0.2s;
+}
+.key-wrap:focus-within .key-label { color:var(--cyan); }
+.key-input-wrap { position:relative; display:flex; align-items:center; }
+.key-bracket {
+  font-family:var(--mono); font-size:22px; color:rgba(34,211,238,0.25);
+  padding:0 10px; line-height:1; flex-shrink:0; transition:color 0.2s;
+  user-select:none;
+}
+.key-wrap:focus-within .key-bracket { color:rgba(34,211,238,0.6); }
+.key-input {
+  flex:1; height:50px;
+  background:var(--s2); border:1px solid var(--border); border-left:none; border-right:none;
+  color:var(--cyan2); font-family:var(--mono); font-size:15px; letter-spacing:2px;
+  text-align:center; outline:none;
+  transition:border-color 0.25s, background 0.25s, box-shadow 0.25s;
+  padding:0 8px;
+}
+.key-input::placeholder { color:var(--t4); letter-spacing:2px; }
+.key-input:focus { background:rgba(34,211,238,0.03); box-shadow:0 0 0 1px rgba(34,211,238,0.18) inset, 0 0 20px rgba(34,211,238,0.05); }
+.key-input.error { color:var(--red); animation:shake 0.38s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(4px);} }
+
+.err-msg {
+  font-family:var(--mono); font-size:10px; color:var(--red);
+  letter-spacing:1.5px; text-align:center; min-height:16px; margin-bottom:18px;
+  opacity:0; transition:opacity 0.2s;
+}
+.err-msg.show { opacity:1; }
+
+.enter-btn {
+  width:310px; height:48px;
+  background:transparent; border:1px solid rgba(34,211,238,0.32);
+  color:var(--cyan); font-family:var(--orb); font-size:13px; font-weight:700;
+  letter-spacing:5px; text-transform:uppercase; cursor:pointer;
+  position:relative; overflow:hidden; transition:all 0.2s ease;
+}
+.enter-btn::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg,transparent,rgba(34,211,238,0.07),transparent);
+  transform:translateX(-100%); transition:transform 0.55s ease;
+}
+.enter-btn:hover { background:rgba(34,211,238,0.05); border-color:rgba(34,211,238,0.55); box-shadow:0 0 18px rgba(34,211,238,0.08); }
+.enter-btn:hover::before { transform:translateX(100%); }
+.enter-btn:active { transform:scale(0.98); }
+
+.status-bar {
+  position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
+  display:flex; align-items:center; gap:14px;
+  font-family:var(--mono); font-size:9px; letter-spacing:2px; color:var(--t4); white-space:nowrap;
+}
+.status-dot { width:5px; height:5px; border-radius:50%; background:var(--cyan); opacity:0.5; animation:dotBlink 2s ease-in-out infinite; }
+@keyframes dotBlink { 0%,100%{opacity:0.25;} 50%{opacity:0.7;} }
+
+/* ══════════════════════════
+   PANEL PAGE
+══════════════════════════ */
+#panelPage { flex-direction:column; align-items:center; justify-content:flex-start; overflow:hidden; }
+
+/* ── HEADER ── */
+.panel-header {
+  width:100%; height:56px;
+  border-bottom:1px solid var(--border);
+  background:rgba(10,12,18,0.92);
+  backdrop-filter:blur(16px);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 24px; flex-shrink:0; position:relative; z-index:5;
+}
+.ph-logo { font-family:var(--orb); font-size:13px; font-weight:800; letter-spacing:4px; color:var(--t2); }
+.ph-logo span { color:var(--cyan); }
+.ph-right { display:flex; align-items:center; gap:24px; }
+
+/* period */
+.period-wrap { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+.period-label { font-family:var(--mono); font-size:8px; letter-spacing:2px; color:var(--t4); text-transform:uppercase; }
+.period-val { font-family:var(--mono); font-size:11px; color:var(--t3); letter-spacing:0.5px; }
+
+/* ── WATCH TIMER ── */
+.watch-wrap {
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+}
+.watch-label { font-family:var(--mono); font-size:8px; letter-spacing:2px; color:var(--t4); text-transform:uppercase; }
+
+.watch-face {
+  position:relative;
+  width:64px; height:64px;
+  flex-shrink:0;
+}
+.watch-svg { width:64px; height:64px; transform:rotate(-90deg); }
+.watch-track { fill:none; stroke:rgba(255,255,255,0.06); stroke-width:3; }
+.watch-prog  { fill:none; stroke:var(--cyan); stroke-width:3; stroke-linecap:round;
+  stroke-dasharray:163; stroke-dashoffset:0;
+  transition:stroke-dashoffset 0.9s linear, stroke 0.4s;
+  filter:drop-shadow(0 0 4px rgba(34,211,238,0.4));
+}
+.watch-prog.warn { stroke:#f59e0b; filter:drop-shadow(0 0 4px rgba(245,158,11,0.4)); }
+.watch-prog.crit { stroke:var(--red); filter:drop-shadow(0 0 5px rgba(239,68,68,0.5)); animation:progFlash 0.5s ease-in-out infinite; }
+@keyframes progFlash { 50%{ opacity:0.4; } }
+
+.watch-center-text {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--orb); font-size:13px; font-weight:700; letter-spacing:1px;
+  color:var(--cyan); line-height:1;
+  transition:color 0.4s;
+}
+.watch-center-text.warn { color:#f59e0b; }
+.watch-center-text.crit { color:var(--red); }
+
+/* ── CENTER AREA ── */
+.panel-center {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  position:relative; z-index:2; width:100%; overflow:hidden;
+}
+
+/* result circle */
+.result-circle-wrap {
+  position:relative; display:flex; align-items:center; justify-content:center;
+}
+
+.result-circle {
+  width:220px; height:220px; border-radius:50%;
+  border:2px solid rgba(255,255,255,0.06);
+  background: radial-gradient(circle, rgba(20,23,32,0.9) 0%, rgba(10,12,18,0.95) 100%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative; overflow:hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.04), inset 0 0 40px rgba(0,0,0,0.4);
+  transition: box-shadow 0.5s ease, border-color 0.5s;
+}
+
+/* spinning ring on circle */
+.ring-spin {
+  position:absolute; inset:-2px;
+  border-radius:50%;
+  border:2px solid transparent;
+  border-top-color:rgba(34,211,238,0.25);
+  border-right-color:rgba(34,211,238,0.1);
+  animation:spin 6s linear infinite;
+  pointer-events:none;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.result-inner-label {
+  font-family:var(--mono); font-size:9px; letter-spacing:3px;
+  text-transform:uppercase; color:var(--t4); margin-bottom:8px;
+  transition:color 0.4s;
+}
+.result-main-text {
+  font-family:var(--orb); font-size:42px; font-weight:900;
+  letter-spacing:4px; text-transform:uppercase;
+  color:var(--t4); transition:color 0.4s, text-shadow 0.4s, font-size 0.3s;
+  line-height:1;
+}
+.result-sub-text {
+  font-family:var(--mono); font-size:10px; letter-spacing:2px;
+  color:var(--t4); margin-top:10px; text-transform:uppercase;
+  transition:color 0.4s; min-height:14px;
+}
+
+/* states */
+.result-circle.show-small {
+  border-color:rgba(253,230,138,0.3);
+  box-shadow:0 0 40px rgba(253,230,138,0.1), 0 0 80px rgba(253,230,138,0.04), inset 0 0 40px rgba(253,230,138,0.04);
+}
+.result-circle.show-small .result-inner-label { color:rgba(253,230,138,0.5); }
+.result-circle.show-small .result-main-text { color:var(--yellow); text-shadow:0 0 30px rgba(253,230,138,0.5), 0 0 60px rgba(253,230,138,0.2); font-size:52px; }
+.result-circle.show-small .result-sub-text  { color:rgba(253,230,138,0.45); }
+
+.result-circle.show-big {
+  border-color:rgba(147,197,253,0.3);
+  box-shadow:0 0 40px rgba(147,197,253,0.12), 0 0 80px rgba(147,197,253,0.05), inset 0 0 40px rgba(147,197,253,0.05);
+}
+.result-circle.show-big .result-inner-label { color:rgba(147,197,253,0.5); }
+.result-circle.show-big .result-main-text { color:var(--blue); text-shadow:0 0 30px rgba(147,197,253,0.5), 0 0 60px rgba(147,197,253,0.2); font-size:64px; }
+.result-circle.show-big .result-sub-text  { color:rgba(147,197,253,0.45); }
+
+/* crosshair corners on circle */
+.circ-corner { position:absolute; width:14px; height:14px; }
+.circ-corner::before, .circ-corner::after { content:''; position:absolute; background:rgba(34,211,238,0.25); }
+.circ-corner.c-tl { top:14px;left:14px; }
+.circ-corner.c-tr { top:14px;right:14px; }
+.circ-corner.c-bl { bottom:14px;left:14px; }
+.circ-corner.c-br { bottom:14px;right:14px; }
+.circ-corner.c-tl::before,.circ-corner.c-tr::before,.circ-corner.c-bl::before,.circ-corner.c-br::before { width:100%;height:1px;top:0;left:0; }
+.circ-corner.c-tl::after,.circ-corner.c-tr::after,.circ-corner.c-bl::after,.circ-corner.c-br::after { height:100%;width:1px;top:0;left:0; }
+
+/* ── FOOTER ── */
+.panel-footer {
+  width:100%; padding:0 24px 32px;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  flex-shrink:0; position:relative; z-index:5;
+}
+
+.generate-btn {
+  width:100%; max-width:280px; height:50px;
+  background:transparent;
+  border:1px solid rgba(34,211,238,0.3);
+  color:var(--cyan);
+  font-family:var(--orb); font-size:14px; font-weight:700; letter-spacing:5px;
+  text-transform:uppercase; cursor:pointer;
+  position:relative; overflow:hidden;
+  transition:all 0.22s ease;
+}
+.generate-btn::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg, transparent, rgba(34,211,238,0.07), transparent);
+  transform:translateX(-100%); transition:transform 0.5s;
+}
+.generate-btn:hover { background:rgba(34,211,238,0.05); border-color:rgba(34,211,238,0.55); box-shadow:0 0 20px rgba(34,211,238,0.1); }
+.generate-btn:hover::before { transform:translateX(100%); }
+.generate-btn:active { transform:scale(0.97); }
+.generate-btn:disabled { opacity:0.25; cursor:not-allowed; transform:none !important; box-shadow:none; border-color: rgba(239,68,68,0.3); color: var(--red); }
+
+.footer-status {
+  font-family:var(--mono); font-size:9px; letter-spacing:2px;
+  color:var(--t4); text-transform:uppercase; text-align:center; min-height:13px;
+  transition:color 0.3s;
+}
+.footer-status.locked { color:rgba(239,68,68,0.6); }
+
+/* flash */
+.flash-overlay { position:fixed;inset:0;z-index:999;background:var(--cyan);opacity:0;pointer-events:none; }
+.flash-overlay.go { animation:flashAnim 0.4s ease forwards; }
+@keyframes flashAnim { 0%{opacity:0.3;} 100%{opacity:0;} }
+</style>
 </head>
 <body>
 
-    <div class="admin-root" id="adminRoot">
+<div class="scanlines"></div>
+<div class="flash-overlay" id="flashOverlay"></div>
 
-        <!-- HEADER (taller, centered brand) -->
-        <div class="adm-header">
-            <button class="menu-btn" onclick="admToggleSide()"><i class="fa-solid fa-bars"></i></button>
-            <div class="brand">
-                <div class="lg"><img src="" id="admHeaderLogo" alt="logo"></div>
-                <div class="nm" id="admHeaderName">REBETS CLUB</div>
-            </div>
-            <button class="close" onclick="admClose()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
+<div class="page active" id="loginPage">
+  <div class="scan-bar"></div>
+  <div class="corner tl"><svg viewBox="0 0 48 48"><path d="M2 46 L2 2 L46 2"/></svg></div>
+  <div class="corner tr"><svg viewBox="0 0 48 48"><path d="M2 46 L2 2 L46 2"/></svg></div>
+  <div class="corner bl"><svg viewBox="0 0 48 48"><path d="M2 46 L2 2 L46 2"/></svg></div>
+  <div class="corner br"><svg viewBox="0 0 48 48"><path d="M2 46 L2 2 L46 2"/></svg></div>
 
-        <!-- LOGIN SCREEN -->
-        <div id="admLoginScreen">
-            <div class="adm-card">
-                <h3><i class="fa-solid fa-user-shield"></i> ADMIN LOGIN</h3>
-                <div class="adm-field"><label>Email</label><div class="adm-inp"><i class="fa-solid fa-envelope"></i><input id="admEmail" type="email" placeholder="admin email"></div></div>
-                <div class="adm-field"><label>Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="admPass" type="password" placeholder="password"></div></div>
-                <button class="adm-btn w100" onclick="admDoLogin()"><i class="fa-solid fa-right-to-bracket"></i> ENTER</button>
-            </div>
-        </div>
-
-        <!-- MAIN BODY -->
-        <div class="adm-body" id="admBody" style="display:none">
-            <div class="adm-scrim" onclick="admToggleSide()"></div>
-            <!-- SIDEBAR (left) -->
-            <aside class="adm-side" id="admSide">
-                <div class="item on" data-sec="dashboard" onclick="admGo('dashboard')"><i class="fa-solid fa-gauge-high"></i> Dashboard</div>
-                <div class="item" data-sec="appname" onclick="admGo('appname')"><i class="fa-solid fa-signature"></i> Change App Name</div>
-                <div class="item" data-sec="support" onclick="admGo('support')"><i class="fa-solid fa-headset"></i> Change Support Link</div>
-                <div class="item" data-sec="qr" onclick="admGo('qr')"><i class="fa-solid fa-qrcode"></i> QR and UPI</div>
-                <div class="item" data-sec="addreq" onclick="admGo('addreq')"><i class="fa-solid fa-plus"></i> Add Funds Requests</div>
-                <div class="item" data-sec="witreq" onclick="admGo('witreq')"><i class="fa-solid fa-arrow-down"></i> Withdraw Requests</div>
-                <div class="item" data-sec="promo" onclick="admGo('promo')"><i class="fa-solid fa-bullhorn"></i> Add Promotion</div>
-                <div class="item" data-sec="users" onclick="admGo('users')"><i class="fa-solid fa-users"></i> Users</div>
-                <div class="item" data-sec="password" onclick="admGo('password')"><i class="fa-solid fa-key"></i> Change Admin Password</div>
-                <div class="item" data-sec="gift" onclick="admGo('gift')"><i class="fa-solid fa-gift"></i> Gift Codes</div>
-                <div class="item logout-item" onclick="admLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
-            </aside>
-            <!-- MAIN -->
-            <main class="adm-main" id="admMain"></main>
-        </div>
+  <div class="login-wrap">
+    <div class="avatar-ring">
+      <div class="avatar-tick tl"></div>
+      <div class="avatar-tick tr"></div>
+      <div class="avatar-tick bl"></div>
+      <div class="avatar-tick br"></div>
+      <img class="avatar-img"
+           src="https://api.dicebear.com/10.x/toon-head/svg?seed=Felix"
+           alt="avatar"
+           onerror="this.style.background='#0f1118'">
     </div>
 
-    <!-- Password Modal -->
-    <div class="pw-modal" id="pwModal">
-        <div class="pw-box">
-            <h3><i class="fa-solid fa-lock"></i> Enter Password</h3>
-            <div class="err" id="pwErr">Incorrect password</div>
-            <div class="adm-inp"><i class="fa-solid fa-key"></i><input id="pwInput" type="password" placeholder="Enter password"></div>
-            <button class="adm-btn" onclick="admPwSubmit()"><i class="fa-solid fa-check"></i> Unlock</button>
-        </div>
+    <div class="login-brand">Secure Access Terminal</div>
+    <div class="login-title">WELCOME TO <span>ZILLA</span> 4 PANEL</div>
+    <div class="login-sub">Authorized Personnel Only</div>
+
+    <div class="key-wrap">
+      <label class="key-label">Enter Your Key</label>
+      <div class="key-input-wrap">
+        <span class="key-bracket">[</span>
+        <input class="key-input" id="keyInput" type="password" placeholder="••••••••••••••" autocomplete="off">
+        <span class="key-bracket">]</span>
+      </div>
     </div>
-
-    <div class="toast" id="toast"></div>
-
-    <script>
-        /* ==========================================================================
-           FIREBASE CONFIG — encrypted/obfuscated (XOR + base64)
-           Config matches: apiKey: AIzaSyDxCV7OGMIBp7nkBMwCB4W9MPRyyXiOvZ0
-           ========================================================================== */
-        (function() {
-            // This is the XOR-encoded + base64 representation of the Firebase config
-            const _enc =
-                'B18GQwAYFhVID0kdFwAfHARVH0MWBxgAB0VUDBIXB1QeGAQAABVYHwBDAhQWAFQdFgAfHARWGBgFQQAWGQBVHhEGAB8cBFYYGQVBAxYaFVUfFgEABQwHABhUGBgFQQBWDxgABVUaFwYAHxwEVhgYBUEBVh8YBQAVAh8cBFYYGAVBABYbFwAfHARWGBgFQQBWHwJDAhYXBFUfFgEABQwHABhUGBgFQQZWHwBEAhUUAFQdFgAfHARVH0ZWAQ4IBVYfGUJWGRYdFQYfCkZWBQ0GB1YfFAZBABYbF1UfFgEABQwHABhUGBgFQQAWHgZWGxYdFQYfCkZWAAQMB1YfFkRXHgcPAhYUAFQdFgAfHARVGRVWGBgFQQAWHgZWAxZeFQYfCkZWAAQMB1YfFkRXGQdCHwIWHBQVAB8cBFYYGAVBAApWEQYAHxwEVhgYBUEBVh8ZBQEXHwQVHwAVVh9GVh8ADUUVGxwEQgcfCwRUHxhGWAUMAwZWHwQbFkUVHhQCTQ0CQhQXAB8cBFYYGAVBABYbFwAfHARWGBgFQQFWHxgHVh8YFkIfBw8HVh8cQhUZBQMBHxwBVh8YFkIfBw8HVh8cQhUZBQMBHxwBVh8YFkIVFwAHAR4cAVYfGBZCFRcABwEeHAFWHxgWQhUXAAcBHhwBVh8YFkIUGwcBHxwBVh8YFkIUGwcBHxwBVh8YFkIUHQUDAh8cAVYfGBZCFB0FAwIfHAFWHxgWQhQdBQMCHxwBVh8YFkIUHQUDAh8cAVYfGBZCFB0FAwIfHAFWHxgWQhUfAUIfB1UfGAZCFRkAAR8cAVYfGBZCFRkAAR8cAVYfGBZCFRsAAR8cAVYfGBZCFRsAAR8cAVYfGBZCFRsHAB8cAVYfGBZCFRsHAB8cAVYfGBZCFQoPAh8cAVYfGBZCFQoPAh8cAVYfGBZCFQsPAh8cAVYfGBZCFQsPAh8cAVYfGBZCFQ0PAh8cAVYfGBZCFQ0PAh8cAVYfGBZCFQ4PAh8cAVYfGBZCFQ4PAh8cAVYfGBZCFQgPAh8cAVYfGBZCFQgPAh8cAVYfGBZCFQUPAh8cAVYfGBZCFQUPAh8cAVYfGBZCFQYPAh8cAVYfGBZCFQYPAh8cAVYfGBZCFRMPAh8cAVYfGBZCFRMPAh8cAVYfGBZCFRIAAh8cAVYfGBZCFRIAAh8cAVYfGBZCFREAAh8cAVYfGBZCFREAAh8cAVYfGBZCFREAAh8cAVYfGBZCFRccAh8cAVYfGBZCFRccAh8cAVYfGBZCFRcbAh8cAVYfGBZCFRcbAh8cAVYfGBZCFRcaAh8cAVYfGBZCFRcaAh8cAVYfGBZCFRcXAh8cAVYfGBZCFRcXAh8cAVYfGBZCFRcYAh8cAVYfGBZCFRcYAh8cAVYfGBZCFRcZAh8cAVYfGBZCFRcZAh8cAVYfGBZCFRcWAh8cAVYfGBZCFRcWAh8cAVYfGBZCFRcVAh8cAVYfGBZCFRcVAh8cAVYfGBZCFRcSAh8cAVYfGBZCFRcSAh8cAVYfGBZCFRcTAh8cAVYfGBZCFRcTAh8cAVYfGBZCFRcQAh8cAVYfGBZCFRcQAh8cAVYfGBZCFRcRAh8cAVYfGBZCFRcRAh8cAVYfGBZCFRcOAh8cAVYfGBZCFRcOAh8cAVYfGBZCFRcPAh8cAVYfGBZCFRcPAh8cAVYfGBZCFRcMAh8cAVYfGBZCFRcMAh8cAVYfGBZCFRcNAh8cAVYfGBZCFRcNAh8cAVYfGBZCFRcKAh8cAVYfGBZCFRcKAh8cAVYfGBZCFRcLAh8cAVYfGBZCFRcLAh8cAVYfGBZCFRcIAh8cAVYfGBZCFRcIAh8cAVYfGBZCFRcJAh8cAVYfGBZCFRcJAh8cAVYfGBZCFRcGAh8cAVYfGBZCFRcGAh8cAVYfGBZCFRcHAh8cAVYfGBZCFRcHAh8cAVYfGBZCFRcEAh8cAVYfGBZCFRcEAh8cAVYfGBZCFRcFAh8cAVYfGBZCFRcFAh8cAVYfGBZCFRcCAh8cAVYfGBZCFRcCAh8cAVYfGBZCFRcDAh8cAVYfGBZCFRcDAh8cAVYfGBZCFRcAAh8cAVYfGBZCFRcAAh8cAVYfGBZCFRcBAh8cAVYfGBZCFRcBAh8cAVYfGBZCFRc-Ah8cAVYfGBZCFRc-Ah8cAVYfGBZCFRc9Ah8cAVYfGBZCFRc9Ah8cAVYfGBZCFRc-Ah8cAVYfGBZCFRc-Ah8cAVYfGBZCFRc9Ah8cAVYfGBZCFRc9Ah8cAVYfGBZCFRc4Ah8cAVYfGBZCFRc4Ah8cAVYfGBZCFRc5Ah8cAVYfGBZCFRc5Ah8cAVYfGBZCFRc6Ah8cAVYfGBZCFRc6Ah8cAVYfGBZCFRc7Ah8cAVYfGBZCFRc7Ah8cAVYfGBZCFRc0Ah8cAVYfGBZCFRc0Ah8cAVYfGBZCFRc1Ah8cAVYfGBZCFRc1Ah8cAVYfGBZCFRc2Ah8cAVYfGBZCFRc2Ah8cAVYfGBZCFRc3Ah8cAVYfGBZCFRc3Ah8cAVYfGBZCFRcwAh8cAVYfGBZCFRcwAh8cAVYfGBZCFRcxAh8cAVYfGBZCFRcxAh8cAVYfGBZCFRwyAh8cAVYfGBZCFRwyAh8cAVYfGBZCFRwzAh8cAVYfGBZCFRwzAh8cAVYfGBZCFRwwAh8cAVYfGBZCFRwwAh8cAVYfGBZCFRwxAh8cAVYfGBZCFRwxAh8cAVYfGBZCFRw-Ah8cAVYfGBZCFRw-Ah8cAVYfGBZCFRw9Ah8cAVYfGBZCFRw9Ah8cAVYfGBZCFRw8Ah8cAVYfGBZCFRw8Ah8cAVYfGBZCFRw7Ah8cAVYfGBZCFRw7Ah8cAVYfGBZCFRw6Ah8cAVYfGBZCFRw6Ah8cAVYfGBZCFRw5Ah8cAVYfGBZCFRw5Ah8cAVYfGBZCFRw4Ah8cAVYfGBZCFRw4Ah8cAVYfGBZCFRw3Ah8cAVYfGBZCFRw3Ah8cAVYfGBZCFRw2Ah8cAVYfGBZCFRw2Ah8cAVYfGBZCFRw1Ah8cAVYfGBZCFRw1Ah8cAVYfGBZCFRw0Ah8cAVYfGBZCFRw0Ah8cAVYfGBZCFRwzAh8cAVYfGBZCFRwzAh8cAVYfGBZCFRwyAh8cAVYfGBZCFRwyAh8cAVYfGBZCFRwxAh8cAVYfGBZCFRwxAh8cAVYfGBZCFRwwAh8cAVYfGBZCFRwwAh8cAVYfGBZCFRwvAh8cAVYfGBZCFRwvAh8cAVYfGBZCFRwuAh8cAVYfGBZCFRwuAh8cAVYfGBZCFRwtAh8cAVYfGBZCFRwtAh8cAVYfGBZCFRwsAh8cAVYfGBZCFRwsAh8cAVYfGBZCFRwrAh8cAVYfGBZCFRwrAh8cAVYfGBZCFRwqAh8cAVYfGBZCFRwqAh8cAVYfGBZCFRwpAh8cAVYfGBZCFRwpAh8cAVYfGBZCFRwoAh8cAVYfGBZCFRwoAh8cAVYfGBZCFRwnAh8cAVYfGBZCFRwnAh8cAVYfGBZCFRwmAh8cAVYfGBZCFRwmAh8cAVYfGBZCFRwlAh8cAVYfGBZCFRwlAh8cAVYfGBZCFRwkAh8cAVYfGBZCFRwkAh8cAVYfGBZCFRwjAh8cAVYfGBZCFRwjAh8cAVYfGBZCFRwiAh8cAVYfGBZCFRwiAh8cAVYfGBZCFRwhAh8cAVYfGBZCFRwhAh8cAVYfGBZCFRwgAh8cAVYfGBZCFRwgAh8cAVYfGBZCFRwfAh8cAVYfGBZCFRwfAh8cAVYfGBZCFRweAh8cAVYfGBZCFRweAh8cAVYfGBZCFRwdAh8cAVYfGBZCFRwdAh8cAVYfGBZCFRwcAh8cAVYfGBZCFRwcAh8cAVYfGBZCFRwbAh8cAVYfGBZCFRwbAh8cAVYfGBZCFRwaAh8cAVYfGBZCFRwaAh8cAVYfGBZCFRwZAh8cAVYfGBZCFRwZAh8cAVYfGBZCFRwYAh8cAVYfGBZCFRwYAh8cAVYfGBZCFRwXAh8cAVYfGBZCFRwXAh8cAVYfGBZCFRwWAh8cAVYfGBZCFRwWAh8cAVYfGBZCFRwVAh8cAVYfGBZCFRwVAh8cAVYfGBZCFRwUAh8cAVYfGBZCFRwUAh8cAVYfGBZCFRwTAh8cAVYfGBZCFRwTAh8cAVYfGBZCFRwSAh8cAVYfGBZCFRwSAh8cAVYfGBZCFRwRAh8cAVYfGBZCFRwRAh8cAVYfGBZCFRwQAh8cAVYfGBZCFRwQAh8cAVYfGBZCFRwPAh8cAVYfGBZCFRwPAh8cAVYfGBZCFRwOAh8cAVYfGBZCFRwOAh8cAVYfGBZCFRwNAh8cAVYfGBZCFRwNAh8cAVYfGBZCFRwMAh8cAVYfGBZCFRwMAh8cAVYfGBZCFRwLAh8cAVYfGBZCFRwLAh8cAVYfGBZCFRwKAh8cAVYfGBZCFRwKAh8cAVYfGBZCFRwJAh8cAVYfGBZCFRwJAh8cAVYfGBZCFRwIAh8cAVYfGBZCFRwIAh8cAVYfGBZCFRwHAh8cAVYfGBZCFRwHAh8cAVYfGBZCFRwGAh8cAVYfGBZCFRwGAh8cAVYfGBZCFRwFAh8cAVYfGBZCFRwFAh8cAVYfGBZCFRwEAh8cAVYfGBZCFRwEAh8cAVYfGBZCFRwDAh8cAVYfGBZCFRwDAh8cAVYfGBZCFRwCAh8cAVYfGBZCFRwCAh8cAVYfGBZCFRwBAh8cAVYfGBZCFRwBAh8cAVYfGBZCFRwAAh8cAVYfGBZCFRwAAh8cAVYfGBZCFRw_Ah8cAVYfGBZCFRw_Ah8cAVYfGBZCFRw-Ah8cAVYfGBZCFRw-Ah8cAVYfGBZCFRw9Ah8cAVYfGBZCFRw9Ah8cAVYfGBZCFRw8Ah8cAVYfGBZCFRw8Ah8cAVYfGBZCFRw7Ah8cAVYfGBZCFRw7Ah8cAVYfGBZCFRw6Ah8cAVYfGBZCFRw6Ah8cAVYfGBZCFRw5Ah8cAVYfGBZCFRw5Ah8cAVYfGBZCFRw4Ah8cAVYfGBZCFRw4Ah8cAVYfGBZCFRw3Ah8cAVYfGBZCFRw3Ah8cAVYfGBZCFRw2Ah8cAVYfGBZCFRw2Ah8cAVYfGBZCFRw1Ah8cAVYfGBZCFRw1Ah8cAVYfGBZCFRw0Ah8cAVYfGBZCFRw0Ah8cAVYfGBZCFRwzAh8cAVYfGBZCFRwzAh8cAVYfGBZCFRwyAh8cAVYfGBZCFRwyAh8cAVYfGBZCFRwxAh8cAVYfGBZCFRwxAh8cAVYfGBZCFRwwAh8cAVYfGBZCFRwwAh8cAVYfGBZCFRwvAh8cAVYfGBZCFRwvAh8cAVYfGBZCFRwuAh8cAVYfGBZCFRwuAh8cAVYfGBZCFRwtAh8cAVYfGBZCFRwtAh8cAVYfGBZCFRwsAh8cAVYfGBZCFRwsAh8cAVYfGBZCFRwrAh8cAVYfGBZCFRwrAh8cAVYfGBZCFRwqAh8cAVYfGBZCFRwqAh8cAVYfGBZCFRwpAh8cAVYfGBZCFRwpAh8cAVYfGBZCFRwoAh8cAVYfGBZCFRwoAh8cAVYfGBZCFRwnAh8cAVYfGBZCFRwnAh8cAVYfGBZCFRwmAh8cAVYfGBZCFRwmAh8cAVYfGBZCFRwlAh8cAVYfGBZCFRwlAh8cAVYfGBZCFRwkAh8cAVYfGBZCFRwkAh8cAVYfGBZCFRwjAh8cAVYfGBZCFRwjAh8cAVYfGBZCFRwiAh8cAVYfGBZCFRwiAh8cAVYfGBZCFRwhAh8cAVYfGBZCFRwhAh8cAVYfGBZCFRwgAh8cAVYfGBZCFRwgAh8cAVYfGBZCFRwfAh8cAVYfGBZCFRwfAh8cAVYfGBZCFRweAh8cAVYfGBZCFRweAh8cAVYfGBZCFRwdAh8cAVYfGBZCFRwdAh8cAVYfGBZCFRwcAh8cAVYfGBZCFRwcAh8cAVYfGBZCFRwbAh8cAVYfGBZCFRwbAh8cAVYfGBZCFRwaAh8cAVYfGBZCFRwaAh8cAVYfGBZCFRwZAh8cAVYfGBZCFRwZAh8cAVYfGBZCFRwYAh8cAVYfGBZCFRwYAh8cAVYfGBZCFRwXAh8cAVYfGBZCFRwXAh8cAVYfGBZCFRwWAh8cAVYfGBZCFRwWAh8cAVYfGBZCFRwV';
-            const _key = 'REBETS2024';
-
-            function _xorDecode(enc, key) {
-                let res = '';
-                for (let i = 0; i < enc.length; i++) {
-                    res += String.fromCharCode(enc.charCodeAt(i) ^ key.charCodeAt(i % key.length));
-                }
-                return res;
-            }
-
-            let raw = '';
-            try {
-                const decoded = atob(_enc);
-                raw = _xorDecode(decoded, _key);
-            } catch (e) {
-                raw = '{}';
-            }
-            let cfg = {};
-            try { cfg = JSON.parse(raw); } catch (e) { cfg = {}; }
-
-            // Fallback in case decoding fails — matches the user's provided config
-            if (!cfg.apiKey) {
-                cfg = {
-                    apiKey: "AIzaSyDxCV7OGMIBp7nkBMwCB4W9MPRyyXiOvZ0",
-                    authDomain: "rebets-ffeb8.firebaseapp.com",
-                    databaseURL: "https://rebets-ffeb8-default-rtdb.firebaseio.com",
-                    projectId: "rebets-ffeb8",
-                    storageBucket: "rebets-ffeb8.firebasestorage.app",
-                    messagingSenderId: "56304898018",
-                    appId: "1:56304898018:web:90a46b28257585d79ef3bb"
-                };
-            }
-
-            window._fbCfg = cfg;
-
-            let _fbDB = null;
-            try {
-                if (window.firebase && !firebase.apps.length) {
-                    if (cfg.apiKey) {
-                        firebase.initializeApp(cfg);
-                        _fbDB = firebase.database();
-                        console.log('✅ Firebase initialized');
-                    }
-                }
-            } catch (e) { console.warn('Firebase init error:', e); }
-            window._fbDB = _fbDB;
-        })();
-
-        function _fbSafe(fn) { try { if (window._fbDB) fn(window._fbDB); } catch (e) { console.warn('Firebase error:', e); } }
-
-        /* ==========================================================================
-           STATE — Admin credentials are encrypted in code (base64)
-           Email: xyzrony1293@gmail.com  -> base64: eHl6cm9ueTEyOTNAZ21haWwuY29t
-           Password: MONU MANFORCE        -> base64: TU9OVSBNQU5GT1JDRQ==
-           ========================================================================== */
-        const S = JSON.parse(localStorage.getItem('sm_state') || '{}');
-        S.users = S.users || {};
-        S.brand = S.brand || 'REBETS CLUB';
-        S.supportUrl = S.supportUrl || 'https://t.me/durablebattle_support';
-        S.giftCodes = S.giftCodes || {};
-        S.session = S.session || null;
-        S.qrUrl = S.qrUrl ||
-            'https://project--4813f4b4-35ac-447f-b90e-90942f45537b.lovable.app/__l5e/assets-v1/472f3cfe-4113-4fa8-baa9-6c56f73c81f1/qr.png';
-        S.upi = S.upi || 'durablebattle@upi';
-        // If admin not set, create from encrypted values
-        if (!S.admin) {
-            // Decode base64
-            const encEmail = 'eHl6cm9ueTEyOTNAZ21haWwuY29t'; // xyzrony1293@gmail.com
-            const encPass = 'TU9OVSBNQU5GT1JDRQ=='; // MONU MANFORCE
-            try {
-                const email = atob(encEmail);
-                const pass = atob(encPass);
-                S.admin = { email: email, password: pass }; // plain for now, will be hashed on first login
-                // We'll keep plain password initially, but after first login it will be hashed.
-                // We also store a hashed version if not already.
-                // We'll convert to hash on first login.
-            } catch (e) {
-                S.admin = { email: 'xyzrony1293@gmail.com', password: 'MONU MANFORCE' };
-            }
-        }
-        S.adminSession = S.adminSession || false;
-        S.promos = S.promos || [];
-        S.matchReq = S.matchReq || [];
-
-        // Remove match related state to keep clean (not used)
-        // We keep them but they won't be used.
-        // We'll also keep S.tiles and S.matches for compatibility but they are not shown.
-
-        function save() { localStorage.setItem('sm_state', JSON.stringify(S)); }
-
-        function toast(msg, dur) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            clearTimeout(t._timer);
-            t._timer = setTimeout(() => t.classList.remove('show'), dur || 2200);
-        }
-
-        function fmtTime(t) { const d = new Date(t); return d.toLocaleDateString() + ' · ' + d.toLocaleTimeString([], { hour: '2-digit',
-                minute: '2-digit' }); }
-
-        /* ==========================================================================
-           ADMIN FUNCTIONS
-           ========================================================================== */
-        const LOGO_IMG =
-            'https://project--3368afd7-4f7c-4e6f-8a0e-cee70ad4466f.lovable.app/__l5e/assets-v1/852a1621-53c8-41a4-a00c-cb069b9b31bd/logo.png';
-
-        document.getElementById('admHeaderLogo').src = LOGO_IMG;
-        document.getElementById('admHeaderName').textContent = 'REBETS CLUB';
-
-        let _pwCache = false;
-        const SIDEBAR_PW = 'MONU MANFORCE';
-
-        async function hashPass(p) {
-            try {
-                const b = new TextEncoder().encode(p + '|durable-salt');
-                const h = await crypto.subtle.digest('SHA-256', b);
-                return 'sha256$' + Array.from(new Uint8Array(h)).map(x => x.toString(16).padStart(2, '0')).join('');
-            } catch (e) { return p; }
-        }
-
-        function admClose() {
-            document.getElementById('adminRoot').style.display = 'none';
-            S.adminSession = false;
-            save();
-        }
-
-        async function admDoLogin() {
-            const e = document.getElementById('admEmail').value.trim().toLowerCase();
-            const p = document.getElementById('admPass').value;
-            if (e !== S.admin.email.toLowerCase()) return toast('Invalid admin credentials');
-            const stored = S.admin.password || '';
-            const ph = await hashPass(p);
-            const ok = stored.startsWith('sha256$') ? (stored === ph) : (stored === p);
-            if (!ok) return toast('Invalid admin credentials');
-            // If stored is plain, convert to hash
-            if (!stored.startsWith('sha256$')) {
-                S.admin.password = ph;
-                save();
-            }
-            S.adminSession = true;
-            _pwCache = false;
-            save();
-            document.getElementById('admPass').value = '';
-            document.getElementById('admLoginScreen').style.display = 'none';
-            document.getElementById('admBody').style.display = 'flex';
-            admGoDirect('dashboard');
-        }
-
-        function admLogout() {
-            S.adminSession = false;
-            _pwCache = false;
-            save();
-            document.getElementById('admLoginScreen').style.display = 'flex';
-            document.getElementById('admBody').style.display = 'none';
-            document.getElementById('admPass').value = '';
-            toast('Logged out');
-        }
-
-        function admToggleSide() {
-            document.getElementById('admSide').classList.toggle('open');
-            document.querySelector('.adm-scrim').classList.toggle('open');
-        }
-
-        /* ---- Password Modal ---- */
-        let _pendingSec = null;
-
-        function admShowPw(sec) {
-            _pendingSec = sec;
-            document.getElementById('pwModal').classList.add('open');
-            document.getElementById('pwInput').value = '';
-            document.getElementById('pwErr').classList.remove('show');
-            document.getElementById('pwInput').focus();
-        }
-
-        function admPwSubmit() {
-            const val = document.getElementById('pwInput').value;
-            if (val === SIDEBAR_PW) {
-                _pwCache = true;
-                document.getElementById('pwModal').classList.remove('open');
-                if (_pendingSec) {
-                    const sec = _pendingSec;
-                    _pendingSec = null;
-                    admGoDirect(sec);
-                }
-            } else {
-                document.getElementById('pwErr').classList.add('show');
-                document.getElementById('pwInput').value = '';
-                document.getElementById('pwInput').focus();
-            }
-        }
-
-        document.getElementById('pwInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') admPwSubmit();
-        });
-
-        document.getElementById('pwModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.remove('open');
-                _pendingSec = null;
-            }
-        });
-
-        /* ---- Navigation ---- */
-        function admGo(sec) {
-            if (sec === 'dashboard') {
-                admGoDirect(sec);
-                return;
-            }
-            if (_pwCache) {
-                admGoDirect(sec);
-            } else {
-                admShowPw(sec);
-            }
-        }
-
-        function admGoDirect(sec) {
-            // update sidebar active state
-            document.querySelectorAll('#admSide .item').forEach(el => {
-                el.classList.toggle('on', el.dataset.sec === sec);
-            });
-            const m = document.getElementById('admMain');
-            // close sidebar on mobile
-            if (window.innerWidth <= 720) {
-                document.getElementById('admSide').classList.remove('open');
-                document.querySelector('.adm-scrim').classList.remove('open');
-            }
-            const sections = {
-                dashboard: admRenderDashboard,
-                appname: admRenderAppName,
-                support: admRenderSupport,
-                qr: admRenderQR,
-                addreq: admRenderAddReq,
-                witreq: admRenderWitReq,
-                promo: admRenderPromoAdmin,
-                users: admRenderUsers,
-                password: admRenderPassword,
-                gift: admRenderGift
-            };
-            m.scrollTop = 0;
-            (sections[sec] || admRenderDashboard)(m);
-        }
-
-        /* ---------- Helpers ---------- */
-        function admAllAddReq() {
-            const out = [];
-            for (const ph in S.users) {
-                const u = S.users[ph];
-                (u.addHist || []).forEach((r, i) => out.push({ phone: ph, user: u.name || 'Unknown', idx: i, ...r }));
-            }
-            return out.sort((a, b) => b.time - a.time);
-        }
-
-        function admAllWitReq() {
-            const out = [];
-            for (const ph in S.users) {
-                const u = S.users[ph];
-                (u.withHist || []).forEach((r, i) => out.push({ phone: ph, user: u.name || 'Unknown', idx: i, ...r }));
-            }
-            return out.sort((a, b) => b.time - a.time);
-        }
-
-        function admTotalSpent() {
-            let t = 0;
-            for (const ph in S.users) {
-                (S.users[ph].trans || []).forEach(x => { if (x.type === 'debit' && /Match entry/i.test(x.note || '')) t += (x
-                        .amount || 0); });
-            }
-            return t;
-        }
-
-        function fbPushUser(u) { _fbSafe(db => db.ref('users/' + u.phone).set(u)); }
-
-        function fbPushAppConfig() {
-            _fbSafe(db => db.ref('appConfig').set({
-                brand: S.brand,
-                supportUrl: S.supportUrl,
-                upi: S.upi,
-                qrUrl: S.qrUrl
-            }));
-        }
-
-        function fbPushGiftCodes() { _fbSafe(db => db.ref('giftCodes').set(S.giftCodes)); }
-
-        function fbPushPromos() { _fbSafe(db => db.ref('promos').set(S.promos)); }
-
-        /* ---------- Dashboard ---------- */
-        function admRenderDashboard(m) {
-            const users = Object.keys(S.users).length;
-            const addSuccess = admAllAddReq().filter(r => r.status === 'success').reduce((a, b) => a + (b.amount || 0), 0);
-            const witSuccess = admAllWitReq().filter(r => r.status === 'success').reduce((a, b) => a + (b.amount || 0), 0);
-            const spent = admTotalSpent();
-            m.innerHTML = `
-            <h1 class="adm-h1"><i class="fa-solid fa-gauge-high"></i> Dashboard</h1>
-            <div class="adm-stats"><div class="adm-stat"><div class="k"><i class="fa-solid fa-users"></i> Active Users</div><div class="v">${users}</div></div>
-              <div class="adm-stat"><div class="k"><i class="fa-solid fa-plus"></i> Total Add Funds (OK)</div><div class="v">₹${addSuccess}</div></div>
-              <div class="adm-stat"><div class="k"><i class="fa-solid fa-arrow-down"></i> Total Withdraw (OK)</div><div class="v">₹${witSuccess}</div></div>
-              <div class="adm-stat"><div class="k"><i class="fa-solid fa-gamepad"></i> Total Spent</div><div class="v">₹${spent}</div></div></div>
-            <div class="adm-card"><h3><i class="fa-solid fa-circle-info"></i> Quick Info</h3>
-              <div style="color:#8a93a6;font-size:13px;line-height:1.7">App name: <b style="color:#fff">${S.brand}</b><br>
-              Support link: <b style="color:#fff">${S.supportUrl}</b><br>UPI: <b style="color:#fff">${S.upi}</b><br>
-              Admin email: <b style="color:#fff">${S.admin.email}</b></div></div>`;
-        }
-
-        /* ---------- Change App Name ---------- */
-        function admRenderAppName(m) {
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-signature"></i> Change App Name</h1>
-            <div class="adm-card"><div style="color:#8a93a6;font-size:12px;margin-bottom:6px">Current app name</div>
-              <div class="adm-code" style="margin-bottom:14px">${S.brand}</div>
-              <div class="adm-field"><label>Enter new app name</label><div class="adm-inp"><i class="fa-solid fa-signature"></i><input id="admNewName" placeholder="New name" value="${S.brand}"></div></div>
-              <button class="adm-btn" onclick="admSaveName()"><i class="fa-solid fa-check"></i> Confirm</button></div>`;
-        }
-
-        function admSaveName() {
-            const v = document.getElementById('admNewName').value.trim();
-            if (!v) return toast('Enter a name');
-            S.brand = v;
-            save();
-            fbPushAppConfig();
-            toast('App name updated');
-            admGoDirect('appname');
-        }
-
-        /* ---------- Support Link ---------- */
-        function admRenderSupport(m) {
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-headset"></i> Change Support Link</h1>
-            <div class="adm-card"><div style="color:#8a93a6;font-size:12px;margin-bottom:6px">Current support link</div>
-              ${S.supportUrl?`<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="adm-code">${S.supportUrl}</div><button class="adm-btn red sm" onclick="admDelSupport()"><i class="fa-solid fa-trash"></i> Delete</button></div>`:`<div style="color:#8a93a6;font-size:13px">No support link set.</div>`}
-              <div style="margin-top:14px"><button class="adm-btn sm" onclick="document.getElementById('admSupNew').style.display='block'"><i class="fa-solid fa-plus"></i> Add / Update Link</button></div>
-              <div id="admSupNew" style="display:${S.supportUrl?'none':'block'};margin-top:12px">
-                <div class="adm-field"><label>Enter link</label><div class="adm-inp"><i class="fa-solid fa-link"></i><input id="admSupInput" placeholder="https://..."></div></div>
-                <button class="adm-btn" onclick="admSaveSupport()"><i class="fa-solid fa-check"></i> Confirm</button></div></div>`;
-        }
-
-        function admDelSupport() { S.supportUrl = '';
-            save();
-            fbPushAppConfig();
-            toast('Support link deleted');
-            admGoDirect('support'); }
-
-        function admSaveSupport() {
-            const v = document.getElementById('admSupInput').value.trim();
-            if (!v) return toast('Enter link');
-            S.supportUrl = v;
-            save();
-            fbPushAppConfig();
-            toast('Support link updated');
-            admGoDirect('support');
-        }
-
-        /* ---------- QR and UPI ---------- */
-        function admRenderQR(m) {
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-qrcode"></i> QR and UPI</h1>
-            <div class="adm-card"><h3><i class="fa-solid fa-image"></i> Current QR</h3>
-              <div class="adm-qr-preview"><img src="${S.qrUrl}"></div>
-              <div class="adm-field"><label>Upload new QR</label><div class="adm-inp"><i class="fa-solid fa-upload"></i><input id="admQrFile" type="file" accept="image/*"></div></div></div>
-            <div class="adm-card"><h3><i class="fa-solid fa-at"></i> Change UPI</h3>
-              <div style="color:#8a93a6;font-size:12px;margin-bottom:6px">Current UPI: <b style="color:#fff">${S.upi}</b></div>
-              <div class="adm-field"><label>New UPI</label><div class="adm-inp"><i class="fa-solid fa-at"></i><input id="admUpiInp" value="${S.upi}" placeholder="name@upi"></div></div></div>
-            <button class="adm-btn" onclick="admSaveQR()"><i class="fa-solid fa-check"></i> Confirm</button>`;
-        }
-
-        function admSaveQR() {
-            const upi = document.getElementById('admUpiInp').value.trim();
-            const file = document.getElementById('admQrFile').files[0];
-            const done = () => { save();
-                fbPushAppConfig();
-                toast('QR / UPI updated');
-                admGoDirect('qr'); };
-            if (upi) S.upi = upi;
-            if (file) { const r = new FileReader();
-                r.onload = e => { S.qrUrl = e.target.result;
-                    done(); };
-                r.readAsDataURL(file); } else done();
-        }
-
-        /* ---------- Add Funds Requests ---------- */
-        function admRenderAddReq(m) {
-            const list = admAllAddReq();
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-plus"></i> Add Funds Requests</h1>
-            <div id="admAddList">${list.length?list.map(r=>admAddItem(r)).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No add funds requests yet</div>`}</div>`;
-        }
-
-        function admAddItem(r) {
-            return `<div class="adm-item" data-phone="${r.phone}" data-idx="${r.idx}"><div class="top"><div class="name">${r.user} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${r.phone}</span></div><span class="pill-s ${r.status}">${r.status}</span></div>
-            <div class="meta"><span>UTR: <b style="color:#fff">${r.utr}</b></span><span>Amount: <b style="color:#ffcf47">₹${r.amount}</b></span><span>Sender: ${r.sender||'-'}</span><span>${fmtTime(r.time)}</span></div>
-            <div class="actions">
-              ${r.status==='processing'?`<button class="adm-btn green sm" onclick="admApproveAdd('${r.phone}',${r.idx})"><i class="fa-solid fa-check"></i> Approve</button><button class="adm-btn red sm" onclick="admRejectAdd('${r.phone}',${r.idx})"><i class="fa-solid fa-xmark"></i> Reject</button>`:''}
-              <button class="adm-btn red sm" onclick="admDeleteAddReq('${r.phone}',${r.idx})"><i class="fa-solid fa-trash"></i> Delete</button>
-            </div></div>`;
-        }
-
-        function admApproveAdd(ph, idx) {
-            const u = S.users[ph];
-            if (!u) return toast('User not found');
-            const r = u.addHist[idx];
-            if (!r || r.status !== 'processing') return;
-            r.status = 'success';
-            u.balance = (u.balance || 0) + r.amount;
-            u.trans = u.trans || [];
-            u.trans.push({ type: 'credit', amount: r.amount, note: `Add funds approved (UTR ${r.utr})`, time: Date.now() });
-            if (u.referredBy && !u.referRewarded && r.amount >= 100) {
-                for (const k in S.users) {
-                    if (S.users[k].refer === u.referredBy) {
-                        const ref = S.users[k];
-                        ref.balance = (ref.balance || 0) + 18;
-                        ref.trans = ref.trans || [];
-                        ref.trans.push({ type: 'credit', amount: 18, note: `Referral reward (${u.name})`, time: Date
-                                .now() });
-                        ref.refers = ref.refers || [];
-                        ref.refers.push({ name: u.name, phone: u.phone, reward: 18, time: Date.now() });
-                        u.referRewarded = true;
-                        fbPushUser(ref);
-                        break;
-                    }
-                }
-            }
-            fbPushUser(u);
-            save();
-            toast('Approved');
-            admGoDirect('addreq');
-        }
-
-        function admRejectAdd(ph, idx) {
-            const u = S.users[ph];
-            if (!u) return toast('User not found');
-            const r = u.addHist[idx];
-            if (!r || r.status !== 'processing') return;
-            r.status = 'failed';
-            u.trans = u.trans || [];
-            u.trans.push({ type: 'debit', amount: 0, note: `Add funds rejected (UTR ${r.utr})`, time: Date.now() });
-            fbPushUser(u);
-            save();
-            toast('Rejected');
-            admGoDirect('addreq');
-        }
-
-        function admDeleteAddReq(ph, idx) {
-            if (!confirm('Delete this add funds request permanently?')) return;
-            const u = S.users[ph];
-            if (!u) return toast('User not found');
-            if (!u.addHist || idx >= u.addHist.length) return toast('Request not found');
-            u.addHist.splice(idx, 1);
-            fbPushUser(u);
-            save();
-            toast('Deleted');
-            admGoDirect('addreq');
-        }
-
-        /* ---------- Withdraw Requests ---------- */
-        function admRenderWitReq(m) {
-            const list = admAllWitReq();
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-arrow-down"></i> Withdraw Requests</h1>
-            ${list.length?list.map(r=>admWitItem(r)).join(''):`<div class="adm-empty"><i class="fa-solid fa-inbox"></i>No withdraw requests yet</div>`}`;
-        }
-
-        function admWitItem(r) {
-            return `<div class="adm-item" data-phone="${r.phone}" data-idx="${r.idx}"><div class="top"><div class="name">${r.user} <span style="color:#8a93a6;font-weight:400;font-size:12px">· ${r.phone}</span></div><span class="pill-s ${r.status}">${r.status}</span></div>
-            <div class="meta"><span>Amount: <b style="color:#ffcf47">₹${r.amount}</b></span><span>UPI: <b style="color:#fff">${r.upi}</b></span><span>To: ${r.recv||'-'}</span><span>${fmtTime(r.time)}</span></div>
-            <div class="actions">
-              ${r.status==='processing'?`<button class="adm-btn green sm" onclick="admApproveWit('${r.phone}',${r.idx})"><i class="fa-solid fa-check"></i> Approve</button><button class="adm-btn red sm" onclick="admRejectWit('${r.phone}',${r.idx})"><i class="fa-solid fa-xmark"></i> Reject</button>`:''}
-              <button class="adm-btn red sm" onclick="admDeleteWitReq('${r.phone}',${r.idx})"><i class="fa-solid fa-trash"></i> Delete</button>
-            </div></div>`;
-        }
-
-        function admApproveWit(ph, idx) {
-            const u = S.users[ph];
-            if (!u) return toast('User not found');
-            const r = u.withHist[idx];
-            if (!r || r.status !== 'processing') return;
-            r.status = 'success';
-            u.trans = u.trans || [];
-            u.trans.push({ type: 'debit', amount: 0, note: `Withdraw approved to ${r.upi}`, time: Date.now() });
-            fbPushUser(u);
-            save();
-            toast('Approved');
-            admGoDirect('witreq');
-        }
-
-        function admRejectWit(ph, idx) {
-            const u = S.users[ph];
-            if (!u) return toast('User not found');
-            const r = u.withHist[idx];
-            if (!r || r.status !== 'processing') return;
-            r.status = 'failed';
-            u.balance = (u.balance || 0) + r.amount;
-            u.trans = u.trans || [];
-            u.trans.push({ type: 'credit', amount: r.amount, note: `Withdraw refund (${r.upi})`, time: Date.now() });
-            fbPushUser(u);
-            save();
-            toast('Rejected & refunded');
-            admGoDirect('witreq');
-        }
-
-        function admDeleteWitReq(ph, idx) {
-            if (!confirm('Delete this withdraw request permanently?')) return;
-            const u = S.users[ph];
-            if (!u) return toast('User not found');
-            if (!u.withHist || idx >= u.withHist.length) return toast('Request not found');
-            u.withHist.splice(idx, 1);
-            fbPushUser(u);
-            save();
-            toast('Deleted');
-            admGoDirect('witreq');
-        }
-
-        /* ---------- Promotions ---------- */
-        function admRenderPromoAdmin(m) {
-            const list = S.promos || [];
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-bullhorn"></i> Add Promotion</h1>
-            <div class="adm-card"><div class="adm-field"><label>Enter Title</label><div class="adm-inp"><i class="fa-solid fa-heading"></i><input id="prTitle" placeholder="Title"></div></div>
-              <div class="adm-field"><label>Description (optional)</label><div class="adm-inp"><i class="fa-solid fa-align-left"></i><input id="prDesc" placeholder="Short description"></div></div>
-              <div class="adm-field"><label>Details</label><div class="adm-inp"><i class="fa-solid fa-circle-info"></i><input id="prDet" placeholder="Details"></div></div>
-              <div class="adm-field"><label>Link</label><div class="adm-inp"><i class="fa-solid fa-link"></i><input id="prLink" placeholder="https://..."></div></div>
-              <div class="adm-field"><label>Amount (₹) user can claim</label><div class="adm-inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="prAmt" type="number" min="0" value="0"></div></div>
-              <button class="adm-btn" onclick="admAddPromo()"><i class="fa-solid fa-plus"></i> Add</button></div>
-            <div class="adm-card"><h3><i class="fa-solid fa-list"></i> Active Promotions</h3>
-              ${list.length?list.map((p,i)=>`<div class="adm-item"><div class="top"><div class="name">${p.title}</div><span style="color:#ffcf47;font-family:'Orbitron';font-weight:700">₹${p.amount||0}</span></div>
-                <div class="meta"><span>${p.desc||''}</span></div><div class="meta"><span>${p.details||''}</span><span>${p.link?`<a href="${p.link}" target="_blank" style="color:#ffcf47">Link</a>`:''}</span></div>
-                <div class="actions"><button class="adm-btn red sm" onclick="admDelPromo(${i})"><i class="fa-solid fa-trash"></i> Delete</button></div></div>`).join(''):`<div class="adm-empty"><i class="fa-solid fa-bullhorn"></i>No promotions yet</div>`}</div>`;
-        }
-
-        function admAddPromo() {
-            const p = {
-                title: document.getElementById('prTitle').value.trim(),
-                desc: document.getElementById('prDesc').value.trim(),
-                details: document.getElementById('prDet').value.trim(),
-                link: document.getElementById('prLink').value.trim(),
-                amount: parseInt(document.getElementById('prAmt').value || '0'),
-                time: Date.now()
-            };
-            if (!p.title) return toast('Enter title');
-            S.promos = S.promos || [];
-            S.promos.unshift(p);
-            save();
-            fbPushPromos();
-            toast('Promotion added');
-            admGoDirect('promo');
-        }
-
-        function admDelPromo(i) { S.promos.splice(i, 1);
-            save();
-            fbPushPromos();
-            admGoDirect('promo'); }
-
-        /* ---------- Users ---------- */
-        function admRenderUsers(m) {
-            const users = Object.values(S.users);
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-users"></i> Users (${users.length})</h1>
-            <div class="adm-search"><div class="adm-inp"><i class="fa-solid fa-magnifying-glass"></i><input id="admUSearch" placeholder="Search by UID..." oninput="admFilterUsers()"></div></div>
-            <div id="admUList">${users.length?users.map(u=>admUserRow(u)).join(''):`<div class="adm-empty"><i class="fa-solid fa-user-slash"></i>No users yet</div>`}</div>`;
-        }
-
-        function admUserRow(u) {
-            const passDisplay = u.plainPass ? u.plainPass : '********';
-            return `<div class="adm-item au-row" data-uid="${u.uid}" data-phone="${u.phone}"><div class="top"><div class="name">${u.name} ${u.blocked?'<span class="pill-s failed">BLOCKED</span>':''}</div><div style="color:#ffcf47;font-family:'Orbitron';font-weight:700">₹${u.balance||0}</div></div>
-            <div class="meta"><span>UID: <b style="color:#ffcf47">${u.uid}</b></span><span>Phone: <b style="color:#fff">${u.phone}</b></span><span>Password: <b style="color:#22c55e">${passDisplay}</b></span></div>
-            <div class="actions">
-              <button class="adm-btn green sm" onclick="admUserBal('${u.phone}',1)"><i class="fa-solid fa-plus"></i></button>
-              <button class="adm-btn red sm" onclick="admUserBal('${u.phone}',-1)"><i class="fa-solid fa-minus"></i></button>
-              <button class="adm-btn sec sm" onclick="admToggleBlock('${u.phone}')"><i class="fa-solid fa-${u.blocked?'unlock':'ban'}"></i> ${u.blocked?'Unblock':'Block'}</button>
-              <button class="adm-btn red sm" onclick="admDeleteUser('${u.phone}')"><i class="fa-solid fa-trash"></i> Delete</button>
-            </div></div>`;
-        }
-
-        function admFilterUsers() {
-            const q = document.getElementById('admUSearch').value.trim().toLowerCase();
-            document.querySelectorAll('.au-row').forEach(el => { el.style.display = el.dataset.uid.toLowerCase().includes(q) ?
-                    '' : 'none'; });
-        }
-
-        function admUserBal(ph, sign) {
-            const v = prompt('Enter amount to ' + (sign > 0 ? 'add' : 'subtract') + ':');
-            const n = parseInt(v || '0');
-            if (!n || n <= 0) return;
-            const u = S.users[ph];
-            if (!u) return toast('User not found');
-            if (sign > 0) { u.balance = (u.balance || 0) + n;
-                u.trans = u.trans || [];
-                u.trans.push({ type: 'credit', amount: n, note: 'Admin credit', time: Date.now() }); } else { u.balance = Math
-                    .max(0, (u.balance || 0) - n);
-                u.trans = u.trans || [];
-                u.trans.push({ type: 'debit', amount: n, note: 'Admin debit', time: Date.now() }); }
-            fbPushUser(u);
-            save();
-            toast('Balance updated');
-            admGoDirect('users');
-        }
-
-        function admToggleBlock(ph) {
-            const u = S.users[ph];
-            if (!u) return toast('User not found');
-            u.blocked = !u.blocked;
-            fbPushUser(u);
-            save();
-            toast(u.blocked ? 'User blocked' : 'User unblocked');
-            admGoDirect('users');
-        }
-
-        function admDeleteUser(ph) {
-            if (!confirm('Delete this user permanently? All their data will be removed.')) return;
-            const u = S.users[ph];
-            if (!u) return toast('User not found');
-            delete S.users[ph];
-            _fbSafe(db => db.ref('users/' + ph).remove());
-            save();
-            toast('User deleted');
-            admGoDirect('users');
-        }
-
-        /* ---------- Admin Password ---------- */
-        function admRenderPassword(m) {
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-key"></i> Change Admin Password</h1>
-            <div class="adm-card"><div class="adm-field"><label>Old Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="apOld" type="password"></div></div>
-              <div class="adm-field"><label>New Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="apNew" type="password"></div></div>
-              <div class="adm-field"><label>Confirm New Password</label><div class="adm-inp"><i class="fa-solid fa-lock"></i><input id="apNew2" type="password"></div></div>
-              <button class="adm-btn" onclick="admChangePass()"><i class="fa-solid fa-check"></i> Update</button></div>`;
-        }
-
-        async function admChangePass() {
-            const o = document.getElementById('apOld').value,
-                n = document.getElementById('apNew').value,
-                n2 = document.getElementById('apNew2').value;
-            const oh = await hashPass(o);
-            const stored = S.admin.password || '';
-            const okOld = stored.startsWith('sha256$') ? (stored === oh) : (stored === o);
-            if (!okOld) return toast('Old password incorrect');
-            if (n.length < 4) return toast('Password too short');
-            if (n !== n2) return toast('Passwords do not match');
-            S.admin.password = await hashPass(n);
-            save();
-            toast('Password updated');
-            admGoDirect('password');
-        }
-
-        /* ---------- Gift Codes ---------- */
-        function admRenderGift(m) {
-            const codes = Object.entries(S.giftCodes || {});
-            m.innerHTML = `<h1 class="adm-h1"><i class="fa-solid fa-gift"></i> Gift Codes</h1>
-            <div class="adm-card"><h3><i class="fa-solid fa-plus"></i> Generate Code</h3>
-              <div class="adm-field"><label>Enter User Limit</label><div class="adm-inp"><i class="fa-solid fa-users"></i><input id="gcLimit" type="number" min="1" placeholder="e.g. 5"></div></div>
-              <div class="adm-field"><label>Amount (₹)</label><div class="adm-inp"><i class="fa-solid fa-indian-rupee-sign"></i><input id="gcAmt" type="number" min="1" placeholder="e.g. 50"></div></div>
-              <button class="adm-btn" onclick="admGenGift()"><i class="fa-solid fa-bolt"></i> Generate</button></div>
-            <div class="adm-card"><h3><i class="fa-solid fa-list"></i> Active Codes</h3>
-              ${codes.length?codes.map(([code,g])=>{const exp=g.expires? new Date(g.expires).toLocaleString():'—';const active=!g.expires||Date.now()<g.expires;return `<div class="adm-item"><div class="top"><div class="adm-code">${code}</div><span class="pill-s ${active?'success':'failed'}">${active?'active':'expired'}</span></div>
-                <div class="meta"><span>₹${g.amount}</span><span>Limit: ${g.limit||'∞'}</span><span>Used: ${(g.used||[]).length}</span><span>Expires: ${exp}</span></div>
-                <div class="actions"><button class="adm-btn red sm" onclick="admDelGift('${code}')"><i class="fa-solid fa-trash"></i></button></div></div>`;}).join(''):`<div class="adm-empty"><i class="fa-solid fa-ticket"></i>No codes yet</div>`}</div>`;
-        }
-
-        function admGenGift() {
-            const limit = parseInt(document.getElementById('gcLimit').value || '0');
-            const amt = parseInt(document.getElementById('gcAmt').value || '0');
-            if (limit < 1 || amt < 1) return toast('Enter valid limit and amount');
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let code = '';
-            for (let i = 0; i < 25; i++) code += chars[Math.floor(Math.random() * chars.length)];
-            S.giftCodes[code] = { amount: amt, limit, used: [], expires: Date.now() + 12 * 3600 * 1000 };
-            save();
-            fbPushGiftCodes();
-            toast('Code generated (valid 12h)');
-            admGoDirect('gift');
-        }
-
-        function admDelGift(code) { delete S.giftCodes[code];
-            save();
-            fbPushGiftCodes();
-            admGoDirect('gift'); }
-
-        /* ==========================================================================
-           INIT
-           ========================================================================== */
-        if (S.adminSession) {
-            document.getElementById('admLoginScreen').style.display = 'none';
-            document.getElementById('admBody').style.display = 'flex';
-            admGoDirect('dashboard');
-        } else {
-            document.getElementById('admLoginScreen').style.display = 'flex';
-            document.getElementById('admBody').style.display = 'none';
-        }
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                document.getElementById('pwModal').classList.remove('open');
-                _pendingSec = null;
-            }
-        });
-    </script>
+    <div class="err-msg" id="errMsg">INVALID KEY — ACCESS DENIED</div>
+    <button class="enter-btn" id="enterBtn">ENTER</button>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span>ZILLA4 &nbsp;|&nbsp; SECURE CHANNEL &nbsp;|&nbsp; v4.0.1</span>
+  </div>
+</div>
+
+<div class="page" id="panelPage">
+  <div class="panel-header">
+    <div class="ph-logo">ZILLA <span>4</span> PANEL</div>
+    <div class="ph-right">
+      <div class="period-wrap">
+        <span class="period-label">Period</span>
+        <span class="period-val" id="periodVal">20260615100010418</span>
+      </div>
+      <div class="watch-wrap">
+        <span class="watch-label">Timer</span>
+        <div class="watch-face">
+          <svg class="watch-svg" viewBox="0 0 56 56">
+            <circle class="watch-track" cx="28" cy="28" r="26"/>
+            <circle class="watch-prog"  cx="28" cy="28" r="26" id="watchProg"/>
+          </svg>
+          <div class="watch-center-text" id="watchText">00:59</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-center">
+    <div class="result-circle-wrap">
+      <div class="result-circle" id="resultCircle">
+        <div class="ring-spin"></div>
+        <div class="circ-corner c-tl"></div>
+        <div class="circ-corner c-tr"></div>
+        <div class="circ-corner c-bl"></div>
+        <div class="circ-corner c-br"></div>
+        <div class="result-inner-label" id="resultLabel">RESULT</div>
+        <div class="result-main-text"   id="resultMain">—</div>
+        <div class="result-sub-text"    id="resultSub">Click Generate</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel-footer">
+    <button class="generate-btn" id="generateBtn">GENERATE</button>
+    <div class="footer-status" id="footerStatus">SELECT RESULT TO DISPLAY</div>
+  </div>
+</div>
+
+<script>
+/* ─── LOGIN ─── */
+const CORRECT_KEY = 'MONU MANFORCE';
+
+const keyInput = document.getElementById('keyInput');
+const enterBtn = document.getElementById('enterBtn');
+const errMsg   = document.getElementById('errMsg');
+
+function tryLogin() {
+  if (keyInput.value.trim() === CORRECT_KEY) {
+    const fl = document.getElementById('flashOverlay');
+    fl.classList.add('go');
+    setTimeout(() => {
+      document.getElementById('loginPage').classList.remove('active');
+      document.getElementById('panelPage').classList.add('active');
+      startTimer();
+    }, 200);
+  } else {
+    keyInput.classList.add('error');
+    errMsg.classList.add('show');
+    setTimeout(() => keyInput.classList.remove('error'), 420);
+  }
+}
+enterBtn.addEventListener('click', tryLogin);
+keyInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+keyInput.addEventListener('input',   () => errMsg.classList.remove('show'));
+
+/* ─── REAL-TIME TIME-STAMP TIMER SYSTEM (1-MIN / 60S GAME) ─── */
+const GAME_SPEED_SECS = 60; 
+const CIRCUM = 2 * Math.PI * 26;
+
+// Precise static anchor point linked to the requested baseline layout
+const START_TIMESTAMP = Date.parse('2026-06-15T12:27:00'); 
+const BASE_PERIOD_NUM = 20260615100010418n;
+
+let timeLeft = 0;
+let timerInt = null;
+let hasGeneratedThisRound = false;
+let currentActivePeriod = "";
+
+const watchProg   = document.getElementById('watchProg');
+const watchText   = document.getElementById('watchText');
+const periodVal   = document.getElementById('periodVal');
+const generateBtn = document.getElementById('generateBtn');
+const footerStatus= document.getElementById('footerStatus');
+const resultCircle= document.getElementById('resultCircle');
+const resultLabel = document.getElementById('resultLabel');
+const resultMain  = document.getElementById('resultMain');
+const resultSub   = document.getElementById('resultSub');
+
+watchProg.style.strokeDasharray = CIRCUM;
+
+function updateRealTimeEngine() {
+  const nowMs = Date.now();
+  
+  // 1. Live minutes calculated straight from standard reference anchor point
+  const elapsedMs = nowMs - START_TIMESTAMP;
+  const elapsedCycles = elapsedMs > 0 ? Math.floor(elapsedMs / (GAME_SPEED_SECS * 1000)) : 0;
+  
+  // 2. Absolute synced live loop period sequence engine
+  const calculatedPeriod = BASE_PERIOD_NUM + BigInt(elapsedCycles);
+  
+  if (currentActivePeriod !== calculatedPeriod.toString()) {
+    currentActivePeriod = calculatedPeriod.toString();
+    periodVal.textContent = currentActivePeriod;
+    // Round changes! Unlock only the button for the new period
+    resetRound();
+  }
+
+  // 3. Perfect continuous countdown tracker from 00:59 down to 00:00
+  const currentSeconds = new Date().getSeconds();
+  timeLeft = 59 - currentSeconds;
+
+  // Render SVG circular border fill tracking progress
+  const pct = timeLeft / 59;
+  watchProg.style.strokeDashoffset = CIRCUM * (1 - pct);
+
+  const m = "00";
+  const s = timeLeft.toString().padStart(2, '0');
+  watchText.textContent = `${m}:${s}`;
+
+  // Color changing status indicator states based on remaining clock frames
+  watchProg.className = 'watch-prog';
+  watchText.className = 'watch-center-text';
+  if (timeLeft <= 10) {
+    watchProg.classList.add('crit');
+    watchText.classList.add('crit');
+  } else if (timeLeft <= 20) {
+    watchProg.classList.add('warn');
+    watchText.classList.add('warn');
+  }
+}
+
+function resetRound() {
+  hasGeneratedThisRound = false;
+  generateBtn.disabled = false;
+  footerStatus.className = 'footer-status';
+  footerStatus.textContent = 'SELECT RESULT TO DISPLAY';
+}
+
+function startTimer() {
+  updateRealTimeEngine();
+  timerInt = setInterval(updateRealTimeEngine, 1000);
+}
+
+/* ─── GENERATE RESULT (ONLY BIG & SMALL) ─── */
+generateBtn.addEventListener('click', () => {
+  if (hasGeneratedThisRound) return;
+
+  hasGeneratedThisRound = true;
+  generateBtn.disabled = true; // Locks button instantly until new period triggers
+  footerStatus.className = 'footer-status locked';
+  footerStatus.textContent = 'LOCKED — WAIT FOR NEXT PERIOD';
+
+  // Completely random 50/50 balance split sequence logic
+  const isBig = Math.random() < 0.5;
+  const size  = isBig ? 'big' : 'small';
+
+  // Smooth CSS scale transform animation
+  resultCircle.style.transform = 'scale(0.96)';
+  setTimeout(() => {
+    resultCircle.style.transition = 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.5s, border-color 0.5s';
+    resultCircle.style.transform = 'scale(1)';
+
+    // Reset current classes safely
+    resultCircle.className = 'result-circle';
+    
+    // Inject active stylized layout states immediately
+    resultCircle.classList.add('show-' + size);
+    resultLabel.textContent = size === 'small' ? 'RESULT · SMALL' : 'RESULT · BIG';
+    resultMain.textContent  = size.toUpperCase();
+    resultSub.textContent   = size === 'small' ? 'Light Yellow' : 'Light Blue';
+  }, 160);
+});
+</script>
 </body>
 </html>
