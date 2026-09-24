@@ -1,826 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;900&family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<title>TRX MINER PRO</title>
+<style>
+:root{--bg:#05070f;--panel:rgba(20,26,48,.72);--line:rgba(255,255,255,.08);--txt:#f2f5ff;--mut:#8a94b8;
+--acc:#ff2d55;--acc2:#ff8a00;--gold:#ffd166;--ok:#19e6a1;--bad:#ff5d73;
+--grad:linear-gradient(120deg,#ff2d55,#ff8a00);--glow:0 10px 40px -10px rgba(255,45,85,.55)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--txt);font-family:Sora,system-ui,sans-serif;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:-20%;z-index:-1;background:
+radial-gradient(40% 30% at 15% 10%,rgba(255,45,85,.22),transparent 70%),
+radial-gradient(35% 30% at 90% 30%,rgba(255,138,0,.16),transparent 70%),
+radial-gradient(40% 35% at 50% 100%,rgba(80,60,255,.14),transparent 70%);animation:drift 18s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate(3%,-3%) scale(1.05)}}
+#app{max-width:460px;margin:0 auto;min-height:100%;position:relative;padding-bottom:96px}
+.brand{font-family:Unbounded,sans-serif;font-weight:900;letter-spacing:3px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+header{position:sticky;top:0;z-index:5;padding:16px 18px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(16px);background:rgba(5,7,15,.6);border-bottom:1px solid var(--line)}
+header h1{margin:0;font-size:18px}
+.logo{width:34px;height:34px;border-radius:10px;background:var(--grad);display:grid;place-items:center;font-family:Unbounded;font-weight:900;color:#fff;box-shadow:var(--glow);font-size:15px}
+.live{margin-left:auto;font-size:11px;color:var(--ok);display:flex;align-items:center;gap:6px;font-weight:600;letter-spacing:1px}
+.live:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 1.4s infinite}
+@keyframes pulse{50%{opacity:.3}}
+.wrap{padding:18px;animation:up .45s ease}
+@keyframes up{from{opacity:0;transform:translateY(12px)}}
+.card{width:100%;background:var(--panel);backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:16px;position:relative;overflow:hidden}
+.mine-card{height:180px;display:flex;flex-direction:column;justify-content:space-between}
+.hero{background:linear-gradient(135deg,rgba(255,45,85,.9),rgba(255,138,0,.85));border:0;box-shadow:var(--glow)}
+.hero:after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;border:26px solid rgba(255,255,255,.12)}
+.hero .lbl{color:rgba(255,255,255,.8)}
+.hero .btn{background:#fff;color:#1a0610;box-shadow:none}
+.lbl{font-size:11px;color:var(--mut);letter-spacing:2px;font-weight:600;text-transform:uppercase}
+.bal{font-family:"JetBrains Mono",monospace;font-size:25px;font-weight:700;margin-top:8px;letter-spacing:-.5px}
+.btn{position:relative;z-index:1;display:block;width:100%;padding:15px;border:0;border-radius:14px;font:700 14px Sora;letter-spacing:2px;background:var(--grad);color:#fff;cursor:pointer;box-shadow:var(--glow);transition:transform .15s,filter .2s}
+.btn:active{transform:scale(.97)}
+.btn.sec{background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--txt);box-shadow:none}
+.btn:disabled{filter:grayscale(.6) brightness(.8);cursor:not-allowed}
+input,select{width:100%;padding:15px 16px;margin-top:10px;border-radius:14px;border:1px solid var(--line);background:rgba(0,0,0,.35);color:var(--txt);font:500 14px Sora;outline:none;transition:border .2s,box-shadow .2s;letter-spacing:.5px}
+input::placeholder{color:#5d668a;letter-spacing:1.5px;font-size:12px}
+input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 4px rgba(255,45,85,.15)}
+select option{background:#111}
+nav{position:fixed;bottom:14px;left:14px;right:14px;max-width:432px;margin:0 auto;display:flex;padding:6px;gap:6px;border-radius:20px;background:rgba(15,19,36,.8);backdrop-filter:blur(18px);border:1px solid var(--line);z-index:6}
+nav button{flex:1;background:none;border:0;color:var(--mut);padding:12px 0;border-radius:14px;font:700 11px Sora;letter-spacing:2px;cursor:pointer;transition:.2s}
+nav button.on{background:var(--grad);color:#fff;box-shadow:var(--glow)}
+.hide{display:none!important}
+.mut{color:var(--mut);font-size:13px;line-height:1.6}
+.code{font-family:"JetBrains Mono",monospace;background:rgba(0,0,0,.35);border:1.5px dashed var(--acc2);border-radius:16px;padding:16px;text-align:center;font-size:26px;letter-spacing:8px;color:var(--gold);font-weight:700}
+.addr{font-family:"JetBrains Mono",monospace;font-size:11.5px;word-break:break-all;background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:8px;cursor:pointer}
+.addr:active{border-color:var(--acc)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.pill{background:rgba(255,209,102,.1);border:1px solid rgba(255,209,102,.3);border-radius:999px;padding:5px 12px;font-size:12px;color:var(--gold);font-weight:600;display:inline-block}
+.modal{position:fixed;inset:0;background:rgba(2,3,8,.75);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;z-index:50;animation:fade .25s}
+.modal .card{max-width:460px;margin:0;border-radius:28px 28px 0 0;padding:24px 20px 28px;background:#0f1428;animation:sheet .35s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes fade{from{opacity:0}}@keyframes sheet{from{transform:translateY(100%)}}
+.err{color:var(--bad);font-size:12px;margin:10px 0 4px;min-height:14px}
+.hist{border-top:1px solid var(--line);padding:12px 0;font-size:14px}
+h3{margin:0 0 12px;font:800 14px Unbounded;letter-spacing:2px}
+.t{font-family:"JetBrains Mono";font-size:13px;color:var(--gold);font-weight:700}
+.bar{height:8px;background:rgba(0,0,0,.4);border-radius:99px;overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;width:0;background:var(--grad);box-shadow:0 0 12px var(--acc);transition:width 1s linear}
+.authtop{text-align:center;margin:44px 0 26px}
+.authtop .logo{width:74px;height:74px;border-radius:22px;font-size:32px;margin:0 auto 18px;animation:float 3s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px)}}
+.authtop h1{margin:0;font-size:28px}
+#toast{position:fixed;left:50%;top:20px;transform:translate(-50%,-300%);opacity:0;background:#161c36;border:1px solid var(--line);padding:12px 18px;border-radius:14px;font-size:13px;font-weight:600;z-index:99;transition:.35s;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#toast.show{transform:translate(-50%,0);opacity:1}
 
-    <!-- Dynamic Title & SEO tags -->
-    <title>ZORO PANELS</title>
-    <meta name="description" content="" />
-
-    <!-- Google Fonts Inter & Playfair for VIP theme -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,700&display=swap" rel="stylesheet" />
-
-    <!-- Meta Pixel tracking logic (Supports Multiple Comma-Separated Pixels) -->
-    <script>
-        ! function(f, b, e, v, n, t, s) {
-            if (f.fbq) return;
-            n = f.fbq = function() {
-                n.callMethod ?
-                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-            };
-            if (!f._fbq) f._fbq = n;
-            n.push = n;
-            n.loaded = !0;
-            n.version = '2.0';
-            n.queue = [];
-            t = b.createElement(e);
-            t.async = !0;
-            t.src = v;
-            s = b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t, s)
-        }(window, document, 'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-
-        fbq('init', '1649134099683216');
-
-        fbq('track', 'PageView');
-    </script>
-    <noscript>
-        <img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=1649134099683216&ev=PageView&noscript=1" />
-    </noscript>
-
-    <style>
-        :root {
-            --blob1-color: #229ED9;
-            --blob2-color: #00FFA3;
-            --btn-start: #229ED9;
-            --btn-end: #00FFA3;
-            --text-glow: #00FFA3;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-        }
-
-        body {
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            color: #fff;
-            position: relative;
-            padding: 15px;
-            transition: background 0.5s ease;
-        }
-        body.has-bg {
-            background: url('uploads/1780058960_bg_1472ab3230075eee71a83f5be33c3260.jpg') no-repeat center center;
-            background-size: cover;
-        }
-
-        /* High contrast premium dark frosted screen mask */
-        body::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(6, 6, 10, 0.76);
-            backdrop-filter: blur(3px);
-            -webkit-backdrop-filter: blur(3px);
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        /* ==========================================
-           BACKGROUNDS AND PARTICLES (By Theme)
-           ========================================== */
-
-        /* Default Blobs */
-        .blob {
-            position: absolute;
-            width: 450px;
-            height: 450px;
-            border-radius: 50%;
-            filter: blur(130px);
-            opacity: 0.45;
-            animation: move 12s infinite alternate ease-in-out;
-            z-index: 2;
-            pointer-events: none;
-        }
-        .blob1 {
-            background: var(--blob1-color);
-            top: -120px;
-            left: -120px;
-        }
-        .blob2 {
-            background: var(--blob2-color);
-            bottom: -120px;
-            right: -120px;
-            animation-delay: -3s;
-        }
-        @keyframes move {
-            0% {
-                transform: translate(0, 0) scale(1);
-            }
-            100% {
-                transform: translate(80px, 60px) scale(1.1);
-            }
-        }
-
-        /* Cyberpunk Grid Background (Theme 2) */
-        .theme-theme2 {
-            background: #050508;
-            background-image:
-                linear-gradient(rgba(6, 182, 212, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(6, 182, 212, 0.05) 1px, transparent 1px);
-            background-size: 25px 25px;
-        }
-
-        /* VIP Luxury Radiant Gradient (Theme 3) */
-        .theme-theme3 {
-            background: radial-gradient(circle at center, #111522 0%, #030408 100%);
-        }
-
-        /* Crimson Urgency Hype Background (Theme 4) */
-        .theme-theme4 {
-            background: #07070a;
-        }
-
-        /* Modern Tech Dot Matrix Background (Theme 5) */
-        .theme-theme5 {
-            background: #09090e;
-            background-image: radial-gradient(rgba(139, 92, 246, 0.08) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-
-        /* Aurora Borealis Slow Cycle (Theme 6) */
-        .theme-theme6 {
-            background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.1) 0%, rgba(139, 92, 246, 0.1) 90%), #040406;
-        }
-
-        /* ==========================================
-           CONTAINERS (By Theme)
-           ========================================== */
-        .container {
-            position: relative;
-            width: 100%;
-            max-width: 430px;
-            padding: 34px 28px;
-            z-index: 3;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* Theme 1 - Neon Telegram */
-        .theme-theme1 .container {
-            border-radius: 24px;
-            background: rgba(255, 255, 255, 0.035);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
-            text-align: center;
-        }
-        .theme-theme1 .container::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 24px;
-            padding: 1px;
-            background: linear-gradient(125deg, var(--btn-start), var(--btn-end));
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
-
-        /* Theme 2 - Cyberpunk Angular */
-        .theme-theme2 .container {
-            background: rgba(10, 10, 16, 0.95);
-            border: 2px solid #06b6d4;
-            box-shadow: 0 0 25px rgba(6, 182, 212, 0.35), inset 0 0 15px rgba(6, 182, 212, 0.1);
-            clip-path: polygon(0 0, calc(100% - 25px) 0, 100% 25px, 100% 100%, 25px 100%, 0 calc(100% - 25px));
-            text-align: center;
-        }
-
-        /* Theme 3 - VIP Gold Luxury */
-        .theme-theme3 .container {
-            border-radius: 12px;
-            background: linear-gradient(135deg, rgba(21, 28, 44, 0.9) 0%, rgba(10, 12, 20, 0.95) 100%);
-            border: 1px solid rgba(245, 158, 11, 0.35);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
-            text-align: center;
-        }
-
-        /* Theme 4 - Crimson Alert */
-        .theme-theme4 .container {
-            border-radius: 16px;
-            background: rgba(20, 15, 15, 0.95);
-            border-top: 6px solid #ef4444;
-            border-left: 1px solid rgba(239, 68, 68, 0.15);
-            border-right: 1px solid rgba(239, 68, 68, 0.15);
-            border-bottom: 1px solid rgba(239, 68, 68, 0.15);
-            box-shadow: 0 20px 45px rgba(239, 68, 68, 0.15);
-            text-align: center;
-        }
-
-        /* Theme 5 - Modern Tech Minimal */
-        .theme-theme5 .container {
-            max-width: 440px;
-            border-radius: 20px;
-            background: #0d0d14;
-            border: 1px solid rgba(139, 92, 246, 0.18);
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
-            text-align: left;
-            padding: 40px 32px;
-        }
-
-        /* Theme 6 - Cosmic Aurora */
-        .theme-theme6 .container {
-            border-radius: 36px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 15px 45px rgba(139, 92, 246, 0.12), inset 0 0 25px rgba(255, 255, 255, 0.02);
-            text-align: center;
-            padding: 38px 32px;
-        }
-
-        /* ==========================================
-           HERO IMAGES (By Theme)
-           ========================================== */
-        .hero {
-            width: 110px;
-            height: 110px;
-            object-fit: cover;
-            margin: 0 auto 18px auto;
-            display: block;
-            transition: transform 0.3s ease;
-        }
-
-        /* Theme 1 - Neon Circle */
-        .theme-theme1 .hero {
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.18);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Theme 2 - Cyber Square Block */
-        .theme-theme2 .hero {
-            border-radius: 4px;
-            border: 2px solid #06b6d4;
-            box-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
-        }
-
-        /* Theme 3 - VIP Gold Ringed */
-        .theme-theme3 .hero {
-            border-radius: 50%;
-            border: 3px double #f59e0b;
-            box-shadow: 0 8px 24px rgba(245, 158, 11, 0.25);
-        }
-
-        /* Theme 4 - Crimson Alert Box */
-        .theme-theme4 .hero {
-            border-radius: 12px;
-            border: 2px solid #ef4444;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
-        }
-
-        /* Theme 5 - Left Aligned Pill Icon */
-        .theme-theme5 .hero {
-            margin: 0 0 22px 0;
-            width: 76px;
-            height: 76px;
-            border-radius: 16px;
-            border: 1px solid rgba(139, 92, 246, 0.3);
-        }
-
-        /* Theme 6 - Floating Cosmic Aura Hero */
-        .theme-theme6 .hero {
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.2);
-            animation: floatHero 4s infinite alternate ease-in-out;
-        }
-        @keyframes floatHero {
-            0% {
-                transform: translateY(0px) scale(1);
-            }
-            100% {
-                transform: translateY(-6px) scale(1.03);
-            }
-        }
-
-        /* ==========================================
-           TITLES & DESCRIPTIONS (By Theme)
-           ========================================== */
-        h1 {
-            font-size: 26px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            letter-spacing: -0.02em;
-            transition: all 0.3s ease;
-        }
-
-        /* Theme 1 - Neon Text */
-        .theme-theme1 h1 {
-            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Theme 2 - Glitch Cyber Uppercase */
-        .theme-theme2 h1 {
-            text-transform: uppercase;
-            font-family: monospace;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px #06b6d4, 0 0 20px #d946ef;
-            color: #fff;
-        }
-
-        /* Theme 3 - Luxury Serif */
-        .theme-theme3 h1 {
-            font-family: 'Playfair Display', 'Georgia', serif;
-            font-style: italic;
-            color: #f59e0b;
-            letter-spacing: 0px;
-        }
-
-        /* Theme 4 - Bold Hype Warning */
-        .theme-theme4 h1 {
-            text-transform: uppercase;
-            font-weight: 900;
-            color: #ef4444;
-            letter-spacing: -0.5px;
-            text-shadow: 0 2px 10px rgba(239, 68, 68, 0.2);
-        }
-
-        /* Theme 5 - Left Aligned SaaS */
-        .theme-theme5 h1 {
-            font-size: 24px;
-            font-weight: 800;
-            color: #fff;
-            line-height: 1.25;
-            text-align: left;
-        }
-
-        /* Theme 6 - Aurora Radiant */
-        .theme-theme6 h1 {
-            background: linear-gradient(135deg, #10b981 0%, #8b5cf6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* Description styling */
-        p {
-            font-size: 14px;
-            color: #ccd6f6;
-            line-height: 1.6;
-            margin-bottom: 22px;
-            white-space: pre-line;
-        }
-        .theme-theme5 p {
-            text-align: left;
-            color: #94a3b8;
-        }
-        .theme-theme3 p {
-            color: #d1d5db;
-            font-size: 13.5px;
-        }
-
-        /* ==========================================
-           POINTS CARDS LAYOUTS (By Theme)
-           ========================================== */
-        .points {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-
-        .point-card {
-            padding: 12px 16px;
-            font-size: 13.5px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Theme 1 - Neon Glow outline on Hover */
-        .theme-theme1 .point-card {
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            color: #e2e8f0;
-            text-align: left;
-        }
-        .theme-theme1 .point-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateX(4px);
-            border-color: var(--text-glow);
-        }
-
-        /* Theme 2 - Cyber Blocky */
-        .theme-theme2 .point-card {
-            border-radius: 0px;
-            border: 1px solid #d946ef;
-            background: rgba(217, 70, 239, 0.03);
-            color: #06b6d4;
-            text-align: left;
-            font-family: monospace;
-        }
-        .theme-theme2 .point-card:hover {
-            background: rgba(6, 182, 212, 0.1);
-            transform: scale(1.02);
-            box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
-        }
-
-        /* Theme 3 - VIP Luxury */
-        .theme-theme3 .point-card {
-            border-radius: 6px;
-            border: 1px solid rgba(245, 158, 11, 0.15);
-            background: rgba(245, 158, 11, 0.02);
-            color: #cbd5e1;
-            text-align: left;
-        }
-        .theme-theme3 .point-card:hover {
-            border-color: #f59e0b;
-            background: rgba(245, 158, 11, 0.05);
-        }
-
-        /* Theme 4 - Crimson Alarm Card */
-        .theme-theme4 .point-card {
-            border-radius: 4px;
-            border-left: 4px solid #ef4444;
-            background: rgba(239, 68, 68, 0.05);
-            color: #e2e8f0;
-            text-align: left;
-        }
-        .theme-theme4 .point-card:hover {
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        /* Theme 5 - SaaS checklist */
-        .theme-theme5 .point-card {
-            border-radius: 10px;
-            background: rgba(139, 92, 246, 0.03);
-            border: 1px solid rgba(139, 92, 246, 0.12);
-            color: #e2e8f0;
-            text-align: left;
-        }
-        .theme-theme5 .point-card:hover {
-            border-color: #8b5cf6;
-            background: rgba(139, 92, 246, 0.06);
-        }
-
-        /* Theme 6 - Aurora Capsule Card */
-        .theme-theme6 .point-card {
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            color: #fff;
-            text-align: left;
-        }
-        .theme-theme6 .point-card:hover {
-            transform: translateY(-2px);
-            background: rgba(255, 255, 255, 0.06);
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.1);
-        }
-
-        /* 2 columns on screens over 500px wide (Except Theme 5 SaaS which is strictly stacked checklist) */
-        @media(min-width: 500px) {
-            .theme-theme1 .points,
-            .theme-theme2 .points,
-            .theme-theme3 .points,
-            .theme-theme4 .points,
-            .theme-theme6 .points {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        /* ==========================================
-           CONVERSION CTA BUTTONS (By Theme)
-           ========================================== */
-        .btn {
-            position: relative;
-            display: block;
-            width: 100%;
-            padding: 16px 20px;
-            text-decoration: none;
-            color: #fff;
-            font-weight: 700;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 1;
-        }
-
-        /* Theme 1 - Neon Pulse Border */
-        .theme-theme1 .btn {
-            border-radius: 14px;
-            background: #111422;
-        }
-        .theme-theme1 .btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 14px;
-            padding: 2px;
-            background: linear-gradient(45deg, var(--btn-start), var(--btn-end));
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
-        .theme-theme1 .btn::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 14px;
-            background: linear-gradient(45deg, var(--btn-start), var(--btn-end));
-            opacity: 0.18;
-            filter: blur(12px);
-            animation: pulseTheme1 2.5s infinite;
-            z-index: -1;
-        }
-        @keyframes pulseTheme1 {
-            0%,
-            100% {
-                opacity: 0.15;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.38;
-                transform: scale(1.05);
-            }
-        }
-        .theme-theme1 .btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 10px 20px rgba(255, 255, 255, 0.12);
-        }
-
-        /* Theme 2 - Cyberpunk Blocky */
-        .theme-theme2 .btn {
-            border-radius: 0px;
-            background: linear-gradient(135deg, #d946ef 0%, #06b6d4 100%);
-            font-family: monospace;
-            letter-spacing: 2px;
-            box-shadow: 0 0 15px rgba(217, 70, 239, 0.5);
-            font-weight: 900;
-            text-transform: uppercase;
-        }
-        .theme-theme2 .btn:hover {
-            box-shadow: 0 0 25px rgba(6, 182, 212, 0.8);
-            transform: translateY(-2px);
-        }
-
-        /* Theme 3 - VIP Gold Luxury */
-        .theme-theme3 .btn {
-            border-radius: 6px;
-            background: linear-gradient(to right, #f59e0b, #d97706);
-            color: #000;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
-        }
-        .theme-theme3 .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(245, 158, 11, 0.5);
-        }
-
-        /* Theme 4 - Crimson Alert Urgency Button */
-        .theme-theme4 .btn {
-            border-radius: 8px;
-            background: #ef4444;
-            font-weight: 800;
-            text-transform: uppercase;
-            animation: crimsonHypePulse 1.2s infinite;
-        }
-        @keyframes crimsonHypePulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-            }
-            70% {
-                box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
-        }
-        .theme-theme4 .btn:hover {
-            background: #f43f5e;
-        }
-
-        /* Theme 5 - SaaS Sleek Pill */
-        .theme-theme5 .btn {
-            border-radius: 12px;
-            background: #8b5cf6;
-            text-align: center;
-            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
-            font-weight: 600;
-        }
-        .theme-theme5 .btn:hover {
-            background: #7c3aed;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.5);
-        }
-
-        /* Theme 6 - Aurora Capsule */
-        .theme-theme6 .btn {
-            border-radius: 30px;
-            background: linear-gradient(135deg, #10b981 0%, #8b5cf6 100%);
-            font-weight: 800;
-            text-transform: uppercase;
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-        }
-        .theme-theme6 .btn:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.5);
-        }
-
-        .btn:active {
-            transform: translateY(0) scale(1) !important;
-        }
-
-        /* Footers */
-        .footer {
-            margin-top: 24px;
-            font-size: 11px;
-            color: #52525b;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 6px;
-        }
-        .footer-logo {
-            height: 20px;
-            width: auto;
-            opacity: 0.65;
-            filter: brightness(1.2);
-            transition: opacity 0.3s ease;
-        }
-        .footer-logo:hover {
-            opacity: 1 !important;
-        }
-        .theme-theme2 .footer {
-            font-family: monospace;
-            color: #06b6d4;
-        }
-        .theme-theme3 .footer {
-            color: #78350f;
-        }
-        .theme-theme5 .footer {
-            text-align: left;
-            color: #475569;
-            align-items: flex-start;
-        }
-    </style>
+.bal{font-size:24px}
+.orb{position:absolute;right:-30px;bottom:-30px;width:130px;height:130px;border-radius:50%;background:conic-gradient(from 0deg,transparent,rgba(255,45,85,.5),rgba(255,138,0,.6),transparent);filter:blur(2px);opacity:.25;-webkit-mask:radial-gradient(circle,transparent 52%,#000 54%);mask:radial-gradient(circle,transparent 52%,#000 54%)}
+#mineCard.on .orb{opacity:.9;animation:spin 3s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--mut);margin-right:8px;vertical-align:middle}
+#mineCard.on .dot{background:var(--ok);box-shadow:0 0 10px var(--ok);animation:pulse 1.2s infinite}
+#mineCard.on{border-color:rgba(255,138,0,.35);box-shadow:0 0 0 1px rgba(255,138,0,.15),0 20px 50px -20px rgba(255,138,0,.5)}
+#mineCard.on .bal{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.card{box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+h3{font-weight:700}
+</style>
 </head>
-<body class="theme-theme1 has-bg">
+<body>
+<div id="app">
 
-    <!-- Background glowing nodes (Used heavily by classic, minimal, and aurora themes) -->
-    <div class="blob blob1"></div>
-    <div class="blob blob2"></div>
+<!-- ================= AUTH ================= -->
+<section id="auth" class="wrap">
+  <div class="authtop">
+    <div class="logo">T</div><h1 class="brand">TRX MINER PRO</h1>
+    <p class="mut">Mine TRX every hour. Invite friends. Withdraw.</p>
+  </div>
 
-    <div class="container">
-        <!-- Dynamic Hero Icon -->
-        <img src="https://api.dicebear.com/10.x/toon-head/svg?seed=Milo" class="hero" alt="ZORO PANELS" />
+  <div class="card" id="regBox">
+    <h3>REGISTER</h3>
+    <input id="rEmail" type="email" placeholder="EMAIL" />
+    <input id="rName" placeholder="NAME" />
+    <input id="rPass" type="password" placeholder="PASSWORD" />
+    <input id="rPass2" type="password" placeholder="CONFIRM PASSWORD" />
+    <input id="rRef" placeholder="REFER CODE (OPTIONAL)" />
+    <div class="err" id="rErr"></div>
+    <button class="btn" onclick="doRegister()">REGISTER</button>
+    <button class="btn sec" style="margin-top:8px" onclick="toggleAuth()">LOGIN</button>
+  </div>
 
-        <!-- Landing Title -->
-        <h1>ZORO PANELS</h1>
+  <div class="card hide" id="logBox">
+    <h3>LOGIN</h3>
+    <input id="lEmail" type="email" placeholder="EMAIL" />
+    <input id="lPass" type="password" placeholder="PASSWORD" />
+    <div class="err" id="lErr"></div>
+    <button class="btn" onclick="doLogin()">LOGIN</button>
+    <button class="btn sec" style="margin-top:8px" onclick="toggleAuth()">REGISTER</button>
+  </div>
+</section>
 
-        <!-- Page description paragraph -->
-        <p></p>
+<!-- ================= MAIN ================= -->
+<div id="main" class="hide">
+  <header><div class="logo">T</div><h1 class="brand">TRX MINER PRO</h1><span class="live">LIVE</span></header>
 
-        <!-- Dynamic points grid list if bullet entries parsed -->
-        <div class="points">
-            <div class="point-card">
-                • Expert backed predictions
-            </div>
-            <div class="point-card">
-                • Fan sentiment tracking
-            </div>
-            <div class="point-card">
-                • Performance trends
-            </div>
-            <div class="point-card">
-                • Tactical breakdowns
-            </div>
-        </div>
-
-        <!-- Action Conversion Button -->
-        <button class="btn" onclick="triggerLeadConversion()">
-            Join Telegram Now
-        </button>
-
-        <!-- Footer signature -->
-        <div class="footer">
-            <img src="assets/Whale_logoW.png" class="footer-logo" alt="Big Whale Logo" onerror="this.style.display='none';" />
-            <span>© 2026 • ALL RIGHTS RESERVED</span>
-        </div>
-
-        <!-- Compliance Footer for Meta Safe Mode -->
+  <!-- HOME -->
+  <section id="page-home" class="wrap">
+    <div class="card mine-card hero">
+      <div>
+        <div class="lbl">TOTAL BALANCE</div>
+        <div class="bal" id="balTop">TRX 0.00000000</div>
+      </div>
+      <button class="btn" onclick="openWithdraw()">WITHDRAW</button>
     </div>
 
-    <script>
-        // Capture entry timestamp
-        var pageLoadTime = Date.now();
-        var currentClickId = 307161;
-        var redirectTriggered = false;
+    <div class="card mine-card" id="mineCard"><div class="orb"></div>
+      <div>
+        <div class="row"><div class="lbl"><span class="dot"></span>MINING SESSION</div><div class="t" id="timer">READY</div></div>
+        <div class="bal" id="balMine">TRX 0.00000000</div>
+        <div class="bar"><i id="bar"></i></div>
+      </div>
+      <button class="btn" id="mineBtn" onclick="startMining()">START MINING</button>
+    </div>
+  </section>
 
-        // Reset redirectTriggered flag when user comes back to page (via back button)
-        window.addEventListener('pageshow', function() {
-            redirectTriggered = false;
-        });
+  <!-- REFER -->
+  <section id="page-refer" class="wrap hide">
+    <div class="card">
+      <h3>INVITE &amp; EARN</h3>
+      <p class="mut">Share your refer code with friends. When a friend registers with your code, it counts as 1 successful refer. Reach 3 refers to move ahead with account verification and unlock withdrawals.</p>
+      <div class="code" id="myCode">------</div>
+      <button class="btn" style="margin-top:10px" onclick="copyCode()">COPY REFER CODE</button>
+    </div>
+    <div class="card">
+      <div class="row"><h3 style="margin:0">MY REFERS</h3><span class="pill" id="refCount">0 / 3</span></div>
+      <div id="refList"></div>
+    </div>
+  </section>
 
-        // Live Visitor Heartbeat (Ping every 10 seconds)
-        function sendHeartbeat() {
-            fetch('heartbeat.php?page_id=33').catch(function(e) {});
-        }
-        sendHeartbeat(); // Initial ping
-        setInterval(sendHeartbeat, 10000);
+  <nav>
+    <button id="nav-home" class="on" onclick="go('home')">HOME</button>
+    <button id="nav-refer" onclick="go('refer')">REFER</button>
+    <button onclick="logout()">LOGOUT</button>
+  </nav>
+</div>
 
-        // Trigger background geo enrichment immediately (non-blocking)
-        // This ensures `clicks` rows get country/city populated even if user doesn't click CTA.
-        try {
-            fetch('capi.php?click_id=' + currentClickId + '&time_on_page=0').catch(function(e) {});
-        } catch (e) {}
+<!-- ================= MODALS ================= -->
+<div id="bonusModal" class="modal hide">
+  <div class="card" style="text-align:center">
+    <h3>🎉 WELCOME BONUS</h3>
+    <div class="bal brand" style="font-size:28px">2000.00000000 TRX</div>
+    <p class="mut">Your signup bonus is ready.</p>
+    <button class="btn" onclick="claimBonus()">CLAIM</button>
+  </div>
+</div>
 
-        function triggerLeadConversion() {
-            if (redirectTriggered) return;
-            redirectTriggered = true;
+<div id="wdModal" class="modal hide">
+  <div class="card">
+    <h3 id="wdTitle">COMPLETE ACCOUNT VERIFICATION</h3>
+    <div id="wdStep1">
+      <p class="mut">First complete account verification.</p>
+      <p class="mut"><b>Refer with 3 friends</b></p>
+      <div class="pill" id="wdRef">0 / 3 refers</div>
+    </div>
+    <div id="wdStep2" class="hide">
+      <p class="mut">PAY ONE TIME FEE 2 GRAM/TON AND UNLOCK LIFETIME WITHDRAW</p>
+      <button class="btn" onclick="showPay()">PAY</button>
+    </div>
+    <button class="btn sec" style="margin-top:10px" onclick="closeModal('wdModal')">CLOSE</button>
+  </div>
+</div>
 
-            // 1. Calculate user reading duration (engagement tracking)
-            var timeOnPage = Math.round((Date.now() - pageLoadTime) / 1000);
+<div id="payModal" class="modal hide">
+  <div class="card" style="max-height:88vh;overflow:auto">
+    <h3>PAYMENT</h3>
+    <div class="lbl">SEND ONLY GRAM — 2 GRAM</div>
+    <div class="addr" onclick="copyTxt(this.textContent)">UQCE3Zh0c-MHBlvTxkV3Gb9rbraigEnRBCNt3FoSN281Joeq</div>
+    <div class="lbl" style="margin-top:12px">SEND ONLY SOLANA — 0.022 SOLANA</div>
+    <div class="addr" onclick="copyTxt(this.textContent)">HfhT7TexPwKkayJsDJWM1dSYLtSyCxzf1ByLJTZtPtU3</div>
+    <div class="lbl" style="margin-top:12px">SEND ONLY BTC — 0.000030 BTC</div>
+    <div class="addr" onclick="copyTxt(this.textContent)">bc1q72pr0m3n8teyjfntj22rk3whzn0r3vlufahhut</div>
 
-            // 2. Dispatch browser Lead tracking event
-            try {
-                fbq('track', 'Lead');
-            } catch (e) {
-                console.error("Meta Pixel browser tracking failed:", e);
-            }
+    <input id="txid" placeholder="ENTER TRANSITION / HASH ID" />
+    <select id="coin" onchange="syncAmount()">
+      <option value="">SELECT</option>
+      <option value="2">GRAM</option>
+      <option value="0.022">SOLANA</option>
+      <option value="0.000030">BTC</option>
+    </select>
+    <input id="amount" placeholder="AMOUNT" readonly />
+    <div class="err" id="pErr"></div>
+    <button class="btn" onclick="submitPay()">SUBMIT</button>
+    <button class="btn sec" style="margin-top:8px" onclick="closeModal('payModal')">CLOSE</button>
+  </div>
+</div>
 
-            // 3. Trigger immediate redirect first (non-blocking CAPI in background)
-            var telegramLink = "https://t.me/Rlby6cbb6hAwOGQ9";
+</div>
+<div id="toast"></div>
+<script>
+const RATE_TOTAL = 100.12345678, HOUR = 3600000;
+const DB = {
+  users(){ return JSON.parse(localStorage.getItem('tmp_users')||'[]'); },
+  save(u){ localStorage.setItem('tmp_users', JSON.stringify(u)); },
+  session(){ return localStorage.getItem('tmp_session'); },
+  setSession(e){ e ? localStorage.setItem('tmp_session',e) : localStorage.removeItem('tmp_session'); }
+};
+let me = null, tick = null;
 
-            // Redirect immediately without waiting for API response
-            setTimeout(function() {
-                window.location.href = telegramLink;
-            }, 100);
+function fmt(n){ return 'TRX ' + Number(n).toFixed(8); }
+function code(){ return Math.random().toString(36).slice(2,8).toUpperCase(); }
+function persist(){ const u=DB.users(); const i=u.findIndex(x=>x.email===me.email); u[i]=me; DB.save(u); }
 
-            // 4. Dispatch background CAPI server-to-server and Telegram bot alert (non-blocking)
-            var capiUrl = 'capi.php?click_id=' + currentClickId + '&time_on_page=' + timeOnPage +
-                '&is_converted=1';
+/* ---------- AUTH ---------- */
+function toggleAuth(){
+  regBox.classList.toggle('hide'); logBox.classList.toggle('hide');
+}
+function doRegister(){
+  const email=rEmail.value.trim().toLowerCase(), name=rName.value.trim();
+  const p=rPass.value, p2=rPass2.value, ref=rRef.value.trim().toUpperCase();
+  rErr.textContent='';
+  if(!email||!name||!p) return rErr.textContent='Please fill all required fields.';
+  if(p.length<4) return rErr.textContent='Password must be at least 4 characters.';
+  if(p!==p2) return rErr.textContent='Passwords do not match.';
+  const users=DB.users();
+  if(users.some(u=>u.email===email)) return rErr.textContent='Email already registered.';
+  let refBy=null;
+  if(ref){
+    const r=users.find(u=>u.code===ref);
+    if(!r) return rErr.textContent='Invalid refer code.';
+    refBy=r.code; r.refers=r.refers||[]; r.refers.push({name,email,date:new Date().toLocaleString()});
+  }
+  const user={email,name,pass:p,code:code(),refBy,balance:0,bonus:false,refers:[],mineEnd:0,mineStart:0,paid:false};
+  users.push(user); DB.save(users); DB.setSession(email);
+  enter(true);
+}
+function doLogin(){
+  const email=lEmail.value.trim().toLowerCase();
+  const u=DB.users().find(x=>x.email===email && x.pass===lPass.value);
+  if(!u) return lErr.textContent='Wrong email or password.';
+  lErr.textContent=''; DB.setSession(email); enter(false);
+}
+function logout(){ DB.setSession(null); location.reload(); }
 
-            try {
-                fetch(capiUrl, {
-                    method: 'GET',
-                    mode: 'no-cors',
-                    credentials: 'omit'
-                }).catch(function(err) {
-                    console.error("CAPI callback error (non-critical):", err);
-                });
-            } catch (e) {
-                console.error("CAPI fetch error:", e);
-            }
-        }
+function enter(isNew){
+  me=DB.users().find(u=>u.email===DB.session());
+  auth.classList.add('hide'); main.classList.remove('hide');
+  render(); go('home');
+  if(!me.bonus) bonusModal.classList.remove('hide');
+  loop();
+}
+function claimBonus(){ me.balance+=2000; me.bonus=true; persist(); bonusModal.classList.add('hide'); render(); }
 
-        // ==========================================
-        // 🛡️ FRONTEND CODE & DESIGN PROTECTION SHIELD
-        // ==========================================
+/* ---------- NAV ---------- */
+function go(p){
+  ['home','refer'].forEach(x=>{
+    document.getElementById('page-'+x).classList.toggle('hide', x!==p);
+    document.getElementById('nav-'+x).classList.toggle('on', x===p);
+  });
+  if(p==='refer') renderRefers();
+}
 
-        // 1. Block Context Menu (Right Click)
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        }, false);
+/* ---------- MINING ---------- */
+function startMining(){
+  if(Date.now()<me.mineEnd) return;
+  me.mineStart=Date.now(); me.mineEnd=Date.now()+HOUR; persist(); render();
+}
+function mined(){
+  if(!me.mineStart) return 0;
+  const p=Math.min(1,(Date.now()-me.mineStart)/HOUR);
+  return p*RATE_TOTAL;
+}
+function loop(){
+  clearInterval(tick);
+  tick=setInterval(()=>{
+    if(me.mineStart && Date.now()>=me.mineEnd){
+      me.balance+=RATE_TOTAL; me.mineStart=0; me.mineEnd=0; persist();
+    }
+    render();
+  },1000);
+}
+function render(){
+  const live=mined();
+  balTop.textContent=fmt(me.balance+live);
+  balMine.textContent=fmt(live);
+  const on=me.mineStart && Date.now()<me.mineEnd;
+  mineBtn.disabled=!!on;mineCard.classList.toggle('on',!!on);
+  mineBtn.textContent=on?'MINING...':'START MINING';
+  if(on){
+    const left=me.mineEnd-Date.now(), s=Math.floor(left/1000);
+    timer.textContent=String(Math.floor(s/3600)).padStart(2,'0')+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+    bar.style.width=((HOUR-left)/HOUR*100)+'%';
+  } else { timer.textContent='READY'; bar.style.width='0%'; }
+  myCode.textContent=me.code;
+}
+function renderRefers(){
+  me=DB.users().find(u=>u.email===me.email);
+  const r=me.refers||[];
+  refCount.textContent=r.length+' / 3';
+  refList.innerHTML = r.length? r.map((x,i)=>`<div class="hist"><b>${i+1}. ${x.name}</b><div class="mut">${x.email} · ${x.date}</div></div>`).join('')
+    : '<p class="mut">No refers yet. Share your code to see your history here.</p>';
+}
+function copyCode(){ navigator.clipboard?.writeText(me.code); toast('Refer code copied: '+me.code); }
 
-        // 2. Block Keyboard DevTools Shortcuts
-        document.addEventListener('keydown', function(e) {
-            // Block F12
-            if (e.key === 'F12' || e.keyCode === 123) {
-                e.preventDefault();
-                return false;
-            }
-            // Block Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J
-            if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J' || e.keyCode === 73 ||
-                    e.keyCode === 67 || e.keyCode === 74)) {
-                e.preventDefault();
-                return false;
-            }
-            // Block Cmd+Alt+I, Cmd+Alt+C, Cmd+Alt+J (Mac OSX shortcuts)
-            if (e.metaKey && e.altKey && (e.key === 'i' || e.key === 'c' || e.key === 'j' || e.keyCode === 73 ||
-                    e.keyCode === 67 || e.keyCode === 74)) {
-                e.preventDefault();
-                return false;
-            }
-            // Block Ctrl+U (View Source)
-            if (e.ctrlKey && (e.key === 'u' || e.keyCode === 85)) {
-                e.preventDefault();
-                return false;
-            }
-            // Block Cmd+Option+U (Mac View Source)
-            if (e.metaKey && e.altKey && (e.key === 'u' || e.keyCode === 85)) {
-                e.preventDefault();
-                return false;
-            }
-        }, false);
-    </script>
+/* ---------- WITHDRAW ---------- */
+function openWithdraw(){
+  me=DB.users().find(u=>u.email===me.email);
+  const n=(me.refers||[]).length;
+  wdRef.textContent=n+' / 3 refers';
+  const done=n>=3;
+  wdStep1.classList.toggle('hide',done);
+  wdStep2.classList.toggle('hide',!done);
+  wdTitle.textContent='COMPLETE ACCOUNT VERIFICATION';
+  if(me.paid){ wdStep2.classList.add('hide'); wdStep1.classList.add('hide'); wdTitle.textContent='VERIFICATION SUBMITTED — UNDER REVIEW'; }
+  wdModal.classList.remove('hide');
+}
+function showPay(){ wdModal.classList.add('hide'); payModal.classList.remove('hide'); }
+function syncAmount(){ amount.value=coin.value||''; }
+function submitPay(){
+  pErr.textContent='';
+  if(!txid.value.trim()) return pErr.textContent='Enter your transaction / hash ID.';
+  if(!coin.value) return pErr.textContent='Select a coin.';
+  me.paid=true; persist();
+  payModal.classList.add('hide');
+  toast('Submitted! Payment under review.');
+}
+function closeModal(id){ document.getElementById(id).classList.add('hide'); }
 
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200)}
+function copyTxt(x){navigator.clipboard?.writeText(x.trim());toast('Address copied')}
+/* ---------- BOOT ---------- */
+if(DB.session() && DB.users().some(u=>u.email===DB.session())) enter(false);
+</script>
 </body>
 </html>
