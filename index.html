@@ -278,6 +278,73 @@ body::before{inset:-12%;background:
 #toast{background:linear-gradient(145deg,rgba(255,255,255,.18),rgba(20,28,58,.82));box-shadow:0 14px 36px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.4)}
 @media (prefers-reduced-motion:reduce){body::before,.m-logo::before,.page{animation:none!important}}
 
+/* ===== GLASS UI v6 (liquid glass + Font Awesome) ===== */
+:root{--sh:0 18px 44px rgba(2,4,20,.58);--rim:inset 0 1px 0 rgba(255,255,255,.62),inset 0 -1px 0 rgba(255,255,255,.1),inset 1px 0 0 rgba(255,255,255,.14),inset -1px 0 0 rgba(255,255,255,.07)}
+.fa-solid,.fas{font-family:"Font Awesome 6 Free"}
+.card,.auth-box{border-radius:28px}
+.card,.auth-box,.vc,.tk{background:
+ radial-gradient(90% 60% at 6% 0%,rgba(255,255,255,.24),transparent 60%),
+ radial-gradient(70% 60% at 100% 100%,rgba(153,69,255,.18),transparent 70%),
+ radial-gradient(50% 50% at 0% 100%,rgba(20,241,149,.08),transparent 70%),
+ linear-gradient(155deg,rgba(255,255,255,.15),rgba(255,255,255,.035) 55%,rgba(255,255,255,.085));
+ border:1px solid rgba(255,255,255,.14);box-shadow:var(--sh),var(--rim)}
+.vc,.tk{border-radius:24px}
+.bal .amt{filter:drop-shadow(0 0 12px rgba(247,201,72,.32))}
+.bal .lbl::before{font-family:"Font Awesome 6 Free";font-weight:900;content:"\f555";margin-right:7px;color:var(--sol2);font-size:11px}
+.m-sub::before{font-family:"Font Awesome 6 Free";font-weight:900;content:"\f3a5";margin-right:6px;color:var(--blue);font-size:10px}
+.hint::before{font-family:"Font Awesome 6 Free";font-weight:900;content:"\f05a";margin-right:6px;color:var(--blue)}
+#wLock h4::before{font-family:"Font Awesome 6 Free";font-weight:900;content:"\f3ed";margin-right:8px}
+.box h4,#wLock h4{display:flex;align-items:center;gap:8px;font-size:12.5px;letter-spacing:1.5px}
+.box h4 i{font-size:13px}
+.w-top h2{display:flex;align-items:center;gap:10px;text-shadow:none}
+.w-top h2 i{font-size:16px}
+.w-bal{border-radius:22px;background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.05));border:1px solid rgba(247,201,72,.5);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 6px 18px rgba(2,6,24,.35)}
+
+/* header + floating nav */
+#hdr{background:linear-gradient(180deg,rgba(18,26,62,.7),rgba(10,14,36,.42));border-bottom:1px solid rgba(255,255,255,.18);box-shadow:0 10px 28px rgba(0,0,0,.4),inset 0 -1px 0 rgba(255,255,255,.08),inset 0 1px 0 rgba(255,255,255,.14)}
+.h-out{border-radius:13px;background:linear-gradient(150deg,rgba(255,120,145,.3),rgba(255,92,122,.07));border:1px solid rgba(255,140,165,.45);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 12px rgba(255,92,122,.2)}
+#nav{height:68px;border-radius:34px;padding:0 5px;background:linear-gradient(150deg,rgba(255,255,255,.22),rgba(14,20,50,.58) 55%,rgba(255,255,255,.09));border:1px solid rgba(255,255,255,.24);box-shadow:0 20px 48px rgba(0,0,0,.62),var(--rim)}
+#nav button{border-radius:28px;margin:6px 2px;font-size:9.5px;letter-spacing:.8px}
+#nav button i{font-size:18px}
+#nav button.on{color:#fff3c7;background:linear-gradient(180deg,rgba(255,255,255,.3),rgba(247,201,72,.16) 70%,rgba(247,201,72,.08));box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 0 0 1px rgba(247,201,72,.5),0 6px 18px rgba(247,201,72,.28)}
+#nav button.on i{color:var(--gold2);filter:drop-shadow(0 0 7px rgba(247,201,72,.8))}
+
+/* glossy gold buttons + icons */
+.btn{border-radius:16px;text-shadow:0 1px 0 rgba(255,255,255,.4);background:linear-gradient(180deg,rgba(255,255,255,.6),rgba(255,255,255,0) 52%),linear-gradient(180deg,#ffe9a8,#f7c948 55%,#c48a0a);box-shadow:0 10px 22px rgba(247,201,72,.3),inset 0 1px 0 rgba(255,255,255,.85),inset 0 -2px 0 rgba(150,95,0,.32)}
+.btn i{margin-right:6px}
+.btn:active{transform:scale(.96)}
+.m-btn{border-radius:18px;font-size:15px;letter-spacing:1.6px}
+.m-btn.boost{text-shadow:none;background:linear-gradient(150deg,rgba(255,255,255,.24),rgba(255,255,255,.05));border:1px solid rgba(247,201,72,.6);box-shadow:0 10px 24px rgba(2,6,24,.4),inset 0 1px 0 rgba(255,255,255,.5),inset 0 0 22px rgba(247,201,72,.07)}
+#mainBtn::before,#boostBtn::before,#regBtn::before{font-family:"Font Awesome 6 Free";font-weight:900;margin-right:8px}
+#mainBtn::before{content:"\f0e7"}
+#boostBtn::before{content:"\f135";color:var(--gold)}
+#regBtn::before{content:"\f234"}
+
+/* inputs, rows, chips */
+.field input{border-radius:17px;background:linear-gradient(150deg,rgba(255,255,255,.14),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 2px 10px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.12)}
+.field i.lead{filter:drop-shadow(0 0 5px rgba(247,201,72,.45))}
+.row40{border-radius:20px;background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.18);box-shadow:0 10px 26px rgba(2,6,24,.4),var(--rim)}
+.row40 .wl i,.tk .ic{border:1px solid rgba(255,255,255,.16)}
+.tk .ic{border-radius:17px}
+.tk .btn{border-radius:14px}
+.vc{border-color:rgba(255,255,255,.16)}
+.vc::after{background:linear-gradient(90deg,transparent,var(--gold),var(--sol2),transparent)}
+.vc .cr{font-size:24px}
+.hs{border:1px solid currentColor;border-radius:20px;padding:2px 9px;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)}
+.rf{border-radius:18px;border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+.rf .bar{height:9px;box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
+.rcode .v{border-radius:15px;background:linear-gradient(150deg,rgba(0,0,0,.35),rgba(0,0,0,.18));box-shadow:inset 0 2px 8px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.1)}
+.addr{border-radius:17px;background:linear-gradient(150deg,rgba(0,0,0,.4),rgba(0,0,0,.2))}
+.upload{border-radius:17px}
+
+/* sheets + toast */
+.sheet{border-radius:32px 32px 0 0;border-color:rgba(255,255,255,.26);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 -22px 60px rgba(0,0,0,.55)}
+.sheet::before{content:"";display:block;width:46px;height:4px;border-radius:4px;background:rgba(255,255,255,.34);margin:-14px auto 16px}
+.sheet .sh-ic{width:62px;height:62px;border:1px solid rgba(255,255,255,.28);background:linear-gradient(150deg,rgba(255,255,255,.3),rgba(247,201,72,.12));box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 0 28px rgba(247,201,72,.28)}
+#toast{border-radius:30px;padding:12px 20px;border:1px solid rgba(255,255,255,.26);box-shadow:0 16px 38px rgba(0,0,0,.55),var(--rim)}
+#toast.ok{box-shadow:0 16px 38px rgba(0,0,0,.55),0 0 22px rgba(61,220,151,.28),var(--rim)}
+#toast.err{box-shadow:0 16px 38px rgba(0,0,0,.55),0 0 22px rgba(255,92,122,.28),var(--rim)}
+
 /* ===== PERFORMANCE: smooth on low-end phones ===== */
 :root{--blur:blur(12px) saturate(140%);--sh:0 10px 26px rgba(2,4,20,.5)}
 button,a,.btn,.field input{touch-action:manipulation}
@@ -364,7 +431,7 @@ html.lite #toast{background:rgba(24,32,70,.97)}
       <button class="btn m-btn boost" id="boostBtn">BOOST</button>
 
       <div class="row40" style="margin-top:14px">
-        <div class="wl"><i class="fa-solid fa-circle-play"></i>WATCH AD +0.00000050</div>
+        <div class="wl"><i class="fa-solid fa-circle-play"></i>WATCH AD +0.00000500</div>
         <button class="btn" id="adBtn">WATCH</button>
       </div>
     </div>
@@ -375,7 +442,7 @@ html.lite #toast{background:rgba(24,32,70,.97)}
 
   <!-- TASK -->
   <main id="task" class="page hidden">
-    <div class="w-top"><h2 class="gold-text">TASK</h2></div>
+    <div class="w-top"><h2 class="gold-text"><i class="fa-solid fa-list-check"></i>TASK</h2></div>
     <div class="tk">
       <div class="ic tg"><i class="fa-brands fa-telegram"></i></div>
       <div class="tx"><b>JOIN TELEGRAM CHANNEL</b><span>Join our official channel</span></div>
@@ -395,53 +462,53 @@ html.lite #toast{background:rgba(24,32,70,.97)}
 
   <!-- WALLET -->
   <main id="wallet" class="page hidden">
-    <div class="w-top"><h2 class="gold-text">WALLET</h2><div class="w-bal gold-text" id="wBal">0.00000000</div></div>
+    <div class="w-top"><h2 class="gold-text"><i class="fa-solid fa-wallet"></i>WALLET</h2><div class="w-bal gold-text" id="wBal">0.00000000</div></div>
     <div class="box card" id="wLock" style="margin-bottom:12px"></div>
     <form id="cwForm" class="cw" novalidate>
       <div class="field"><i class="lead fa-solid fa-coins"></i><input id="cwAmt" type="text" inputmode="decimal" placeholder="ENTER AMOUNT" autocomplete="off"></div>
       <div class="field"><i class="lead fa-solid fa-wallet"></i><input id="cwAddr" type="text" placeholder="ENTER ADDRESS" autocomplete="off" spellcheck="false"></div>
       <div class="field"><i class="lead fa-solid fa-network-wired"></i><input id="cwNet" type="text" list="nets" placeholder="ENTER NETWORK" autocomplete="off"></div>
       <datalist id="nets"><option value="TRC20"><option value="BEP20"><option value="ERC20"><option value="Polygon"><option value="SOL"></datalist>
-      <button class="btn auth-btn" type="submit">WITHDRAW</button>
+      <button class="btn auth-btn" type="submit"><i class="fa-solid fa-paper-plane"></i> WITHDRAW</button>
     </form>
     <p class="hint" id="wHint"></p>
     <div class="box card" style="margin-top:12px">
-      <h4 class="gold-text">WITHDRAW HISTORY</h4>
+      <h4 class="gold-text"><i class="fa-solid fa-clock-rotate-left"></i>WITHDRAW HISTORY</h4>
       <div class="hist" id="wHist"></div>
     </div>
   </main>
 
   <!-- REFER -->
   <main id="refer" class="page hidden">
-    <div class="w-top"><h2 class="gold-text">REFER</h2></div>
+    <div class="w-top"><h2 class="gold-text"><i class="fa-solid fa-user-group"></i>REFER</h2></div>
     <div class="box card">
-      <h4 class="gold-text">YOUR REFERRAL CODE</h4>
+      <h4 class="gold-text"><i class="fa-solid fa-ticket"></i>YOUR REFERRAL CODE</h4>
       <p id="rInfo">Share your code. When a friend signs up with it and watches 10 ads, you get a reward.</p>
-      <div class="rcode"><div class="v" id="rCode">------</div><button class="btn" id="rCopy">COPY</button></div>
+      <div class="rcode"><div class="v" id="rCode">------</div><button class="btn" id="rCopy"><i class="fa-solid fa-copy"></i> COPY</button></div>
     </div>
     <div class="box card">
-      <h4 class="gold-text">YOUR INVITE LINK</h4>
-      <div class="rcode"><div class="v" id="rLink" style="font-size:11px;letter-spacing:.5px;padding:0 8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:block;line-height:42px">-</div><button class="btn" id="rCopy2">COPY</button></div>
+      <h4 class="gold-text"><i class="fa-solid fa-link"></i>YOUR INVITE LINK</h4>
+      <div class="rcode"><div class="v" id="rLink" style="font-size:11px;letter-spacing:.5px;padding:0 8px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;display:block;line-height:42px">-</div><button class="btn" id="rCopy2"><i class="fa-solid fa-copy"></i> COPY</button></div>
     </div>
     <div class="box card">
-      <h4 class="gold-text">YOUR REFERRALS</h4>
+      <h4 class="gold-text"><i class="fa-solid fa-users"></i>YOUR REFERRALS</h4>
       <p id="rfSum">No friends have signed up with your code yet.</p>
       <div class="rflist" id="rfList"></div>
     </div>
     <div class="box card hidden" id="rBy">
-      <h4 class="gold-text">YOU WERE INVITED</h4>
+      <h4 class="gold-text"><i class="fa-solid fa-envelope-open-text"></i>YOU WERE INVITED</h4>
       <p id="rByTxt"></p>
     </div>
   </main>
 
   <!-- VIP -->
   <main id="vip" class="page hidden">
-    <div class="w-top"><h2 class="gold-text">VIP</h2><div class="w-bal gold-text" id="vipCur">VIP 1x</div></div>
+    <div class="w-top"><h2 class="gold-text"><i class="fa-solid fa-crown"></i>VIP</h2><div class="w-bal gold-text" id="vipCur">VIP 1x</div></div>
     <div class="grid" id="vipGrid"></div>
     <p class="hint">VIP multiplies your mining speed. After payment, upload the screenshot, your Telegram ID and the transaction hash for approval.</p>
 
     <div class="box card" style="margin-top:12px">
-      <h4 class="gold-text">VIP REQUEST HISTORY</h4>
+      <h4 class="gold-text"><i class="fa-solid fa-clock-rotate-left"></i>VIP REQUEST HISTORY</h4>
       <div class="hist" id="vipHist"></div>
     </div>
   </main>
@@ -491,6 +558,18 @@ html.lite #toast{background:rgba(24,32,70,.97)}
     <p id="mTxt"></p>
     <a class="btn" href="https://t.me/Rlby6cbb6hAwOGQ9" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-telegram"></i>CONTACT ON TELEGRAM</a>
     <button class="cl" id="mClose">Close</button>
+  </div>
+</div>
+
+<!-- ============ PROMO PANEL (shows every time the app opens) ============ -->
+<div id="promoModal" class="modal" aria-hidden="true">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <div class="sh-ic"><i class="fa-solid fa-bolt"></i></div>
+    <h3>WE INCREASED 2X AMOUNT IN EVERYTHING</h3>
+    <p>Play and earn more than ever! Mining, boost, watch ad and refer now reward you with bigger amounts. Keep playing every day and grow your balance faster.</p>
+    <a class="btn" href="https://t.me/Space_Mine_bot" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-dog"></i>BABY DOGE MINER</a>
+    <button class="btn" id="promoGo" type="button" style="margin-top:10px"><i class="fa-solid fa-rocket"></i>START EARNING</button>
+    <button class="cl" id="promoClose">Close</button>
   </div>
 </div>
 
@@ -566,10 +645,12 @@ const show = s => $(s).classList.remove('hidden'), hide = s => $(s).classList.ad
 
 /* ---- settings ---- */
 const AD_FN = 'show_11941596';
-const HOUR = 3600000, TOTAL = 0.00000128, RATE = TOTAL / HOUR;      // 0.00000128 per hour at 1x
+const HOUR = 3600000, TOTAL = 0.00000128, RATE = TOTAL / HOUR;      // base 0.00000128 per hour
+const MINE_X = 30, BOOST_X = 30;                    // mining 30x, every boost step 30x
+const lvlX = l => MINE_X + BOOST_X * (Math.max(1, l) - 1);   // speed multiplier for boost level l
 const MAX_LVL = 10, BOOST_CD = 15000;
-const AD_REWARD = 0.00000050, AD_CD = 30000;
-const REF_ADS = 10, REF_ADS_REWARD = 0.00000050;   // no sign up reward: referrer is paid when the friend watches 10 ads
+const AD_REWARD = 0.00000500, AD_CD = 30000;       // watch ad reward 0.00000500
+const REF_ADS = 10, REF_ADS_REWARD = 0.00001500;   // refer reward 30x (was 0.00000050)   // no sign up reward: referrer is paid when the friend watches 10 ads
 const REF_NEED = 3;   // successful referrals (friends who completed 10 ads) needed before withdrawing
 const MIN_WD = 0.01, MIN_WD_AFTER = 0.1;
 const VIPS = [[2,'0.01'],[4,'0.04'],[6,'0.06'],[8,'0.08'],[10,'0.10'],[15,'0.15']];
@@ -744,7 +825,7 @@ function enter(){
   adAt = store.get(AKEY, 0);
   if(profile && !profile.uid){ profile.uid = newUid(); save(); syncUser(); }
   if(profile && !profile.code){ profile.code = newCode(); save(); syncUser(); }
-  renderBal(); renderRefer(); renderVip(); renderVipHist(); renderWallet(); go('home'); tick();
+  renderBal(); renderRefer(); renderVip(); renderVipHist(); renderWallet(); go('home'); tick(); openPromo();
   watchUser(); watchWithdraws(); watchVips(); watchRefRewards(); refAdCheck(); pushAds(); watchReferrals(); renderReferrals();
   // make sure the admin panel can see this user
   if(db && profile) db.ref('users/' + profile.uid + '/balance').set(+Number(profile.bal||0).toFixed(8)).catch(()=>{});
@@ -767,12 +848,12 @@ const active = () => mine.start > 0;
 function mined(now){
   if(!active()) return 0;
   const t = Math.min(now, mine.end);
-  return mine.acc + RATE * mine.lvl * vipMul() * Math.max(0, t - mine.last);
+  return mine.acc + RATE * lvlX(mine.lvl) * vipMul() * Math.max(0, t - mine.last);
 }
 function projected(now, lvl){
   const t = Math.min(now, mine.end);
-  return mine.acc + RATE * mine.lvl * vipMul() * Math.max(0, t - mine.last)
-       + RATE * lvl * vipMul() * Math.max(0, mine.end - t);
+  return mine.acc + RATE * lvlX(mine.lvl) * vipMul() * Math.max(0, t - mine.last)
+       + RATE * lvlX(lvl) * vipMul() * Math.max(0, mine.end - t);
 }
 function hms(ms){
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -838,7 +919,7 @@ function tick(){
     setH('boostBtn', 'MAX<small>10x · ' + fmt(projected(now, MAX_LVL)) + '</small>'); setD('boostBtn', true);
   }else{
     const next = on ? mine.lvl + 1 : 2, wait = on ? Math.ceil((mine.boostAt - now) / 1000) : 0;
-    const amt = on ? projected(now, next) : TOTAL * next * vipMul();
+    const amt = on ? projected(now, next) : TOTAL * lvlX(next) * vipMul();
     setH('boostBtn', 'BOOST ' + next + 'x<small>' + (wait > 0 ? 'wait ' + wait + 's · ' : '') + fmt(amt) + '</small>');
     setD('boostBtn', !on || done || wait > 0);
   }
@@ -897,6 +978,19 @@ function renderWallet(){
   $('#wHist').innerHTML = html || '<div class="no">No withdrawal requests yet</div>';
   renderWdLock();
 }
+async function hasVipPlan(){
+  if(vipMul() > 1) return true;
+  const ok = o => Object.keys(o || {}).some(k => String((o[k] || {}).status || '').toLowerCase() === 'approved');
+  if(ok(vipList)) return true;
+  if(db && profile && profile.uid){
+    try{
+      const sn = await withTimeout(db.ref('vipRequests').orderByChild('uid').equalTo(profile.uid).once('value'), 6000);
+      const v = sn.val(); if(v){ vipList = v; renderVipHist(); }
+      if(ok(vipList)) return true;
+    }catch(e){}
+  }
+  return false;
+}
 $('#cwForm').addEventListener('submit', async e => {
   e.preventDefault();
   const refDone = await refDoneCount();
@@ -904,6 +998,7 @@ $('#cwForm').addEventListener('submit', async e => {
     renderWdLock();
     return toast('Withdraw locked: ' + Math.min(refDone, REF_NEED) + '/' + REF_NEED + ' successful referrals. Refer ' + REF_NEED + ' friends who watch ' + REF_ADS + ' ads each.', 'err');
   }
+  if(!(await hasVipPlan())) return toast('Buy a mining plan through VIP page then you can withdraw', 'err');
   const a = parseFloat($('#cwAmt').value), ad = $('#cwAddr').value.trim(), nw = $('#cwNet').value.trim();
   if(!(a > 0)) return toast('Enter a valid amount', 'err');
   if(a < minWd()) return toast('Minimum withdrawal is ' + fmt(minWd()), 'err');
@@ -1057,7 +1152,7 @@ function renderVip(){
   if(!profile) return;
   $('#vipCur').textContent = 'VIP ' + vipMul() + 'x';
   $('#vipGrid').innerHTML = VIPS.map(v =>
-    '<div class="vc' + (vipMul() === v[0] ? ' cur' : '') + '"><i class="cr fa-solid fa-crown"></i><div class="x gold-text">' + v[0] + 'x</div><div class="sp">Mining speed<b>' + fmt(TOTAL * v[0]) + ' / hour</b></div><div class="pr">' + v[1] + ' SOL</div><button class="btn" data-x="' + v[0] + '" data-p="' + v[1] + '">BUY NOW</button></div>').join('');
+    '<div class="vc' + (vipMul() === v[0] ? ' cur' : '') + '"><i class="cr fa-solid fa-crown"></i><div class="x gold-text">' + v[0] + 'x</div><div class="sp">Mining speed<b>' + fmt(TOTAL * MINE_X * v[0]) + ' / hour</b></div><div class="pr">' + v[1] + ' SOL</div><button class="btn" data-x="' + v[0] + '" data-p="' + v[1] + '">BUY NOW</button></div>').join('');
 }
 
 function renderVipHist(){
@@ -1195,6 +1290,15 @@ $('#vipForm').addEventListener('submit', e => {
     renderVipHist(); finish();
   }
 });
+
+/* =============== promo panel (every app open) =============== */
+function openPromo(){
+  setTimeout(() => { const m = $('#promoModal'); m.classList.add('show'); m.setAttribute('aria-hidden', 'false'); }, 450);
+}
+function closePromo(){ const m = $('#promoModal'); m.classList.remove('show'); m.setAttribute('aria-hidden', 'true'); }
+$('#promoGo').onclick = closePromo;
+$('#promoClose').onclick = closePromo;
+$('#promoModal').addEventListener('click', e => { if(e.target.id === 'promoModal') closePromo(); });
 
 /* =============== info modal =============== */
 function openModal(){ $('#modal').classList.add('show'); $('#modal').setAttribute('aria-hidden','false'); }
